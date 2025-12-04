@@ -27,7 +27,8 @@ function initializePostgres() {
 
   pool = new Pool({
     connectionString,
-    ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require') ? { rejectUnauthorized: false } : false,
+    // Enable SSL for Neon and other cloud providers
+    ssl: connectionString.includes('sslmode=require') || connectionString.includes('neon.tech') ? { rejectUnauthorized: false } : false,
     max: 20, // Maximum number of clients in the pool
     idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
     connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection cannot be established
