@@ -10,7 +10,7 @@ const fs = require('fs');
 const postgresDb = require('./postgres-db');
 
 // Determine which database to use
-const USE_POSTGRES = !!(process.env.DATABASE_URL || process.env.POSTGRES_HOST);
+const USE_POSTGRES = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
 const DB_TYPE = USE_POSTGRES ? 'postgresql' : 'sqlite';
 
 let sqliteDb = null;

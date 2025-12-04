@@ -7,6 +7,8 @@
  * 
  * Environment Variables:
  *   DATABASE_URL - PostgreSQL connection string (recommended)
+ *   POSTGRES_URL - Vercel default connection string
+ *   STORAGE_URL - Custom prefix connection string
  *   OR
  *   POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
  */

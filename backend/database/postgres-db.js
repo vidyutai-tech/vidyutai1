@@ -12,8 +12,10 @@ function initializePostgres() {
   }
 
   // Get connection string from environment
-  // Supports both DATABASE_URL (Vercel Postgres, Supabase, etc.) and individual params
+  // Supports DATABASE_URL, POSTGRES_URL (Vercel default), or individual params
   const connectionString = process.env.DATABASE_URL || 
+    process.env.POSTGRES_URL ||
+    process.env.STORAGE_URL || // Vercel Storage prefix
     (process.env.POSTGRES_HOST ? 
       `postgresql://${process.env.POSTGRES_USER || 'postgres'}:${process.env.POSTGRES_PASSWORD || ''}@${process.env.POSTGRES_HOST || 'localhost'}:${process.env.POSTGRES_PORT || 5432}/${process.env.POSTGRES_DB || 'vidyutai'}` :
       null

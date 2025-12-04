@@ -20,7 +20,7 @@ async function createTables() {
     let schema;
     
     // Determine which schema to use
-    const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_HOST);
+    const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
     const schemaPath = usePostgres ? SCHEMA_POSTGRES_PATH : SCHEMA_PATH;
     
     try {
@@ -114,7 +114,7 @@ async function seedDatabase() {
     }
     
     // Convert SQLite syntax to PostgreSQL if needed
-    const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_HOST);
+    const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
     if (usePostgres) {
       // Convert INSERT OR IGNORE to INSERT ... ON CONFLICT DO NOTHING
       seed = seed.replace(/INSERT OR IGNORE INTO (\w+) \(([^)]+)\) VALUES/gi, 
