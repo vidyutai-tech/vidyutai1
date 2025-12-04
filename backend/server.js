@@ -25,7 +25,13 @@ const app = express();
 const server = http.createServer(app);
 
 // Ensure database is initialized (tables + seed) before routes
-ensureInitialized();
+// Wrap in try-catch to prevent serverless function crashes
+try {
+  ensureInitialized();
+} catch (error) {
+  console.error('⚠️ Database initialization warning:', error.message);
+  // Continue anyway - routes will handle DB errors gracefully
+}
 
 // Initialize Socket.IO
 const io = socketIo(server, {
@@ -237,17 +243,23 @@ if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SIMULATOR === 't
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    error: 'Something went wrong!',
-    message: err.message
-  });
+  console.error('Error middleware:', err.stack);
+  // Ensure we always return JSON, even for errors
+  if (!res.headersSent) {
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+    });
+  }
 });
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
-    error: 'Route not found'
+    success: false,
+    error: 'Route not found',
+    message: `The requested route ${req.method} ${req.path} was not found`
   });
 });
 

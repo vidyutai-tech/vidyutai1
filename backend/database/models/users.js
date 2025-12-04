@@ -1,43 +1,37 @@
-const { getDatabase } = require('../db');
+const dbAdapter = require('../db-adapter');
 
 class UserModel {
-  static findByEmail(email) {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  static async findByEmail(email) {
+    return await dbAdapter.get('SELECT * FROM users WHERE email = ?', [email]);
   }
 
-  static findById(id) {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+  static async findById(id) {
+    return await dbAdapter.get('SELECT * FROM users WHERE id = ?', [id]);
   }
 
-  static getAll() {
-    const db = getDatabase();
-    return db.prepare('SELECT id, email, name, role, created_at FROM users').all();
+  static async getAll() {
+    return await dbAdapter.all('SELECT id, email, name, role, created_at FROM users');
   }
 
-  static create(user) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      INSERT INTO users (id, email, password, name, role)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    return stmt.run(user.id, user.email, user.password, user.name, user.role);
+  static async create(user) {
+    return await dbAdapter.run(
+      `INSERT INTO users (id, email, password, name, role)
+       VALUES (?, ?, ?, ?, ?)`,
+      [user.id, user.email, user.password, user.name, user.role]
+    );
   }
 
-  static update(id, updates) {
-    const db = getDatabase();
+  static async update(id, updates) {
     const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
     const values = Object.values(updates);
-    const stmt = db.prepare(`
-      UPDATE users SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `);
-    return stmt.run(...values, id);
+    return await dbAdapter.run(
+      `UPDATE users SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [...values, id]
+    );
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    return db.prepare('DELETE FROM users WHERE id = ?').run(id);
+  static async delete(id) {
+    return await dbAdapter.run('DELETE FROM users WHERE id = ?', [id]);
   }
 }
 

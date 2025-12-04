@@ -5,7 +5,7 @@ const UserModel = require('../database/models/users');
 // Note: In production, use proper password hashing (bcrypt) and JWT tokens
 
 // POST /api/v1/auth/token - Login endpoint
-router.post('/token', (req, res) => {
+router.post('/token', async (req, res) => {
   try {
     // Handle both JSON and form-urlencoded
     const username = req.body.username || req.body.email;
@@ -19,8 +19,18 @@ router.post('/token', (req, res) => {
       });
     }
     
-    // Find user by email
-    const user = UserModel.findByEmail(username);
+    // Find user by email - handle potential DB errors
+    let user;
+    try {
+      user = await UserModel.findByEmail(username);
+    } catch (dbError) {
+      console.error('Database error in login:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Database error',
+        message: 'Unable to access user database'
+      });
+    }
     
     if (!user) {
       return res.status(401).json({
@@ -60,20 +70,43 @@ router.post('/token', (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error'
-    });
+    // Ensure we always return JSON
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred during login'
+      });
+    }
   }
 });
 
 // POST /api/v1/auth/register - Register endpoint (optional)
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
     
-    // Check if user already exists
-    const existingUser = UserModel.findByEmail(email);
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'Email and password are required'
+      });
+    }
+    
+    // Check if user already exists - handle potential DB errors
+    let existingUser;
+    try {
+      existingUser = await UserModel.findByEmail(email);
+    } catch (dbError) {
+      console.error('Database error in registration:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Database error',
+        message: 'Unable to access user database'
+      });
+    }
     
     if (existingUser) {
       return res.status(400).json({
@@ -91,7 +124,17 @@ router.post('/register', (req, res) => {
       role: 'operator'
     };
     
-    UserModel.create(newUser);
+    // Handle potential DB errors during user creation
+    try {
+      await UserModel.create(newUser);
+    } catch (dbError) {
+      console.error('Database error creating user:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Database error',
+        message: 'Unable to create user account'
+      });
+    }
     
     // Generate token
     const token = Buffer.from(JSON.stringify({
@@ -114,15 +157,19 @@ router.post('/register', (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error'
-    });
+    // Ensure we always return JSON
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred during registration'
+      });
+    }
   }
 });
 
 // GET /api/v1/auth/me - Get current user (requires token)
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -145,7 +192,7 @@ router.get('/me', (req, res) => {
       });
     }
     
-    const user = UserModel.findById(decoded.userId);
+    const user = await UserModel.findById(decoded.userId);
     
     if (!user) {
       return res.status(404).json({

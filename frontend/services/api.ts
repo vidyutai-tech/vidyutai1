@@ -42,9 +42,23 @@ export const apiLogin = async (email: string, password: string): Promise<{ token
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Invalid credentials' }));
+    // Try to parse JSON error, but handle non-JSON responses gracefully
+    let errorData;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        // If JSON parsing fails, use a generic error
+        throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      }
+    } else {
+      // Non-JSON response (HTML error page, etc.)
+      throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+    }
     throw new Error(errorData.message || errorData.error || 'Invalid credentials');
   }
+  
   const data = await response.json();
   
   // Store user data in localStorage
@@ -66,8 +80,22 @@ export const apiRegister = async (name: string, email: string, password: string)
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Registration failed');
+    // Try to parse JSON error, but handle non-JSON responses gracefully
+    let errorData;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        // If JSON parsing fails, use a generic error
+        throw new Error(`Registration failed: ${response.status} ${response.statusText}`);
+      }
+    } else {
+      // Non-JSON response (HTML error page, etc.)
+      const text = await response.text();
+      throw new Error(`Registration failed: ${response.status} ${response.statusText}`);
+    }
+    throw new Error(errorData.error || errorData.message || 'Registration failed');
   }
   
   const data = await response.json();
