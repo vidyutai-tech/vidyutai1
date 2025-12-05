@@ -10,10 +10,7 @@
     },
     {
       "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "backend/**"
-      }
+      "use": "@vercel/node"
     },
     {
       "src": "ai-service/app/vercel_app.py",
