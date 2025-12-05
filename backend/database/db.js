@@ -229,6 +229,7 @@ module.exports = {
   initializeDatabase: dbAdapter.initializeDatabase,
   ensureInitialized,
   isInitialized: dbAdapter.isInitialized,
+  getDbType: dbAdapter.getDbType,
   // Export adapter methods for direct use
   query: dbAdapter.query,
   get: dbAdapter.get,

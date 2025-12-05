@@ -45,7 +45,7 @@ function initializePostgres() {
     console.error('❌ Unexpected PostgreSQL pool error:', err);
   });
 
-  // Test connection
+  // Test connection (async, but don't block initialization)
   pool.query('SELECT NOW()')
     .then((result) => {
       console.log('✅ PostgreSQL connection pool established');
@@ -58,7 +58,7 @@ function initializePostgres() {
         message: err.message,
         stack: err.stack?.split('\n').slice(0, 3).join('\n')
       });
-      throw err;
+      // Don't throw here - let the first query fail if connection is bad
     });
 
   return pool;

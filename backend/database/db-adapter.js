@@ -26,12 +26,20 @@ async function initializeDatabase() {
 
   if (USE_POSTGRES) {
     console.log('🗄️ Using PostgreSQL database');
+    console.log('Environment check:', {
+      DATABASE_URL: !!process.env.DATABASE_URL,
+      POSTGRES_URL: !!process.env.POSTGRES_URL,
+      STORAGE_URL: !!process.env.STORAGE_URL,
+      POSTGRES_HOST: !!process.env.POSTGRES_HOST,
+      VERCEL: !!process.env.VERCEL
+    });
     try {
       postgresDb.initializePostgres();
       dbType = 'postgresql';
       console.log('✅ PostgreSQL initialized');
     } catch (error) {
       console.error('❌ Failed to initialize PostgreSQL:', error.message);
+      console.error('Error stack:', error.stack);
       // Fallback to SQLite if PostgreSQL fails (for development)
       if (!process.env.VERCEL && !process.env.DATABASE_URL) {
         console.log('⚠️ Falling back to SQLite');
@@ -130,16 +138,23 @@ function convertToPostgresParams(sql) {
  * Get a single row
  */
 async function get(sql, params = []) {
-  await initializeDatabase();
-  
-  if (dbType === 'postgresql') {
-    const pgSql = convertToPostgresParams(sql);
-    const result = await postgresDb.query(pgSql, params);
-    return result.rows[0] || null;
-  } else {
-    const db = getDatabase();
-    const stmt = db.prepare(sql);
-    return stmt.get(...params) || null;
+  try {
+    await initializeDatabase();
+    
+    if (dbType === 'postgresql') {
+      const pgSql = convertToPostgresParams(sql);
+      const result = await postgresDb.query(pgSql, params);
+      return result.rows[0] || null;
+    } else {
+      const db = getDatabase();
+      const stmt = db.prepare(sql);
+      return stmt.get(...params) || null;
+    }
+  } catch (error) {
+    console.error('Database get() error:', error);
+    console.error('SQL:', sql);
+    console.error('Params:', params);
+    throw error;
   }
 }
 
@@ -164,19 +179,26 @@ async function all(sql, params = []) {
  * Execute a statement (INSERT, UPDATE, DELETE)
  */
 async function run(sql, params = []) {
-  await initializeDatabase();
-  
-  if (dbType === 'postgresql') {
-    const pgSql = convertToPostgresParams(sql);
-    const result = await postgresDb.query(pgSql, params);
-    return {
-      lastInsertRowid: null, // PostgreSQL doesn't have this concept
-      changes: result.rowCount || 0
-    };
-  } else {
-    const db = getDatabase();
-    const stmt = db.prepare(sql);
-    return stmt.run(...params);
+  try {
+    await initializeDatabase();
+    
+    if (dbType === 'postgresql') {
+      const pgSql = convertToPostgresParams(sql);
+      const result = await postgresDb.query(pgSql, params);
+      return {
+        lastInsertRowid: null, // PostgreSQL doesn't have this concept
+        changes: result.rowCount || 0
+      };
+    } else {
+      const db = getDatabase();
+      const stmt = db.prepare(sql);
+      return stmt.run(...params);
+    }
+  } catch (error) {
+    console.error('Database run() error:', error);
+    console.error('SQL:', sql);
+    console.error('Params:', params);
+    throw error;
   }
 }
 
