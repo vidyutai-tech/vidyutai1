@@ -29,3 +29,5 @@ docker-compose*.yml
 Dockerfile*
 mosquitto.conf
 
+# Exclude api/node_modules - use root node_modules instead
+api/node_modules/
