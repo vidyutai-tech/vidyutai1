@@ -7,3 +7,4 @@ const app = require('../backend/server');
 // Export the Express app - Vercel handles the serverless wrapper
 module.exports = app;
 
+// Cache bust: 1764916352
