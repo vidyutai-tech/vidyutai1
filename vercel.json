@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "npm install",
   "builds": [
     {
       "src": "frontend/package.json",
@@ -12,7 +13,8 @@
       "src": "api/index.js",
       "use": "@vercel/node",
       "config": {
-        "maxLambdaSize": "50mb"
+        "maxLambdaSize": "50mb",
+        "includeFiles": "backend/**"
       }
     },
     {
