@@ -25,12 +25,22 @@ const app = express();
 const server = http.createServer(app);
 
 // Ensure database is initialized (tables + seed) before routes
-// Wrap in try-catch to prevent serverless function crashes
-try {
-  ensureInitialized();
-} catch (error) {
-  console.error('⚠️ Database initialization warning:', error.message);
-  // Continue anyway - routes will handle DB errors gracefully
+// For Vercel serverless, initialization happens on first request
+// For regular server, initialize immediately
+if (process.env.VERCEL) {
+  // On Vercel, initialize asynchronously (non-blocking)
+  ensureInitialized().catch(error => {
+    console.error('⚠️ Database initialization warning:', error.message);
+  });
+} else {
+  // For local/server, initialize synchronously on startup
+  (async () => {
+    try {
+      await ensureInitialized();
+    } catch (error) {
+      console.error('⚠️ Database initialization warning:', error.message);
+    }
+  })();
 }
 
 // Initialize Socket.IO

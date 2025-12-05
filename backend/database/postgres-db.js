@@ -22,8 +22,14 @@ function initializePostgres() {
     );
 
   if (!connectionString) {
-    throw new Error('PostgreSQL connection string not found. Set DATABASE_URL or POSTGRES_* environment variables.');
+    const errorMsg = 'PostgreSQL connection string not found. Set DATABASE_URL, POSTGRES_URL, STORAGE_URL, or POSTGRES_* environment variables.';
+    console.error('❌', errorMsg);
+    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('POSTGRES') || k.includes('DATABASE') || k.includes('STORAGE')).join(', '));
+    throw new Error(errorMsg);
   }
+  
+  console.log('🔗 Connecting to PostgreSQL...');
+  console.log('Connection string format:', connectionString.substring(0, 30) + '...' + connectionString.substring(connectionString.length - 20));
 
   pool = new Pool({
     connectionString,
@@ -41,11 +47,17 @@ function initializePostgres() {
 
   // Test connection
   pool.query('SELECT NOW()')
-    .then(() => {
+    .then((result) => {
       console.log('✅ PostgreSQL connection pool established');
+      console.log('Database time:', result.rows[0].now);
     })
     .catch((err) => {
       console.error('❌ Failed to connect to PostgreSQL:', err.message);
+      console.error('Error details:', {
+        code: err.code,
+        message: err.message,
+        stack: err.stack?.split('\n').slice(0, 3).join('\n')
+      });
       throw err;
     });
 

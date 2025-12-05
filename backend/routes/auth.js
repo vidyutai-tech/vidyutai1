@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const UserModel = require('../database/models/users');
+const { ensureInitialized } = require('../database/db');
 
 // Note: In production, use proper password hashing (bcrypt) and JWT tokens
 
 // POST /api/v1/auth/token - Login endpoint
 router.post('/token', async (req, res) => {
   try {
+    // Ensure database is initialized (important for Vercel serverless)
+    await ensureInitialized();
+    
     // Handle both JSON and form-urlencoded
     const username = req.body.username || req.body.email;
     const password = req.body.password;
@@ -84,6 +88,9 @@ router.post('/token', async (req, res) => {
 // POST /api/v1/auth/register - Register endpoint (optional)
 router.post('/register', async (req, res) => {
   try {
+    // Ensure database is initialized (important for Vercel serverless)
+    await ensureInitialized();
+    
     const { email, password, name } = req.body;
     
     // Validate input

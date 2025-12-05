@@ -162,7 +162,7 @@ async function ensureInitialized() {
         if (process.env.VERCEL) {
           console.log('⚠️ Vercel environment detected. Using minimal schema.');
           try {
-            const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_HOST);
+            const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
             const minimalSchema = getInlineSchema(usePostgres);
             await dbAdapter.exec(minimalSchema);
             console.log('✅ Minimal schema created for Vercel');
