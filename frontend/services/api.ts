@@ -8,7 +8,15 @@ declare global {
   }
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '/api/v1' : 'http://localhost:5001/api/v1');
+// Get API base URL - use full URL for localhost, relative for production
+const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:5001/api/v1';
+  }
+  return import.meta.env.VITE_API_BASE_URL || '/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // --- Helper for Auth Headers ---
 const getAuthHeaders = (): HeadersInit => {
@@ -484,16 +492,32 @@ export const savePlanningStep1 = async (data: { preferred_sources: string[]; pri
 };
 
 export const savePlanningStep2 = async (data: { name: string; appliances: Omit<Appliance, 'id'>[]; site_id?: string }): Promise<{ success: boolean; load_profile: LoadProfile }> => {
+  console.log('📤 Saving load profile:', data);
   const response = await fetch(`${API_BASE_URL}/wizard/planning/step2`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(data)
   });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Unknown error', message: 'Failed to save load profile' }));
-    throw new Error(errorData.message || errorData.error || 'Failed to save load profile');
+  
+  let errorData;
+  try {
+    errorData = await response.json();
+  } catch (parseError) {
+    console.error('❌ Failed to parse error response:', parseError);
+    throw new Error(`Server returned invalid response (${response.status}). Please check if the backend is running.`);
   }
-  return response.json();
+  
+  if (!response.ok) {
+    console.error('❌ Load profile save failed:', {
+      status: response.status,
+      error: errorData
+    });
+    const errorMessage = errorData.message || errorData.error || `Server error (${response.status})`;
+    throw new Error(errorMessage);
+  }
+  
+  console.log('✅ Load profile saved successfully:', errorData);
+  return errorData;
 };
 
 export const savePlanningStep3 = async (data: {

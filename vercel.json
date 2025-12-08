@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install && npm --prefix backend install",
+  "installCommand": "npm install && cd frontend && npm install",
   "builds": [
     {
       "src": "frontend/package.json",
@@ -41,8 +41,7 @@
   ],
   "env": {
     "VITE_API_BASE_URL": "/api/v1",
-    "VITE_AI_BASE_URL": "/ai",
+    "VITE_AI_BASE_URL": "/ai/api/v1",
     "NODE_ENV": "production"
   }
 }
-

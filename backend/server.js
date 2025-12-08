@@ -76,8 +76,8 @@ app.get('/health', async (req, res) => {
     const { ensureInitialized, getDbType } = require('./database/db');
     await ensureInitialized();
     
-    res.json({
-      status: 'healthy',
+  res.json({
+    status: 'healthy',
       timestamp: new Date().toISOString(),
       database: getDbType ? getDbType() : 'unknown',
       env: {
@@ -91,8 +91,8 @@ app.get('/health', async (req, res) => {
     res.status(500).json({
       status: 'unhealthy',
       error: error.message,
-      timestamp: new Date().toISOString()
-    });
+    timestamp: new Date().toISOString()
+  });
   }
 });
 
@@ -274,11 +274,11 @@ app.use((err, req, res, next) => {
   console.error('Error middleware:', err.stack);
   // Ensure we always return JSON, even for errors
   if (!res.headersSent) {
-    res.status(500).json({
+  res.status(500).json({
       success: false,
       error: 'Internal server error',
       message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
-    });
+  });
   }
 });
 

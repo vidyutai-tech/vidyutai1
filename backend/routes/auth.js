@@ -77,12 +77,12 @@ router.post('/token', async (req, res) => {
     console.error('Error stack:', error.stack);
     // Ensure we always return JSON
     if (!res.headersSent) {
-      res.status(500).json({
-        success: false,
+    res.status(500).json({
+      success: false,
         error: 'Internal server error',
         message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred during login',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
+    });
     }
   }
 });
@@ -169,12 +169,12 @@ router.post('/register', async (req, res) => {
     console.error('Error stack:', error.stack);
     // Ensure we always return JSON
     if (!res.headersSent) {
-      res.status(500).json({
-        success: false,
+    res.status(500).json({
+      success: false,
         error: 'Internal server error',
         message: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred during registration',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
+    });
     }
   }
 });

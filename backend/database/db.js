@@ -138,9 +138,9 @@ async function seedDatabase() {
     console.error('❌ Failed to seed database:', error);
     // Don't throw on Vercel - allow app to continue
     if (!process.env.VERCEL) {
-      throw error;
-    }
+    throw error;
   }
+}
 }
 
 /**
@@ -169,7 +169,7 @@ async function ensureInitialized() {
           } catch (minimalError) {
             console.error('❌ Failed to create minimal schema:', minimalError.message);
           }
-        }
+      }
       }
     } else {
       console.log('🗄️ Database already initialized.');

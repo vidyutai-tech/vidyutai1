@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Zap, Battery, Fuel, Grid, Save, Home, School, Factory, Building2, Power, FileText, History, Plus, TrendingUp, DollarSign, Leaf, Trash2 } from 'lucide-react';
 import { PrimaryGoal, SiteType } from '../types';
-import { saveSiteTypeAndWorkflow } from '../services/api';
+import { saveSiteTypeAndWorkflow, savePlanningStep2 } from '../services/api';
 import Card from '../components/ui/Card';
 import ApplianceSelector from '../components/shared/ApplianceSelector';
 import { LoadProfileProvider, LoadProfileContext } from '../contexts/LoadProfileContext';
@@ -35,6 +35,7 @@ const PlanningWizardContent: React.FC = () => {
   const [technicalSizing, setTechnicalSizing] = useState<any>(null);
   const [economicAnalysis, setEconomicAnalysis] = useState<any>(null);
   const [emissionsAnalysis, setEmissionsAnalysis] = useState<any>(null);
+  const [loadProfileId, setLoadProfileId] = useState<string | null>(null);
 
   const useCaseOptions = [
     { 
@@ -130,9 +131,78 @@ const PlanningWizardContent: React.FC = () => {
     setError('');
 
     try {
+      // Validate input
+      if (!totalDailyConsumptionKWh || totalDailyConsumptionKWh <= 0) {
+        throw new Error('Please enter a valid daily energy consumption (must be greater than 0)');
+      }
+
+      if (appliances.length === 0) {
+        throw new Error('Please add at least one appliance to create a load profile');
+      }
+
       // Call backend technical sizing API
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api/v1';
+      // Use full URL for localhost, relative URL for production
+      const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+      const API_BASE_URL = isLocalhost 
+        ? 'http://localhost:5001/api/v1' 
+        : (import.meta.env.VITE_API_BASE_URL || '/api/v1');
       const token = localStorage.getItem('jwt');
+
+      // Step 1: Save load profile first (if not already saved)
+      let currentLoadProfileId = loadProfileId;
+      if (!currentLoadProfileId) {
+        console.log('📝 Saving load profile first...');
+        try {
+          // Convert ApplianceUsage to Appliance format expected by backend
+          const mapCategory = (applianceName: string, priority: string): 'lighting' | 'fans' | 'it' | 'cooling_heating' | 'cleaning' | 'kitchen_misc' => {
+            const name = applianceName.toLowerCase();
+            if (name.includes('led') || name.includes('light') || name.includes('bulb') || name.includes('tube')) return 'lighting';
+            if (name.includes('fan')) return 'fans';
+            if (name.includes('computer') || name.includes('laptop') || name.includes('monitor') || name.includes('printer')) return 'it';
+            if (name.includes('ac') || name.includes('heater') || name.includes('cooling') || name.includes('heating')) return 'cooling_heating';
+            if (name.includes('washing') || name.includes('vacuum') || name.includes('clean')) return 'cleaning';
+            return 'kitchen_misc';
+          };
+          
+          const backendAppliances = appliances.map((app) => ({
+            category: mapCategory(app.appliance, app.priority),
+            name: app.appliance,
+            power_rating: app.rating / 1000, // Convert W to kW
+            quantity: app.quantity,
+            avg_hours: app.hoursPerDay,
+          }));
+          
+          const loadProfileResult = await savePlanningStep2({
+            name: planName || `Load Profile - ${new Date().toLocaleDateString()}`,
+            appliances: backendAppliances
+          });
+          currentLoadProfileId = loadProfileResult.load_profile.id;
+          setLoadProfileId(currentLoadProfileId);
+          console.log('✅ Load profile saved:', currentLoadProfileId);
+        } catch (loadProfileError: any) {
+          console.error('❌ Failed to save load profile:', loadProfileError);
+          // Extract the actual error message
+          const errorMessage = loadProfileError.message || 'Unknown error occurred while saving load profile';
+          throw new Error(errorMessage);
+        }
+      }
+
+      // Step 2: Call technical sizing API with save=true
+      const requestBody = {
+        total_energy_consumption_kwh: totalDailyConsumptionKWh,
+        use_case: useCase,
+        include_hydrogen: includeHydrogen,
+        save: true, // Enable saving to database
+        load_profile_id: currentLoadProfileId,
+        preferred_sources: preferredSources.length > 0 ? preferredSources : ['solar', 'battery'],
+        primary_goal: primaryGoal || 'cost_optimization',
+        allow_diesel: allowDiesel,
+      };
+
+      console.log('📤 Calling technical sizing API:', {
+        url: `${API_BASE_URL}/planning/technical-sizing`,
+        body: requestBody
+      });
 
       const response = await fetch(`${API_BASE_URL}/planning/technical-sizing`, {
         method: 'POST',
@@ -140,28 +210,49 @@ const PlanningWizardContent: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          total_energy_consumption_kwh: totalDailyConsumptionKWh,
-          use_case: useCase,
-          include_hydrogen: includeHydrogen,
-        })
+        body: JSON.stringify(requestBody)
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to calculate technical sizing');
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('❌ Failed to parse response as JSON:', parseError);
+        throw new Error(`Server returned invalid response (${response.status}). Please check if the backend is running.`);
       }
+      
+      console.log('📥 Technical sizing response:', { status: response.status, result });
 
-      const result = await response.json();
+      if (!response.ok) {
+        // Extract error message from response
+        const errorMsg = result.message || result.error || `Server error (${response.status})`;
+        console.error('❌ Technical sizing error:', errorMsg, result);
+        throw new Error(errorMsg);
+      }
       
       if (result.success) {
+        console.log('✅ Technical sizing successful:', result.data);
+        if (result.saved) {
+          console.log('✅ Planning recommendation saved to database:', result.recommendation_id);
+        } else if (result.warning) {
+          console.warn('⚠️', result.warning);
+        }
         setTechnicalSizing(result.data.technical_analysis);
         setEconomicAnalysis(result.data.economic_analysis);
         setEmissionsAnalysis(result.data.emissions_analysis);
       } else {
-        throw new Error(result.error || 'Calculation failed');
+        throw new Error(result.error || result.message || 'Calculation failed');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to generate recommendation');
+      console.error('❌ Error generating recommendation:', err);
+      // Show more helpful error messages
+      let errorMessage = err.message || 'Failed to generate recommendation';
+      if (err.message?.includes('fetch') || err.message?.includes('network')) {
+        errorMessage = 'Cannot connect to server. Please ensure the backend is running on port 5001.';
+      } else if (err.message?.includes('JSON')) {
+        errorMessage = 'Server returned invalid response. Please check backend logs.';
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
