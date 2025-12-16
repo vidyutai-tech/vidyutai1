@@ -19,6 +19,7 @@ const mlPredictionsRoutes = require('./routes/ml-predictions');
 const actionsRoutes = require('./routes/actions');
 const wizardRoutes = require('./routes/wizard');
 const planningRoutes = require('./routes/planning');
+const optimizationRoutes = require('./routes/optimization');
 
 // Initialize Express app
 const app = express();
@@ -108,6 +109,7 @@ app.use('/api/v1/predict', mlPredictionsRoutes);
 app.use('/api/v1/actions', actionsRoutes);
 app.use('/api/v1/wizard', wizardRoutes);
 app.use('/api/v1/planning', planningRoutes);
+app.use('/api/v1', optimizationRoutes);
 
 // Simulator endpoint (also available as /api/v1/simulate for convenience)
 app.post('/api/v1/simulate', async (req, res) => {
@@ -156,19 +158,20 @@ const { getDatabase } = require('./database/db');
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
-  socket.on('subscribe_site', (siteId) => {
+  socket.on('subscribe_site', async (siteId) => {
     socket.join(`site_${siteId}`);
     console.log(`Client ${socket.id} subscribed to site ${siteId}`);
 
     // Send initial data from database (latest available, not necessarily from last minute)
-    const db = getDatabase();
-    const latestData = db.prepare(`
+    try {
+      const dbAdapter = require('./database/db-adapter');
+      const latestData = await dbAdapter.all(`
       SELECT metric_type, metric_value, unit
       FROM timeseries_data
       WHERE site_id = ?
       ORDER BY timestamp DESC
       LIMIT 20
-    `).all(siteId);
+      `, [siteId]);
 
     const metrics = {};
     latestData.forEach(row => {
@@ -186,6 +189,9 @@ io.on('connection', (socket) => {
         metrics,
         message: 'Connected to site updates - updates every 10 minutes'
       });
+      }
+    } catch (error) {
+      console.error('Error fetching initial site data:', error);
     }
   });
 
@@ -201,21 +207,24 @@ if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SIMULATOR === 't
   simulator.start();
 
   // Broadcast latest data from database every 10 minutes
-  setInterval(() => {
-    const db = getDatabase();
-    const sites = db.prepare('SELECT id FROM sites WHERE status = ?').all('online');
+  setInterval(async () => {
+    try {
+      const dbAdapter = require('./database/db-adapter');
+      const sites = await dbAdapter.all('SELECT id FROM sites WHERE status = ?', ['online']);
 
-    sites.forEach(site => {
+      for (const site of sites) {
       const siteId = site.id;
 
       // Get latest metrics from database
-      const latestData = db.prepare(`
+        // Calculate time 10 minutes ago
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const latestData = await dbAdapter.all(`
         SELECT metric_type, metric_value, unit
         FROM timeseries_data
-        WHERE site_id = ? AND timestamp >= datetime('now', '-10 minutes')
+        WHERE site_id = ? AND timestamp >= ?
         ORDER BY timestamp DESC
         LIMIT 10
-      `).all(siteId);
+        `, [siteId, tenMinutesAgo]);
 
       if (latestData.length > 0) {
         const metrics = {};
@@ -260,7 +269,10 @@ if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SIMULATOR === 't
           console.error('Error checking power quality alerts:', error);
         }
       }
-    });
+      }
+    } catch (error) {
+      console.error('Error broadcasting site data:', error);
+    }
   }, 600000); // 10 minutes
 
   // Clean old data every 24 hours (keep last 48 hours)

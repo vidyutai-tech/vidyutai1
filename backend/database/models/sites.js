@@ -1,4 +1,5 @@
 const { getDatabase } = require('../db');
+const dbAdapter = require('../db-adapter');
 
 class SiteModel {
   static getAll() {
@@ -71,9 +72,7 @@ class SiteModel {
     return healthStatus;
   }
 
-  static getTimeseries(siteId, range = 'last_6h') {
-    const db = getDatabase();
-    
+  static async getTimeseries(siteId, range = 'last_6h') {
     // Calculate time range
     const now = new Date();
     let hoursBack = 6;
@@ -82,12 +81,14 @@ class SiteModel {
     
     const startTime = new Date(now - hoursBack * 60 * 60 * 1000).toISOString();
     
-    const data = db.prepare(`
+    // Use db-adapter's all() method which works for both SQLite and PostgreSQL
+    // The adapter will convert ? placeholders to $1, $2 for PostgreSQL
+    const data = await dbAdapter.all(`
       SELECT timestamp, metric_type, metric_value
       FROM timeseries_data
       WHERE site_id = ? AND timestamp >= ?
       ORDER BY timestamp ASC
-    `).all(siteId, startTime);
+    `, [siteId, startTime]);
     
     // Group by timestamp
     const grouped = {};

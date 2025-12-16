@@ -205,23 +205,23 @@ router.get('/:id/assets', (req, res) => {
 });
 
 // GET timeseries data for a site
-router.get('/:id/timeseries', (req, res) => {
+router.get('/:id/timeseries', async (req, res) => {
   const siteId = req.params.id;
+  const dbAdapter = require('../database/db-adapter');
+  
   // Check both mockSites and database sites
   const site = mockSites.find(s => s.id === siteId);
   
   // Also check database for site (if using database)
-  const { getDatabase } = require('../database/db');
-  const db = getDatabase();
-  const dbSite = db.prepare('SELECT id FROM sites WHERE id = ?').get(siteId);
-  
-  if (!site && !dbSite) {
-    console.warn(`Site not found in mock data or database: ${siteId}`);
-    // Still return data even if site not found (for demo purposes)
-    // return res.status(404).json({
-    //   success: false,
-    //   error: 'Site not found'
-    // });
+  try {
+    const dbSite = await dbAdapter.get('SELECT id FROM sites WHERE id = ?', [siteId]);
+    
+    if (!site && !dbSite) {
+      console.warn(`Site not found in mock data or database: ${siteId}`);
+      // Still return data even if site not found (for demo purposes)
+    }
+  } catch (checkError) {
+    console.warn('Error checking site existence:', checkError.message);
   }
   
   const { range = 'last_6h' } = req.query;
@@ -232,12 +232,21 @@ router.get('/:id/timeseries', (req, res) => {
   
   // Try to get data from database first
   try {
-    const dbData = db.prepare(`
+    // Calculate time range
+    const now = new Date();
+    let hoursBack = 6;
+    if (range === 'last_24h') hoursBack = 24;
+    if (range === 'last_7d') hoursBack = 24 * 7;
+    
+    const startTime = new Date(now - hoursBack * 60 * 60 * 1000).toISOString();
+    
+    // Use db-adapter which works for both SQLite and PostgreSQL
+    const dbData = await dbAdapter.all(`
       SELECT timestamp, metric_type, metric_value
       FROM timeseries_data
-      WHERE site_id = ? AND timestamp >= datetime('now', '-6 hours')
+      WHERE site_id = ? AND timestamp >= ?
       ORDER BY timestamp ASC
-    `).all(siteId);
+    `, [siteId, startTime]);
     
     if (dbData && dbData.length > 0) {
       // Group by timestamp and build metrics object
@@ -271,7 +280,8 @@ router.get('/:id/timeseries', (req, res) => {
       }
     }
   } catch (dbError) {
-    console.warn('Database query failed, using generated data:', dbError.message);
+    console.error('Database query failed, using generated data:', dbError.message);
+    console.error('Error stack:', dbError.stack);
   }
   
   // Fallback: Generate synthetic data

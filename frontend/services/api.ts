@@ -282,26 +282,47 @@ export const runMotorFaultDiagnosis = async (): Promise<{ prediction: string; co
 
 // --- AI Predictions ---
 export const getBatteryRULDashboard = async () => {
-  const response = await fetch(`${getAIServiceURL()}/api/v1/predictions/battery-rul/dashboard`, {
+  // Use backend proxy instead of direct AI service call to avoid CORS issues
+  const url = `${API_BASE_URL}/predictions/battery-rul/dashboard`;
+  console.log('Fetching Battery RUL from:', url);
+  const response = await fetch(url, {
     headers: getAuthHeaders()
   });
-  if (!response.ok) throw new Error('Failed to fetch Battery RUL dashboard');
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('Battery RUL API error:', response.status, errorText);
+    throw new Error(`Failed to fetch Battery RUL dashboard: ${response.status} ${errorText}`);
+  }
   return response.json();
 };
 
 export const getSolarDegradationDashboard = async () => {
-  const response = await fetch(`${getAIServiceURL()}/api/v1/predictions/solar-degradation/dashboard`, {
+  // Use backend proxy instead of direct AI service call to avoid CORS issues
+  const url = `${API_BASE_URL}/predictions/solar-degradation/dashboard`;
+  console.log('Fetching Solar Degradation from:', url);
+  const response = await fetch(url, {
     headers: getAuthHeaders()
   });
-  if (!response.ok) throw new Error('Failed to fetch Solar Degradation dashboard');
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('Solar Degradation API error:', response.status, errorText);
+    throw new Error(`Failed to fetch Solar Degradation dashboard: ${response.status} ${errorText}`);
+  }
   return response.json();
 };
 
 export const getEnergyLossDashboard = async () => {
-  const response = await fetch(`${getAIServiceURL()}/api/v1/predictions/energy-loss/dashboard`, {
+  // Use backend proxy instead of direct AI service call to avoid CORS issues
+  const url = `${API_BASE_URL}/predictions/energy-loss/dashboard`;
+  console.log('Fetching Energy Loss from:', url);
+  const response = await fetch(url, {
     headers: getAuthHeaders()
   });
-  if (!response.ok) throw new Error('Failed to fetch Energy Loss dashboard');
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('Energy Loss API error:', response.status, errorText);
+    throw new Error(`Failed to fetch Energy Loss dashboard: ${response.status} ${errorText}`);
+  }
   return response.json();
 };
 
@@ -344,15 +365,19 @@ export interface ForecastResponse {
 }
 
 export const forecastEnergy = async (input: ForecastInput): Promise<ForecastResponse> => {
-  const AI_SERVICE_URL = getAIServiceURL();
-  const response = await fetch(`${AI_SERVICE_URL}/api/v1/forecast/energy`, {
+  // Use backend proxy instead of direct AI service call to avoid CORS issues
+  const url = `${API_BASE_URL}/predictions/forecast/energy`;
+  console.log('Fetching Energy Forecast from:', url);
+  const response = await fetch(url, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(input)
   });
   if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('Energy Forecast API error:', response.status, errorText);
     const errorData = await response.json().catch(() => ({ message: 'Forecasting failed' }));
-    throw new Error(errorData.message || 'Forecasting failed');
+    throw new Error(errorData.message || `Forecasting failed: ${response.status} ${errorText}`);
   }
   const data = await response.json();
   
@@ -383,21 +408,29 @@ export const getForecastSummary = async (
   siteId?: string,
   forecastType: 'production' | 'demand' | 'consumption' = 'consumption'
 ): Promise<ForecastResponse> => {
-  const AI_SERVICE_URL = getAIServiceURL();
+  // Use backend proxy instead of direct AI service call
   const params = new URLSearchParams({ forecast_type: forecastType });
   if (siteId) params.append('site_id', siteId);
   
-  const response = await fetch(`${AI_SERVICE_URL}/api/v1/forecast/summary?${params}`, {
+  const url = `${API_BASE_URL}/predictions/forecast/summary?${params}`;
+  console.log('Fetching Forecast Summary from:', url);
+  const response = await fetch(url, {
     method: 'GET',
     headers: getAuthHeaders()
   });
-  if (!response.ok) throw new Error('Failed to get forecast summary');
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('Forecast Summary API error:', response.status, errorText);
+    throw new Error(`Failed to get forecast summary: ${response.status} ${errorText}`);
+  }
   return response.json();
 };
 
 export const explainForecast = async (forecastData: ForecastResponse): Promise<{ success: boolean; explanation: string; fallback?: boolean }> => {
-  const AI_SERVICE_URL = getAIServiceURL();
-  const response = await fetch(`${AI_SERVICE_URL}/api/v1/forecast/explain`, {
+  // Use backend proxy instead of direct AI service call
+  const url = `${API_BASE_URL}/predictions/forecast/explain`;
+  console.log('Fetching Forecast Explanation from:', url);
+  const response = await fetch(url, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(forecastData)
@@ -410,7 +443,15 @@ export const explainForecast = async (forecastData: ForecastResponse): Promise<{
 };
 
 export const getAIServiceURL = (): string => {
-  return (import.meta as any).env?.VITE_AI_BASE_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '/ai' : 'http://localhost:8000');
+  // Use environment variable if set, otherwise use subdomain or fallback
+  if ((import.meta as any).env?.VITE_AI_BASE_URL) {
+    return (import.meta as any).env.VITE_AI_BASE_URL;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    // Production: use subdomain
+    return 'https://api-python-be.vidyutai.in';
+  }
+  return 'http://localhost:8000';
 };
 
 // --- Hackathon Features ---
@@ -481,7 +522,7 @@ export const saveSiteTypeAndWorkflow = async (siteType: string, workflowPreferen
   return response.json();
 };
 
-export const savePlanningStep1 = async (data: { preferred_sources: string[]; primary_goal: PrimaryGoal; allow_diesel: boolean }): Promise<{ success: boolean }> => {
+export const savePlanningStep1 = async (data: { preferred_sources: string[]; primary_goals: PrimaryGoal[]; allow_diesel: boolean }): Promise<{ success: boolean }> => {
   const response = await fetch(`${API_BASE_URL}/wizard/planning/step1`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -523,7 +564,7 @@ export const savePlanningStep2 = async (data: { name: string; appliances: Omit<A
 export const savePlanningStep3 = async (data: {
   load_profile_id: string;
   preferred_sources: string[];
-  primary_goal: PrimaryGoal;
+  primary_goals: PrimaryGoal[];
   allow_diesel: boolean;
   action: 'save' | 'proceed_to_optimization';
   site_id?: string;

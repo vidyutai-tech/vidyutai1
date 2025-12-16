@@ -84,7 +84,7 @@ function migrate() {
           site_id TEXT,
           load_profile_id TEXT NOT NULL,
           preferred_sources TEXT NOT NULL,
-          primary_goal TEXT CHECK(primary_goal IN ('savings', 'self_sustainability', 'reliability', 'carbon_reduction')),
+          primary_goal TEXT NOT NULL, -- JSON string: array of goals
           allow_diesel BOOLEAN DEFAULT 0,
           technical_sizing TEXT NOT NULL,
           economic_analysis TEXT NOT NULL,

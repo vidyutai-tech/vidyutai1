@@ -195,5 +195,130 @@ router.get('/optimization', async (req, res) => {
   }
 });
 
+// Proxy routes for new prediction dashboard endpoints
+// These forward requests to the AI service on port 8000
+
+// GET battery RUL dashboard
+router.get('/battery-rul/dashboard', async (req, res) => {
+  try {
+    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/battery-rul/dashboard`, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching battery RUL dashboard:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to fetch Battery RUL dashboard',
+      message: error.message
+    });
+  }
+});
+
+// GET solar degradation dashboard
+router.get('/solar-degradation/dashboard', async (req, res) => {
+  try {
+    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/solar-degradation/dashboard`, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching solar degradation dashboard:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to fetch Solar Degradation dashboard',
+      message: error.message
+    });
+  }
+});
+
+// GET energy loss dashboard
+router.get('/energy-loss/dashboard', async (req, res) => {
+  try {
+    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/energy-loss/dashboard`, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching energy loss dashboard:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to fetch Energy Loss dashboard',
+      message: error.message
+    });
+  }
+});
+
+// Proxy routes for forecast endpoints
+// POST /api/v1/predictions/forecast/energy
+router.post('/forecast/energy', async (req, res) => {
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/v1/forecast/energy`, req.body, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching energy forecast:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to fetch energy forecast',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/v1/predictions/forecast/summary
+router.get('/forecast/summary', async (req, res) => {
+  try {
+    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/forecast/summary`, {
+      params: req.query,
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching forecast summary:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to fetch forecast summary',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/v1/predictions/forecast/explain
+router.post('/forecast/explain', async (req, res) => {
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/v1/forecast/explain`, req.body, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error explaining forecast:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to explain forecast',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;
 

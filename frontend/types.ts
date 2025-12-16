@@ -228,7 +228,7 @@ export interface PlanningRecommendation {
   site_id: string | null;
   load_profile_id: string;
   preferred_sources: string[];
-  primary_goal: PrimaryGoal;
+  primary_goal: PrimaryGoal | PrimaryGoal[]; // Support both single and array for backward compatibility
   allow_diesel: boolean;
   technical_sizing: TechnicalSizing;
   economic_analysis: EconomicAnalysis;

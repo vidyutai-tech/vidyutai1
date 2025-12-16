@@ -201,7 +201,7 @@ CREATE TABLE IF NOT EXISTS planning_recommendations (
     site_id TEXT,
     load_profile_id TEXT NOT NULL,
     preferred_sources TEXT NOT NULL, -- JSON string: array of sources
-    primary_goal TEXT CHECK(primary_goal IN ('savings', 'self_sustainability', 'reliability', 'carbon_reduction')),
+    primary_goal TEXT NOT NULL, -- JSON string: array of goals ['savings', 'carbon_reduction', etc.]
     allow_diesel BOOLEAN DEFAULT 0,
     technical_sizing TEXT NOT NULL, -- JSON string
     economic_analysis TEXT NOT NULL, -- JSON string

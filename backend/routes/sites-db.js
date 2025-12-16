@@ -241,7 +241,7 @@ router.get('/:id/assets', (req, res) => {
 });
 
 // GET site timeseries data
-router.get('/:id/timeseries', (req, res) => {
+router.get('/:id/timeseries', async (req, res) => {
   try {
     const site = SiteModel.findById(req.params.id);
     
@@ -253,14 +253,16 @@ router.get('/:id/timeseries', (req, res) => {
     }
     
     const { range = 'last_6h' } = req.query;
-    const timeseries = SiteModel.getTimeseries(req.params.id, range);
+    const timeseries = await SiteModel.getTimeseries(req.params.id, range);
     
     res.json(timeseries);
   } catch (error) {
     console.error('Error fetching timeseries:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch timeseries data'
+      error: 'Failed to fetch timeseries data',
+      message: error.message
     });
   }
 });

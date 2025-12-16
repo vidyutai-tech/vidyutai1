@@ -1,14 +1,29 @@
 const express = require('express');
 const router = express.Router();
+const { getUserId } = require('./wizard');
+const PlanningRecommendationModel = require('../database/models/planningRecommendations');
+const { v4: uuidv4 } = require('uuid');
 
 /**
  * Technical Sizing Calculation
  * Based on total daily consumption, calculates system sizing
  * Similar to CaseStudy1 solar-battery-calculation
+ * Optionally saves to database if save=true and user is authenticated
  */
-router.post('/technical-sizing', (req, res) => {
+router.post('/technical-sizing', async (req, res) => {
   try {
-    const { total_energy_consumption_kwh, use_case = 'commercial', include_hydrogen = false } = req.body;
+    const { 
+      total_energy_consumption_kwh, 
+      use_case = 'commercial', 
+      include_hydrogen = false,
+      save = false, // Optional: save to database
+      load_profile_id,
+      site_id,
+      preferred_sources = ['solar', 'battery'],
+      primary_goals,
+      primary_goal, // Backward compatibility
+      allow_diesel = false
+    } = req.body;
 
     if (!total_energy_consumption_kwh || total_energy_consumption_kwh <= 0) {
       return res.status(400).json({
@@ -68,7 +83,7 @@ router.post('/technical-sizing', (req, res) => {
 
     const equipmentCost = solarCost + batteryCost + inverterCost + dcConverterCost;
     const installationCost = equipmentCost * installationPercent;
-    const totalCapex = equipmentCost + installationCost;
+    let totalCapex = equipmentCost + installationCost;
 
     // Add hydrogen costs if applicable
     let hydrogenCapex = 0;
@@ -162,7 +177,7 @@ router.post('/technical-sizing', (req, res) => {
       solar_emission_factor_kg_per_kwh: solarEmissionFactor,
     };
 
-    res.json({
+    const responseData = {
       success: true,
       data: {
         technical_analysis: technicalAnalysis,
@@ -174,7 +189,67 @@ router.post('/technical-sizing', (req, res) => {
           include_hydrogen,
         },
       },
-    });
+    };
+
+    // Optionally save to database if requested
+    if (save) {
+      try {
+        const userId = getUserId(req);
+        if (!userId) {
+          console.warn('⚠️ Cannot save planning recommendation: User not authenticated');
+          return res.json({
+            ...responseData,
+            saved: false,
+            warning: 'User not authenticated. Calculation completed but not saved.'
+          });
+        }
+
+        if (!load_profile_id) {
+          console.warn('⚠️ Cannot save planning recommendation: load_profile_id missing');
+          return res.json({
+            ...responseData,
+            saved: false,
+            warning: 'load_profile_id is required to save. Calculation completed but not saved.'
+          });
+        }
+
+        // Support both primary_goals (array) and primary_goal (single) for backward compatibility
+        const goals = primary_goals || (primary_goal ? [primary_goal] : ['cost_optimization']);
+
+        const recommendation = {
+          id: uuidv4(),
+          user_id: userId,
+          site_id: site_id || null,
+          load_profile_id,
+          preferred_sources: Array.isArray(preferred_sources) ? preferred_sources : [preferred_sources],
+          primary_goals: goals,
+          allow_diesel: allow_diesel || false,
+          technical_sizing: technicalAnalysis,
+          economic_analysis: economicAnalysis,
+          emissions_analysis: emissionsAnalysis,
+          scenario_link: null,
+          status: 'draft'
+        };
+
+        const createResult = await PlanningRecommendationModel.create(recommendation);
+        
+        if (createResult && createResult.changes > 0) {
+          console.log('✅ Planning recommendation saved from technical-sizing endpoint');
+          responseData.saved = true;
+          responseData.recommendation_id = recommendation.id;
+        } else {
+          console.warn('⚠️ Planning recommendation create returned no changes');
+          responseData.saved = false;
+          responseData.warning = 'Failed to save recommendation';
+        }
+      } catch (saveError) {
+        console.error('❌ Error saving planning recommendation:', saveError);
+        responseData.saved = false;
+        responseData.warning = `Calculation completed but save failed: ${saveError.message}`;
+      }
+    }
+
+    res.json(responseData);
   } catch (error) {
     console.error('Technical sizing error:', error);
     res.status(500).json({

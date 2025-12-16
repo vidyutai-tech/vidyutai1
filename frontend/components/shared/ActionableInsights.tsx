@@ -93,11 +93,16 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
         systemData.predictions = predictionData;
       }
 
-      // Call Groq API via backend
-      const AI_SERVICE_URL = import.meta.env.VITE_AI_BASE_URL || 'http://localhost:8000';
+      // Call Groq API via backend proxy to avoid CORS issues
+      const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:5001/api/v1'
+        : import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const token = localStorage.getItem('jwt');
       
-      const response = await fetch(`${AI_SERVICE_URL}/api/v1/actions/generate-insights`, {
+      const url = `${API_BASE_URL}/actions/generate-insights`;
+      console.log('Fetching Insights from:', url);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -28,7 +28,7 @@ const PlanningWizardPage: React.FC = () => {
 
   // Step 1 State
   const [preferredSources, setPreferredSources] = useState<string[]>([]);
-  const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(null);
+  const [primaryGoals, setPrimaryGoals] = useState<PrimaryGoal[]>([]);
   const [allowDiesel, setAllowDiesel] = useState(false);
 
   // Step 2 State
@@ -138,13 +138,21 @@ const PlanningWizardPage: React.FC = () => {
     );
   };
 
+  const handleGoalToggle = (goal: PrimaryGoal) => {
+    setPrimaryGoals(prev => 
+      prev.includes(goal) 
+        ? prev.filter(g => g !== goal)
+        : [...prev, goal]
+    );
+  };
+
   const handleStep1Next = async () => {
     if (preferredSources.length === 0) {
       setError('Please select at least one energy source');
       return;
     }
-    if (!primaryGoal) {
-      setError('Please select a primary goal');
+    if (primaryGoals.length === 0) {
+      setError('Please select at least one primary goal');
       return;
     }
 
@@ -154,7 +162,7 @@ const PlanningWizardPage: React.FC = () => {
     try {
       await savePlanningStep1({
         preferred_sources: preferredSources,
-        primary_goal: primaryGoal,
+        primary_goals: primaryGoals,
         allow_diesel: allowDiesel
       });
       setStep(2);
@@ -228,7 +236,7 @@ const PlanningWizardPage: React.FC = () => {
       const result = await savePlanningStep3({
         load_profile_id: loadProfileId,
         preferred_sources: preferredSources,
-        primary_goal: primaryGoal!,
+        primary_goals: primaryGoals,
         allow_diesel: allowDiesel,
         action
       });
@@ -322,9 +330,11 @@ const PlanningWizardPage: React.FC = () => {
                   
                   <div className="space-y-3 mb-4">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Primary Goal</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Primary Goal{Array.isArray(plan.primary_goal) && plan.primary_goal.length > 1 ? 's' : ''}</p>
                       <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">
-                        {plan.primary_goal.replace('_', ' ')}
+                        {Array.isArray(plan.primary_goal) 
+                          ? plan.primary_goal.map(g => g.replace(/_/g, ' ')).join(', ')
+                          : plan.primary_goal?.replace(/_/g, ' ') || 'N/A'}
                       </p>
                     </div>
                     <div>
@@ -536,25 +546,32 @@ const PlanningWizardPage: React.FC = () => {
               {/* Primary Goal */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                  Primary Goal
+                  Primary Goal <span className="text-gray-500 text-xs">(Select one or more)</span>
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {goalOptions.map((goal) => (
                     <button
                       key={goal.value}
-                      onClick={() => setPrimaryGoal(goal.value)}
+                      onClick={() => handleGoalToggle(goal.value)}
                       className={`p-4 rounded-xl border-2 transition-all text-left ${
-                        primaryGoal === goal.value
+                        primaryGoals.includes(goal.value)
                           ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
                       }`}
                     >
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                        {goal.label}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {goal.description}
-                      </p>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                            {goal.label}
+                          </h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {goal.description}
+                          </p>
+                        </div>
+                        {primaryGoals.includes(goal.value) && (
+                          <Check className="w-5 h-5 text-blue-600 flex-shrink-0 ml-2" />
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>

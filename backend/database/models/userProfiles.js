@@ -1,28 +1,29 @@
-const { getDatabase } = require('../db');
+const dbAdapter = require('../db-adapter');
 
 class UserProfileModel {
-  static findByUserId(userId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM user_profiles WHERE user_id = ?');
-    return stmt.get(userId);
+  static async findByUserId(userId) {
+    const result = await dbAdapter.get(
+      'SELECT * FROM user_profiles WHERE user_id = ?',
+      [userId]
+    );
+    return result;
   }
 
-  static create(profile) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      INSERT INTO user_profiles (id, user_id, site_type, workflow_preference)
-      VALUES (?, ?, ?, ?)
-    `);
-    return stmt.run(
+  static async create(profile) {
+    const result = await dbAdapter.run(
+      `INSERT INTO user_profiles (id, user_id, site_type, workflow_preference)
+       VALUES (?, ?, ?, ?)`,
+      [
       profile.id,
       profile.user_id,
       profile.site_type || null,
       profile.workflow_preference || null
+      ]
     );
+    return result;
   }
 
-  static update(userId, updates) {
-    const db = getDatabase();
+  static async update(userId, updates) {
     const fields = [];
     const values = [];
 
@@ -42,20 +43,21 @@ class UserProfileModel {
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(userId);
 
-    const stmt = db.prepare(`
-      UPDATE user_profiles 
+    const result = await dbAdapter.run(
+      `UPDATE user_profiles 
       SET ${fields.join(', ')}
-      WHERE user_id = ?
-    `);
-    return stmt.run(...values);
+       WHERE user_id = ?`,
+      values
+    );
+    return result;
   }
 
-  static upsert(profile) {
-    const existing = this.findByUserId(profile.user_id);
+  static async upsert(profile) {
+    const existing = await this.findByUserId(profile.user_id);
     if (existing) {
-      return this.update(profile.user_id, profile);
+      return await this.update(profile.user_id, profile);
     } else {
-      return this.create(profile);
+      return await this.create(profile);
     }
   }
 }

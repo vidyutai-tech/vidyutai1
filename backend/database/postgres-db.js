@@ -35,9 +35,14 @@ function initializePostgres() {
     connectionString,
     // Enable SSL for Neon and other cloud providers
     ssl: connectionString.includes('sslmode=require') || connectionString.includes('neon.tech') ? { rejectUnauthorized: false } : false,
-    max: 20, // Maximum number of clients in the pool
+    max: 10, // Reduced from 20 to avoid connection pool exhaustion on Neon free tier
     idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-    connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection cannot be established
+    connectionTimeoutMillis: 15000, // Increased to 15 seconds for Neon
+    statement_timeout: 30000, // Query timeout: 30 seconds
+    query_timeout: 30000, // Query timeout: 30 seconds
+    // Keep connections alive
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
   });
 
   // Handle pool errors
@@ -75,16 +80,32 @@ function getPostgresPool() {
 }
 
 /**
- * Execute a query
+ * Execute a query with retry logic for connection issues
  */
-async function query(text, params) {
+async function query(text, params, retries = 2) {
   const pgPool = getPostgresPool();
-  try {
-    const result = await pgPool.query(text, params);
-    return result;
-  } catch (error) {
-    console.error('PostgreSQL query error:', error);
-    throw error;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const result = await pgPool.query(text, params);
+      return result;
+    } catch (error) {
+      // If it's a connection error and we have retries left, wait and retry
+      if (attempt < retries && (
+        error.message.includes('Connection terminated') ||
+        error.message.includes('timeout') ||
+        error.code === 'ECONNRESET' ||
+        error.code === 'ETIMEDOUT'
+      )) {
+        const waitTime = (attempt + 1) * 1000; // 1s, 2s
+        console.log(`⚠️ Connection error, retrying in ${waitTime}ms... (attempt ${attempt + 1}/${retries + 1})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      console.error('PostgreSQL query error:', error.message);
+      throw error;
+    }
   }
 }
 

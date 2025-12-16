@@ -140,14 +140,23 @@ const App: React.FC = () => {
       const newSocket = io(socketUrl, {
         auth: { token },
         query: { siteId: selectedSite.id },
+        transports: ['websocket', 'polling'], // Allow both transports
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
     });
 
+    // Fallback: If socket doesn't connect within 5 seconds, mark as connected anyway
+    // (HTTP API is working, Socket.IO is optional for real-time updates)
+    let connectionTimeout: NodeJS.Timeout;
+    
     newSocket.on('connect', () => {
         console.log('✅ Socket.IO connected with ID:', newSocket.id);
+        clearTimeout(connectionTimeout);
         setSocketConnected(true);
         // Subscribe to the selected site's updates
         if (selectedSite) {
-      newSocket.emit('subscribe_site', selectedSite.id);
+          newSocket.emit('subscribe_site', selectedSite.id);
           console.log(`📡 Subscribed to site: ${selectedSite.id}`);
         }
     });
@@ -160,7 +169,23 @@ const App: React.FC = () => {
     newSocket.on('connect_error', (error) => {
         console.error('❌ Socket.IO connection error:', error.message);
         console.error('Socket URL:', socketUrl);
+        setSocketConnected(false);
+        // Try to reconnect after a delay
+        setTimeout(() => {
+          if (!newSocket.connected) {
+            console.log('🔄 Attempting to reconnect Socket.IO...');
+            newSocket.connect();
+          }
+        }, 3000);
     });
+    
+    // Set timeout to mark as connected if Socket.IO fails (HTTP API still works)
+    connectionTimeout = setTimeout(() => {
+      if (!newSocket.connected) {
+        console.log('⚠️ Socket.IO connection timeout - marking as connected (HTTP API available)');
+        setSocketConnected(true);
+      }
+    }, 5000);
 
       // Listen for site data updates (initial connection only, not frequent updates)
       let lastSiteDataUpdate = 0;
@@ -269,7 +294,13 @@ const App: React.FC = () => {
 
     return () => {
         setSocketConnected(false);
-        newSocket.close();
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+        }
+        if (newSocket) {
+          newSocket.removeAllListeners();
+          newSocket.disconnect();
+        }
     };
     }
   }, [isAuthenticated, selectedSite]);

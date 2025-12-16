@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
+
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 // POST ask AI assistant
 router.post('/ask-ai', async (req, res) => {
@@ -81,6 +84,27 @@ router.post('/simulate', async (req, res) => {
       avgCostPerHour: (cost.reduce((a, b) => a + b, 0) / hours).toFixed(2)
     }
   });
+});
+
+// Proxy route for generate-insights endpoint (POST)
+// This forwards requests to the AI service
+router.post('/generate-insights', async (req, res) => {
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/v1/actions/generate-insights`, req.body, {
+      timeout: 30000, // Longer timeout for AI processing
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error generating insights:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to generate insights',
+      message: error.message
+    });
+  }
 });
 
 module.exports = router;

@@ -1,31 +1,38 @@
-const { getDatabase } = require('../db');
+const dbAdapter = require('../db-adapter');
 
 class LoadProfileModel {
-  static findById(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM load_profiles WHERE id = ?');
-    return stmt.get(id);
+  static async findById(id) {
+    const result = await dbAdapter.get('SELECT * FROM load_profiles WHERE id = ?', [id]);
+    if (result && result.appliances) {
+      result.appliances = typeof result.appliances === 'string' ? JSON.parse(result.appliances) : result.appliances;
+      result.category_totals = typeof result.category_totals === 'string' ? JSON.parse(result.category_totals) : result.category_totals;
+    }
+    return result;
   }
 
-  static findByUserId(userId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM load_profiles WHERE user_id = ? ORDER BY created_at DESC');
-    return stmt.all(userId);
+  static async findByUserId(userId) {
+    const results = await dbAdapter.all('SELECT * FROM load_profiles WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+    return results.map(r => ({
+      ...r,
+      appliances: typeof r.appliances === 'string' ? JSON.parse(r.appliances) : r.appliances,
+      category_totals: typeof r.category_totals === 'string' ? JSON.parse(r.category_totals) : r.category_totals
+    }));
   }
 
-  static findBySiteId(siteId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM load_profiles WHERE site_id = ? ORDER BY created_at DESC');
-    return stmt.all(siteId);
+  static async findBySiteId(siteId) {
+    const results = await dbAdapter.all('SELECT * FROM load_profiles WHERE site_id = ? ORDER BY created_at DESC', [siteId]);
+    return results.map(r => ({
+      ...r,
+      appliances: typeof r.appliances === 'string' ? JSON.parse(r.appliances) : r.appliances,
+      category_totals: typeof r.category_totals === 'string' ? JSON.parse(r.category_totals) : r.category_totals
+    }));
   }
 
-  static create(profile) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
+  static async create(profile) {
+    const result = await dbAdapter.run(`
       INSERT INTO load_profiles (id, user_id, site_id, name, category_totals, total_daily_energy_kwh, appliances)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
+    `, [
       profile.id,
       profile.user_id,
       profile.site_id || null,
@@ -33,11 +40,11 @@ class LoadProfileModel {
       JSON.stringify(profile.category_totals),
       profile.total_daily_energy_kwh,
       JSON.stringify(profile.appliances)
-    );
+    ]);
+    return result;
   }
 
-  static update(id, updates) {
-    const db = getDatabase();
+  static async update(id, updates) {
     const fields = [];
     const values = [];
 
@@ -65,18 +72,17 @@ class LoadProfileModel {
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
 
-    const stmt = db.prepare(`
+    const result = await dbAdapter.run(`
       UPDATE load_profiles 
       SET ${fields.join(', ')}
       WHERE id = ?
-    `);
-    return stmt.run(...values);
+    `, values);
+    return result;
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('DELETE FROM load_profiles WHERE id = ?');
-    return stmt.run(id);
+  static async delete(id) {
+    const result = await dbAdapter.run('DELETE FROM load_profiles WHERE id = ?', [id]);
+    return result;
   }
 }
 

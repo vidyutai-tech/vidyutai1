@@ -38,8 +38,11 @@ const SourceOptimizationPage = () => {
   const [plotUrl, setPlotUrl] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const AI_BASE_URL = (import.meta as any).env?.VITE_AI_BASE_URL || "http://localhost:8000";
-  const OPTIMIZE_URL = `${AI_BASE_URL}/api/v1/optimize`;
+  // Use backend proxy instead of direct AI service call to avoid CORS issues
+  const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:5001/api/v1'
+    : import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  const OPTIMIZE_URL = `${API_BASE_URL}/optimize`;
 
   const controlWrapperClass = "form-control space-y-2";
   const labelClass = "label-text text-sm font-medium text-base-content/70 mb-1.5";
@@ -392,7 +395,7 @@ const SourceOptimizationPage = () => {
                 Configure Source Optimization
               </h2>
               <p className="mt-3 max-w-2xl text-sm text-base-content/70 md:text-[0.95rem]">
-                Configure objective and load curtail cost. Common parameters are already set from Optimization Setup.
+                Configure optimization objective. Common parameters are already set from Optimization Setup.
               </p>
             </div>
             {mergedFormData && (
@@ -418,7 +421,7 @@ const SourceOptimizationPage = () => {
             </div>
           )}
 
-          {/* Source-Specific: Objective and Load Curtail Cost */}
+          {/* Source-Specific: Objective (Load Curtail Cost is hardcoded to 50) */}
           <div className={sectionPanelClass}>
             <h3 className="text-lg font-semibold mb-4">Source Optimization Parameters</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -437,23 +440,6 @@ const SourceOptimizationPage = () => {
                 </select>
                 <label className="label">
                   <span className="label-text-alt">Choose whether to optimize for cost or CO2 emissions</span>
-                </label>
-              </div>
-
-              <div className={controlWrapperClass}>
-                <label className="label">
-                  <span className={labelClass}>Load Curtail Cost (Rs/kWh)</span>
-                </label>
-                <input
-                  type="number"
-                  name="load_curtail_cost"
-                  value={sourceSpecificData.load_curtail_cost}
-                  onChange={handleInputChange}
-                  className={inputClass}
-                  step="0.1"
-                />
-                <label className="label">
-                  <span className="label-text-alt">Penalty cost for curtailing load when supply is insufficient</span>
                 </label>
               </div>
             </div>

@@ -14,11 +14,11 @@
     "target": "rul_hours",
     "n_samples": 5000,
     "metrics": {
-      "mae": 206.89173014191834,
-      "rmse": 265.0646600383643,
-      "r2": 0.9835265329743806
+      "mae": 206.84902136879123,
+      "rmse": 265.04150903275763,
+      "r2": 0.9835294104660273
     },
-    "trained_at": "2025-12-03T21:24:13.043290"
+    "trained_at": "2025-12-12T12:08:28.250234"
   },
   "solar_degradation": {
     "model_type": "GradientBoostingRegressor",
@@ -34,11 +34,11 @@
     "target": "degradation_percent",
     "n_samples": 3000,
     "metrics": {
-      "mae": 2.679640058260491,
-      "rmse": 3.338949374994526,
-      "r2": 0.7849982263756761
+      "mae": 2.6797941464063646,
+      "rmse": 3.3398044172023145,
+      "r2": 0.7848880964461864
     },
-    "trained_at": "2025-12-03T21:24:13.973683"
+    "trained_at": "2025-12-12T12:08:29.017564"
   },
   "energy_loss": {
     "model_type": "GradientBoostingRegressor",
@@ -55,11 +55,11 @@
     "target": "loss_percent",
     "n_samples": 4000,
     "metrics": {
-      "mae": 0.2976941040193545,
+      "mae": 0.29769410401935437,
       "rmse": 0.37838267964669897,
       "r2": 0.9768711293510411
     },
-    "trained_at": "2025-12-03T21:24:15.322314"
+    "trained_at": "2025-12-12T12:08:30.194037"
   },
   "total_training_time": "Complete",
   "status": "ready_for_inference"

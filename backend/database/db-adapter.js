@@ -251,7 +251,22 @@ async function isInitialized() {
   try {
     await initializeDatabase();
     const tables = ['users', 'sites', 'assets', 'load_profiles', 'user_profiles', 'planning_recommendations', 'optimization_configs'];
-    const checks = await Promise.all(tables.map(table => tableExists(table)));
+    
+    // Check tables sequentially to avoid connection pool exhaustion
+    // This is slower but more reliable for Neon's connection limits
+    const checks = [];
+    for (const table of tables) {
+      try {
+        const exists = await tableExists(table);
+        checks.push(exists);
+        // Small delay between checks to avoid overwhelming the connection
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } catch (error) {
+        console.error(`Error checking table ${table}:`, error.message);
+        checks.push(false);
+      }
+    }
+    
     return checks.every(exists => exists);
   } catch (error) {
     console.error('Error checking database initialization:', error);

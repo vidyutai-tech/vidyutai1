@@ -35,19 +35,35 @@ const PredictionsPage: React.FC = () => {
     
     try {
       const [battery, solar, loss] = await Promise.all([
-        getBatteryRULDashboard().catch(e => ({ error: e.message })),
-        getSolarDegradationDashboard().catch(e => ({ error: e.message })),
-        getEnergyLossDashboard().catch(e => ({ error: e.message }))
+        getBatteryRULDashboard().catch(e => {
+          console.error('Battery RUL error:', e);
+          return { error: e.message };
+        }),
+        getSolarDegradationDashboard().catch(e => {
+          console.error('Solar Degradation error:', e);
+          return { error: e.message };
+        }),
+        getEnergyLossDashboard().catch(e => {
+          console.error('Energy Loss error:', e);
+          return { error: e.message };
+        })
       ]);
+      
+      console.log('Prediction data loaded:', {
+        battery: battery.error ? 'error' : 'success',
+        solar: solar.error ? 'error' : 'success',
+        loss: loss.error ? 'error' : 'success'
+      });
       
       if (!battery.error) setBatteryData(battery);
       if (!solar.error) setSolarData(solar);
       if (!loss.error) setLossData(loss);
       
       if (battery.error && solar.error && loss.error) {
-        setError('Failed to load prediction models. Please ensure models are trained.');
+        setError(`Failed to load prediction models: ${battery.error || solar.error || loss.error}. Please ensure the AI service is running on port 8000.`);
       }
     } catch (err: any) {
+      console.error('Unexpected error loading predictions:', err);
       setError(err.message || 'Failed to load predictions');
     } finally {
       setLoading(false);

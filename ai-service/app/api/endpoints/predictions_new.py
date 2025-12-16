@@ -19,7 +19,10 @@ from app.api.deps import get_current_user
 from app.models import pydantic_models as models
 
 router = APIRouter()
-models_dir = Path("app/ml-models")
+# Use absolute path relative to this file's location
+# From app/api/endpoints/predictions_new.py -> app/ml-models
+_base_path = Path(__file__).resolve().parent.parent.parent
+models_dir = _base_path / "ml-models"
 
 # Global models dict
 prediction_models = {}

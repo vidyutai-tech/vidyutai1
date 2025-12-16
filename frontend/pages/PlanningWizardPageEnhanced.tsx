@@ -27,7 +27,7 @@ const PlanningWizardContent: React.FC = () => {
 
   // Step 1 State
   const [preferredSources, setPreferredSources] = useState<string[]>(['solar', 'battery', 'grid']);
-  const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | null>(null);
+  const [primaryGoals, setPrimaryGoals] = useState<PrimaryGoal[]>([]);
   const [allowDiesel, setAllowDiesel] = useState(false);
   const [includeHydrogen, setIncludeHydrogen] = useState(false);
 
@@ -97,13 +97,21 @@ const PlanningWizardContent: React.FC = () => {
     );
   };
 
+  const handleGoalToggle = (goal: PrimaryGoal) => {
+    setPrimaryGoals(prev => 
+      prev.includes(goal) 
+        ? prev.filter(g => g !== goal)
+        : [...prev, goal]
+    );
+  };
+
   const handleStep1Next = () => {
     if (preferredSources.length === 0) {
       setError('Please select at least one energy source');
       return;
     }
-    if (!primaryGoal) {
-      setError('Please select a primary goal');
+    if (primaryGoals.length === 0) {
+      setError('Please select at least one primary goal');
       return;
     }
 
@@ -195,7 +203,7 @@ const PlanningWizardContent: React.FC = () => {
         save: true, // Enable saving to database
         load_profile_id: currentLoadProfileId,
         preferred_sources: preferredSources.length > 0 ? preferredSources : ['solar', 'battery'],
-        primary_goal: primaryGoal || 'cost_optimization',
+        primary_goals: primaryGoals.length > 0 ? primaryGoals : ['savings'],
         allow_diesel: allowDiesel,
       };
 
@@ -286,7 +294,7 @@ const PlanningWizardContent: React.FC = () => {
       totalDailyConsumptionKWh,
       peakLoad,
       preferredSources,
-      primaryGoal,
+      primaryGoals,
       technicalSizing,
       economicAnalysis,
       emissionsAnalysis,
@@ -313,7 +321,8 @@ const PlanningWizardContent: React.FC = () => {
     setSelectedUseCase(plan.useCase);
     setUseCase(plan.useCase);
     setPreferredSources(plan.preferredSources || []);
-    setPrimaryGoal(plan.primaryGoal);
+    // Support both old format (single) and new format (array)
+    setPrimaryGoals(Array.isArray(plan.primaryGoals) ? plan.primaryGoals : (plan.primaryGoal ? [plan.primaryGoal] : []));
     
     // Load appliances into context
     plan.appliances?.forEach((app: any) => {
@@ -687,25 +696,32 @@ const PlanningWizardContent: React.FC = () => {
                 {/* Primary Goal */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                    Primary Goal
+                    Primary Goal <span className="text-gray-500 text-xs">(Select one or more)</span>
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {goalOptions.map((goal) => (
                       <button
                         key={goal.value}
-                        onClick={() => setPrimaryGoal(goal.value)}
+                        onClick={() => handleGoalToggle(goal.value)}
                         className={`p-4 rounded-xl border-2 transition-all text-left ${
-                          primaryGoal === goal.value
+                          primaryGoals.includes(goal.value)
                             ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
                             : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
                         }`}
                       >
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                          {goal.label}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {goal.description}
-                        </p>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                              {goal.label}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {goal.description}
+                            </p>
+                          </div>
+                          {primaryGoals.includes(goal.value) && (
+                            <Check className="w-5 h-5 text-blue-600 flex-shrink-0 ml-2" />
+                          )}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -743,7 +759,7 @@ const PlanningWizardContent: React.FC = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={handleStep1Next}
-                    disabled={preferredSources.length === 0 || !primaryGoal}
+                    disabled={preferredSources.length === 0 || primaryGoals.length === 0}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
                   >
                     <span>Next: Add Appliances</span>

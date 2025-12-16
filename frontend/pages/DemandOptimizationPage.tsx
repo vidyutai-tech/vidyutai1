@@ -52,8 +52,11 @@ const DemandOptimizationPage = () => {
   const [plotUrl, setPlotUrl] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const AI_BASE_URL = (import.meta as any).env?.VITE_AI_BASE_URL || "http://localhost:8000";
-  const OPTIMIZE_URL = `${AI_BASE_URL}/api/v1/demand-optimize`;
+  // Use backend proxy instead of direct AI service call to avoid CORS issues
+  const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:5001/api/v1'
+    : import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  const OPTIMIZE_URL = `${API_BASE_URL}/demand-optimize`;
 
   const controlWrapperClass = "form-control space-y-2";
   const labelClass = "label-text text-sm font-medium text-base-content/70 mb-1.5";

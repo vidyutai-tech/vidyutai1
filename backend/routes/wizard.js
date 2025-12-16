@@ -55,7 +55,7 @@ const getUserId = (req) => {
 };
 
 // POST /api/v1/wizard/site-type - Step 1: Select site type and workflow
-router.post('/site-type', (req, res) => {
+router.post('/site-type', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
@@ -103,14 +103,14 @@ router.post('/site-type', (req, res) => {
       workflow_preference
     };
 
-    const result = UserProfileModel.upsert(profile);
+    const result = await UserProfileModel.upsert(profile);
     
     if (!result) {
       throw new Error('Failed to save user profile to database');
     }
 
     // Fetch the saved profile to return complete data
-    const savedProfile = UserProfileModel.findByUserId(userId) || profile;
+    const savedProfile = await UserProfileModel.findByUserId(userId) || profile;
 
     res.json({
       success: true,
@@ -128,14 +128,14 @@ router.post('/site-type', (req, res) => {
 });
 
 // GET /api/v1/wizard/profile - Get user profile
-router.get('/profile', (req, res) => {
+router.get('/profile', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    const profile = UserProfileModel.findByUserId(userId);
+    const profile = await UserProfileModel.findByUserId(userId);
     res.json({
       success: true,
       profile: profile || null
@@ -158,7 +158,7 @@ router.post('/planning/step1', (req, res) => {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    const { preferred_sources, primary_goal, allow_diesel } = req.body;
+    const { preferred_sources, primary_goals, primary_goal, allow_diesel } = req.body;
 
     if (!preferred_sources || !Array.isArray(preferred_sources) || preferred_sources.length === 0) {
       return res.status(400).json({
@@ -167,18 +167,22 @@ router.post('/planning/step1', (req, res) => {
       });
     }
 
-    if (!primary_goal) {
+    // Support both primary_goals (array) and primary_goal (single) for backward compatibility
+    const goals = primary_goals || (primary_goal ? [primary_goal] : null);
+    
+    if (!goals || !Array.isArray(goals) || goals.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'primary_goal is required'
+        error: 'primary_goals must be a non-empty array'
       });
     }
 
     const validGoals = ['savings', 'self_sustainability', 'reliability', 'carbon_reduction'];
-    if (!validGoals.includes(primary_goal)) {
+    const invalidGoals = goals.filter(g => !validGoals.includes(g));
+    if (invalidGoals.length > 0) {
       return res.status(400).json({
         success: false,
-        error: `Invalid primary_goal. Must be one of: ${validGoals.join(', ')}`
+        error: `Invalid primary_goals: ${invalidGoals.join(', ')}. Must be one of: ${validGoals.join(', ')}`
       });
     }
 
@@ -187,7 +191,7 @@ router.post('/planning/step1', (req, res) => {
       success: true,
       data: {
         preferred_sources,
-        primary_goal,
+        primary_goals: goals,
         allow_diesel: allow_diesel || false
       }
     });
@@ -202,7 +206,7 @@ router.post('/planning/step1', (req, res) => {
 });
 
 // POST /api/v1/wizard/planning/step2 - P2: Appliances & Load Profile
-router.post('/planning/step2', (req, res) => {
+router.post('/planning/step2', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
@@ -259,23 +263,45 @@ router.post('/planning/step2', (req, res) => {
       appliances
     };
 
-    const result = LoadProfileModel.create(loadProfile);
+    console.log('📝 Creating load profile:', {
+      id: loadProfile.id,
+      user_id: loadProfile.user_id,
+      name: loadProfile.name,
+      appliance_count: appliances.length,
+      total_daily_energy_kwh: loadProfile.total_daily_energy_kwh
+    });
+
+    const result = await LoadProfileModel.create(loadProfile);
     
-    if (!result || result.changes === 0) {
-      throw new Error('Failed to create load profile in database');
+    if (!result) {
+      console.error('❌ LoadProfileModel.create returned null/undefined');
+      throw new Error('Database operation returned no result');
     }
+    
+    if (result.changes === 0) {
+      console.error('❌ LoadProfileModel.create returned 0 changes');
+      throw new Error('Failed to create load profile in database (no rows inserted)');
+    }
+
+    console.log('✅ Load profile created successfully:', loadProfile.id, 'Changes:', result.changes);
 
     res.json({
       success: true,
       load_profile: loadProfile
     });
   } catch (error) {
-    console.error('Error in /wizard/planning/step2:', error);
-    console.error('Error stack:', error.stack);
+    console.error('❌ Error in /wizard/planning/step2:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
     res.status(500).json({
       success: false,
       error: 'Internal server error',
-      message: error.message || 'Failed to save load profile'
+      message: error.message || 'Failed to save load profile',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -292,10 +318,21 @@ router.post('/planning/step3', async (req, res) => {
       load_profile_id, 
       site_id,
       preferred_sources, 
-      primary_goal, 
+      primary_goals,
+      primary_goal, // Backward compatibility
       allow_diesel,
       action // 'save' or 'proceed_to_optimization'
     } = req.body;
+
+    // Support both primary_goals (array) and primary_goal (single) for backward compatibility
+    const goals = primary_goals || (primary_goal ? [primary_goal] : null);
+    
+    if (!goals || !Array.isArray(goals) || goals.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'primary_goals must be a non-empty array'
+      });
+    }
 
     if (!load_profile_id) {
       return res.status(400).json({
@@ -305,7 +342,7 @@ router.post('/planning/step3', async (req, res) => {
     }
 
     // Fetch load profile to get total daily energy
-    const loadProfile = LoadProfileModel.findById(load_profile_id);
+    const loadProfile = await LoadProfileModel.findById(load_profile_id);
     if (!loadProfile) {
       return res.status(404).json({
         success: false,
@@ -330,7 +367,8 @@ router.post('/planning/step3', async (req, res) => {
           load_profile_id,
           total_daily_energy_kwh: totalDailyEnergy,
           preferred_sources,
-          primary_goal,
+          primary_goal: goals[0], // AI service currently expects single goal, send first one
+          primary_goals: goals, // Also send array for future compatibility
           allow_diesel
         }),
         timeout: 30000 // 30 second timeout
@@ -351,7 +389,7 @@ router.post('/planning/step3', async (req, res) => {
         site_id: site_id || null,
         load_profile_id,
         preferred_sources,
-        primary_goal,
+        primary_goals: goals,
         allow_diesel: allow_diesel || false,
         technical_sizing: planningData.technical_sizing || {},
         economic_analysis: planningData.economic_analysis || {},
@@ -360,12 +398,17 @@ router.post('/planning/step3', async (req, res) => {
         status: action === 'save' ? 'saved' : 'draft'
       };
 
-      PlanningRecommendationModel.create(recommendation);
+      const createResult = await PlanningRecommendationModel.create(recommendation);
+      
+      if (!createResult || createResult.changes === 0) {
+        console.error('⚠️ Warning: Planning recommendation create returned no changes');
+      }
 
       res.json({
         success: true,
         recommendation,
-        action
+        action,
+        saved: true
       });
     } catch (aiError) {
       console.error('AI service error:', aiError);
@@ -380,7 +423,7 @@ router.post('/planning/step3', async (req, res) => {
         site_id: site_id || null,
         load_profile_id,
         preferred_sources,
-        primary_goal,
+        primary_goals: goals,
         allow_diesel: allow_diesel || false,
         technical_sizing: {
           solar_capacity_kw: preferred_sources.includes('solar') ? Math.round((totalDailyEnergy * 0.6) / 5 * 100) / 100 : 0,
@@ -411,12 +454,17 @@ router.post('/planning/step3', async (req, res) => {
         status: action === 'save' ? 'saved' : 'draft'
       };
 
-      PlanningRecommendationModel.create(fallbackRecommendation);
+      const createResult = await PlanningRecommendationModel.create(fallbackRecommendation);
+      
+      if (!createResult || createResult.changes === 0) {
+        console.error('⚠️ Warning: Fallback planning recommendation create returned no changes');
+      }
 
       res.json({
         success: true,
         recommendation: fallbackRecommendation,
         action,
+        saved: true,
         warning: `AI service unavailable (${aiError.message}), using calculated fallback data`
       });
     }
@@ -458,7 +506,7 @@ router.get('/load-profiles', (req, res) => {
 });
 
 // GET /api/v1/wizard/planning-recommendations - Get user's planning recommendations
-router.get('/planning-recommendations', (req, res) => {
+router.get('/planning-recommendations', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
@@ -469,11 +517,11 @@ router.get('/planning-recommendations', (req, res) => {
     let recommendations;
 
     if (load_profile_id) {
-      recommendations = PlanningRecommendationModel.findByLoadProfileId(load_profile_id);
+      recommendations = await PlanningRecommendationModel.findByLoadProfileId(load_profile_id);
     } else if (site_id) {
-      recommendations = PlanningRecommendationModel.findBySiteId(site_id);
+      recommendations = await PlanningRecommendationModel.findBySiteId(site_id);
     } else {
-      recommendations = PlanningRecommendationModel.findByUserId(userId);
+      recommendations = await PlanningRecommendationModel.findByUserId(userId);
     }
 
     res.json({
@@ -574,6 +622,8 @@ router.get('/optimization/configs', (req, res) => {
   }
 });
 
+// Export getUserId for use in other routes
 module.exports = router;
+module.exports.getUserId = getUserId;
 
 

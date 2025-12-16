@@ -116,20 +116,43 @@ async function seedDatabase() {
     // Convert SQLite syntax to PostgreSQL if needed
     const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
     if (usePostgres) {
-      // Convert INSERT OR IGNORE to INSERT ... ON CONFLICT DO NOTHING
-      seed = seed.replace(/INSERT OR IGNORE INTO (\w+) \(([^)]+)\) VALUES/gi, 
-        'INSERT INTO $1 ($2) VALUES ON CONFLICT DO NOTHING');
+      // Convert SQLite datetime() to PostgreSQL NOW() + INTERVAL
+      seed = seed.replace(/datetime\('now', '([+-]\d+) (day|days|hour|hours|minute|minutes)'\)/gi, (match, num, unit) => {
+        const interval = unit.endsWith('s') ? unit : unit + 's';
+        return `NOW() + INTERVAL '${num} ${interval}'`;
+      });
+      seed = seed.replace(/datetime\('now'\)/gi, 'NOW()');
       
-      // For users table, add ON CONFLICT (email) if not present
-      seed = seed.replace(/INSERT INTO users \(([^)]+)\) VALUES([^;]+);/gi, (match, cols, values) => {
-        if (cols.includes('email') && !match.includes('ON CONFLICT')) {
-          return `INSERT INTO users (${cols}) VALUES${values} ON CONFLICT (email) DO NOTHING;`;
+      // Convert INSERT OR IGNORE to INSERT ... ON CONFLICT (id) DO NOTHING
+      // Most tables use 'id' as primary key
+      seed = seed.replace(/INSERT OR IGNORE INTO (\w+) \(([^)]+)\) VALUES/gi, (match, table, cols) => {
+        // Special case for users table - use email as conflict target
+        if (table === 'users' && cols.includes('email')) {
+          return `INSERT INTO ${table} (${cols}) VALUES`;
+        }
+        // For all other tables, use id as conflict target
+        return `INSERT INTO ${table} (${cols}) VALUES`;
+      });
+      
+      // Add ON CONFLICT clause after VALUES for each INSERT statement
+      seed = seed.replace(/INSERT INTO (\w+) \(([^)]+)\) VALUES([^;]+);/gi, (match, table, cols, values) => {
+        if (match.includes('ON CONFLICT')) {
+          return match; // Already has ON CONFLICT
+        }
+        // For users table, conflict on email
+        if (table === 'users' && cols.includes('email')) {
+          return `INSERT INTO ${table} (${cols}) VALUES${values} ON CONFLICT (email) DO NOTHING;`;
+        }
+        // For system_settings table, conflict on key (primary key)
+        if (table === 'system_settings' && cols.includes('key')) {
+          return `INSERT INTO ${table} (${cols}) VALUES${values} ON CONFLICT (key) DO NOTHING;`;
+        }
+        // For all other tables, conflict on id
+        if (cols.includes('id')) {
+          return `INSERT INTO ${table} (${cols}) VALUES${values} ON CONFLICT (id) DO NOTHING;`;
         }
         return match;
       });
-      
-      // Convert ? placeholders to $1, $2, etc. (handled by adapter, but fix multi-value inserts)
-      // The adapter will handle parameter conversion
     }
     
     await dbAdapter.exec(seed);
