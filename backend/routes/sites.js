@@ -215,10 +215,10 @@ router.get('/:id/timeseries', async (req, res) => {
   // Also check database for site (if using database)
   try {
     const dbSite = await dbAdapter.get('SELECT id FROM sites WHERE id = ?', [siteId]);
-    
-    if (!site && !dbSite) {
-      console.warn(`Site not found in mock data or database: ${siteId}`);
-      // Still return data even if site not found (for demo purposes)
+  
+  if (!site && !dbSite) {
+    console.warn(`Site not found in mock data or database: ${siteId}`);
+    // Still return data even if site not found (for demo purposes)
     }
   } catch (checkError) {
     console.warn('Error checking site existence:', checkError.message);

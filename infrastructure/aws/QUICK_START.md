@@ -37,7 +37,7 @@ scp -i your-key.pem -r /path/to/vidyutai1 ec2-user@YOUR_EC2_IP:~/
 # Or clone from Git
 ssh -i your-key.pem ec2-user@YOUR_EC2_IP
 cd ~
-git clone YOUR_REPO_URL vidyutai
+git clone https://github.com/vidyutai-tech/vidyutai1.git vidyutai
 cd vidyutai
 ```
 

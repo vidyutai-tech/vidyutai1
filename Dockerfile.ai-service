@@ -1,7 +1,7 @@
 # AI Service Dockerfile for VidyutAI Dashboard (Python)
 # Optimized for memory-constrained environments (t3.small)
 
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

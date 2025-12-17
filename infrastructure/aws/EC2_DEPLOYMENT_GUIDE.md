@@ -68,7 +68,7 @@ ssh -i ~/path/to/your-key.pem ec2-user@YOUR_EC2_IP
 #### For Ubuntu (Recommended):
 ```bash
 # Run the optimized setup script for t3.small
-curl -fsSL https://raw.githubusercontent.com/your-repo/vidyutai1/main/infrastructure/aws/setup-ubuntu-t3small.sh -o setup.sh
+curl -fsSL https://raw.githubusercontent.com/vidyutai-tech/vidyutai1/main/infrastructure/aws/setup-ubuntu-t3small.sh -o setup.sh
 chmod +x setup.sh
 ./setup.sh
 
@@ -120,7 +120,7 @@ mkdir -p ~/vidyutai
 cd ~/vidyutai
 
 # Clone your repository (or upload files)
-git clone https://github.com/your-username/vidyutai1.git .
+git clone https://github.com/vidyutai-tech/vidyutai1.git .
 
 # OR: Upload files using SCP from your local machine:
 # scp -i ~/path/to/your-key.pem -r /path/to/vidyutai1/* ubuntu@YOUR_EC2_IP:~/vidyutai/

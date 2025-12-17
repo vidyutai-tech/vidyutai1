@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Update Dockerfile.backend on EC2 to fix Node.js version and build dependencies
+
+cat > ~/vidyutai/Dockerfile.backend << 'EOF'
+# Backend Dockerfile for VidyutAI Dashboard (Node.js)
+# Optimized for memory-constrained environments (t3.small)
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install build dependencies for native modules (better-sqlite3)
+# Python and build tools are needed for node-gyp
+RUN apk add --no-cache \
+    wget \
+    python3 \
+    make \
+    g++
+
+# Copy package files
+COPY backend/package*.json ./
+
+# Install dependencies (production only, no dev dependencies)
+RUN npm ci --omit=dev && \
+    npm cache clean --force
+
+# Copy source code
+COPY backend/ ./
+
+# Create database directory
+RUN mkdir -p /app/database
+
+# Set environment variables for memory optimization
+ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=384
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# Initialize database and start server
+CMD ["sh", "-c", "node database/init-db.js && node server.js"]
+EOF
+
+echo "✅ Dockerfile.backend updated!"
+echo "Now rebuild: docker-compose -f docker-compose.prod.yml build --no-cache backend"
+

@@ -149,14 +149,14 @@ const App: React.FC = () => {
     // Fallback: If socket doesn't connect within 5 seconds, mark as connected anyway
     // (HTTP API is working, Socket.IO is optional for real-time updates)
     let connectionTimeout: NodeJS.Timeout;
-    
+
     newSocket.on('connect', () => {
         console.log('✅ Socket.IO connected with ID:', newSocket.id);
         clearTimeout(connectionTimeout);
         setSocketConnected(true);
         // Subscribe to the selected site's updates
         if (selectedSite) {
-          newSocket.emit('subscribe_site', selectedSite.id);
+      newSocket.emit('subscribe_site', selectedSite.id);
           console.log(`📡 Subscribed to site: ${selectedSite.id}`);
         }
     });
