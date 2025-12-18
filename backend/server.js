@@ -17,6 +17,7 @@ const assetsRoutes = require('./routes/assets');
 const predictionsRoutes = require('./routes/predictions');
 const mlPredictionsRoutes = require('./routes/ml-predictions');
 const actionsRoutes = require('./routes/actions');
+const insightsRoutes = require('./routes/insights');
 const wizardRoutes = require('./routes/wizard');
 const planningRoutes = require('./routes/planning');
 const optimizationRoutes = require('./routes/optimization');
@@ -107,6 +108,7 @@ app.use('/api/v1/assets', assetsRoutes);
 app.use('/api/v1/predictions', predictionsRoutes);
 app.use('/api/v1/predict', mlPredictionsRoutes);
 app.use('/api/v1/actions', actionsRoutes);
+app.use('/api/v1/insights', insightsRoutes); // Dedicated insights endpoints
 app.use('/api/v1/wizard', wizardRoutes);
 app.use('/api/v1/planning', planningRoutes);
 app.use('/api/v1', optimizationRoutes);

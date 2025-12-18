@@ -32,8 +32,8 @@ All variables go in the **root `.env` file** (same directory as `docker-compose.
 ### Required (for AI features)
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GROQ_API_KEY` | *(empty)* | **Important:** Groq API key for AI insights and explanations |
-| `OPENAI_API_KEY` | *(empty)* | OpenAI API key (optional, if using OpenAI) |
+| `OPENAI_API_KEY` | *(empty)* | **Important:** OpenAI API key for AI insights and explanations (required for AI features) |
+| `GROQ_API_KEY` | *(empty)* | Legacy Groq API key (deprecated, use OPENAI_API_KEY instead) |
 
 ### Server Configuration
 | Variable | Default | Description |
@@ -96,7 +96,7 @@ FRONTEND_URL=https://spel.vidyutai.in
 CORS_ORIGIN=https://spel.vidyutai.in,https://api-be.vidyutai.in,https://api-python-be.vidyutai.in
 
 # AI Service - Required for AI features
-GROQ_API_KEY=your-groq-api-key-here
+OPENAI_API_KEY=your-openai-api-key-here
 SECRET_KEY=your-secret-key-here
 LOG_LEVEL=INFO
 
@@ -129,7 +129,7 @@ You can add additional variables to the root `.env` file after running the deplo
 
 ## ⚠️ Important Notes
 
-1. **GROQ_API_KEY**: Required for AI insights and explanations. Without it, the AI service will use fallback responses.
+1. **OPENAI_API_KEY**: Required for AI insights and explanations. Without it, the AI service will use fallback responses.
 
 2. **JWT_SECRET**: Must be a strong, random secret. The deployment script generates this automatically.
 

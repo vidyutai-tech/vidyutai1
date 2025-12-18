@@ -19,29 +19,28 @@ from app.data.mock_data import LAST_SUGGESTION_ACTION
 # Create logger
 logger = logging.getLogger(__name__)
 
-# --- Configure the Llama Model via Groq ---
+# --- Configure OpenAI LLM ---
 try:
     from app.core.config import settings
-    groq_api_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY", "")
-    if groq_api_key:
+    openai_api_key = settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY", "")
+    if openai_api_key:
         llm = ChatOpenAI(
-            base_url="https://api.groq.com/openai/v1",
-            api_key=groq_api_key,
-            model="llama-3.1-8b-instant",
+            model="gpt-4o-mini",  # Using OpenAI's efficient model
+            api_key=openai_api_key,
             temperature=0.7,
         )
-        print("✅ Llama 3 model on Groq configured successfully.")
+        print("✅ OpenAI LLM configured successfully.")
     else:
-        print("⚠️ GROQ_API_KEY not found in environment")
+        print("⚠️ OPENAI_API_KEY not found in environment")
         llm = None
 except Exception as e:
-    print(f"⚠️ Llama/Groq AI could not be configured: {e}")
+    print(f"⚠️ OpenAI AI could not be configured: {e}")
     llm = None
 
 router = APIRouter()
 
 def generate_fallback_insights(system_data: dict) -> str:
-    """Generate fallback insights when Groq API is unavailable."""
+    """Generate fallback insights when OpenAI API is unavailable."""
     context = system_data.get('context', 'energy_forecasting')
     
     if context == 'ai_predictions':
@@ -167,56 +166,61 @@ async def analyze_root_cause(alert: models.Alert, current_user: models.User = De
 
 @router.post("/actions/generate-insights", response_model=dict)
 async def generate_insights(request: dict):
-    """Generate actionable insights based on system data using Groq AI."""
+    """Generate actionable insights based on system data using OpenAI AI."""
     if not llm:
-        # Return fallback insights if Groq is not configured
+        # Return fallback insights if OpenAI is not configured
         return {
             "success": True,
             "insights": generate_fallback_insights(request.get("system_data", {})),
             "generated_at": datetime.now().isoformat(),
             "fallback": True,
-            "message": "Using fallback insights. Configure GROQ_API_KEY for AI-powered insights."
+            "message": "Using fallback insights. Configure OPENAI_API_KEY for AI-powered insights."
         }
     
     system_data = request.get("system_data", {})
-    context = system_data.get('context', 'energy_forecasting')
+    context = system_data.get('context', 'dashboard')  # Default to dashboard for full insights
+    
+    # NOTE: Prediction-specific insights (battery, solar, loss) are now handled by dedicated endpoints:
+    # - /api/v1/insights/battery-rul
+    # - /api/v1/insights/solar-degradation
+    # - /api/v1/insights/energy-loss
+    # - /api/v1/insights/energy-forecast
+    # This endpoint now only handles dashboard/main actionable insights
     
     # Different prompts based on context
     if context == 'ai_predictions':
-        # For predictions context, focus on prediction models only
+        # Redirect users to dedicated endpoints
+        logger.warning(f"Received prediction context request. Please use dedicated endpoints: /api/v1/insights/battery-rul, /api/v1/insights/solar-degradation, /api/v1/insights/energy-loss")
+        return {
+            "success": False,
+            "insights": "",
+            "generated_at": datetime.now().isoformat(),
+            "fallback": True,
+            "message": "Prediction insights should use dedicated endpoints: /api/v1/insights/battery-rul, /api/v1/insights/solar-degradation, or /api/v1/insights/energy-loss"
+        }
+    elif context == 'energy_forecasting':
+        # Redirect users to dedicated forecast endpoint
+        logger.warning(f"Received forecast context request. Please use dedicated endpoint: /api/v1/insights/energy-forecast")
+        return {
+            "success": False,
+            "insights": "",
+            "generated_at": datetime.now().isoformat(),
+            "fallback": True,
+            "message": "Forecast insights should use dedicated endpoint: /api/v1/insights/energy-forecast"
+        }
+    elif context == 'dashboard' or not context:
+        # For dashboard context - includes ALL available data (health, telemetry, forecast, etc.)
         system_prompt = """
-        You are an expert predictive maintenance consultant for VidyutAI's Smart Energy Platform.
-        Analyze prediction model outputs and provide maintenance and optimization recommendations.
-        
-        Generate insights as a simple list of actionable items (no categories needed).
-        Each insight should be specific, data-driven, and actionable.
-        """
-        
-        predictions = system_data.get('predictions', {})
-        battery_pred = predictions.get('battery', {})
-        solar_pred = predictions.get('solar', {})
-        loss_pred = predictions.get('loss', {})
-        
-        human_prompt = f"""
-        Analyze these AI prediction model outputs:
-        
-        **Battery RUL Prediction:**
-        {f"- Predictions available: {len(battery_pred.get('predictions', []))} data points" if battery_pred else "- No battery predictions"}
-        
-        **Solar Degradation Prediction:**
-        {f"- Predictions available: {len(solar_pred.get('predictions', []))} data points" if solar_pred else "- No solar predictions"}
-        
-        **Energy Loss Analysis:**
-        {f"- Predictions available: {len(loss_pred.get('predictions', []))} data points" if loss_pred else "- No loss predictions"}
-        
-        Generate 6-8 actionable insights based ONLY on these prediction models.
-        Focus on: maintenance scheduling, performance optimization, efficiency improvements.
-        """
-    else:
-        # For forecast/dashboard context
-        system_prompt = """
-        You are an expert energy management consultant for VidyutAI's Smart Energy Platform.
-        Your task is to analyze the provided system data and generate actionable insights and recommendations.
+        You are an expert energy management consultant for VidyutAI's Smart Energy Platform with specialized knowledge in renewable energy systems, grid integration, battery storage, demand-side management, and energy economics.
+
+        Your task is to analyze ALL available system data (current health status, real-time telemetry, forecast predictions, and any other provided metrics) and generate comprehensive, actionable insights that provide a holistic view of system optimization opportunities.
+
+        **Analysis Framework:**
+        1. Examine current system state across all metrics (health indicators, telemetry, forecast patterns)
+        2. Identify cross-system optimization opportunities (cost reduction, efficiency gains, reliability improvements)
+        3. Connect insights between different data sources (e.g., forecast + battery SoC + grid draw)
+        4. Prioritize recommendations by impact and feasibility
+        5. Provide specific, quantified recommendations with actionable steps
         
         **CRITICAL FORMATTING RULES:**
         - Generate EXACTLY 4 categories, no more, no less
@@ -244,9 +248,13 @@ async def generate_insights(request: dict):
         
         **IMPORTANT:**
         - Use ONLY these 4 category names exactly as shown
+        - Synthesize insights from ALL available data sources (health, telemetry, forecast)
         - Provide 3-4 specific, actionable insights per category
-        - Be specific with numbers and percentages from the data
-        - Each insight should be a complete, actionable recommendation
+        - Be specific with numbers, percentages, timeframes, and thresholds from the data
+        - Connect insights across different data sources (e.g., "Given forecast peak at hour X and current battery SoC of Y%...")
+        - Each insight should be a complete, actionable recommendation with clear business impact
+        - Include both immediate actions and strategic recommendations
+        - Consider safety, reliability, and cost-effectiveness in all recommendations
         """
         
         # Only include health/telemetry if available (full mode)
@@ -280,7 +288,7 @@ async def generate_insights(request: dict):
     """
         
         human_prompt = f"""
-    Analyze this energy system data and provide actionable insights:
+    Analyze ALL available energy system data and provide comprehensive, actionable insights that synthesize information across different data sources:
     
     **Site Information:**
     - Site: {system_data.get('site', {}).get('name', 'Unknown')}
@@ -288,8 +296,10 @@ async def generate_insights(request: dict):
     {telemetry_section}
     {forecast_section}
     
-    Generate specific, actionable insights for each category. Include numbers and percentages where relevant.
-    Focus on what IS available in the data, not what's missing.
+    Generate specific, actionable insights for each category by analyzing and connecting data across all available sources.
+    Synthesize information from health metrics, telemetry, and forecasts to provide holistic recommendations.
+    Include numbers and percentages where relevant, and connect insights between different data sources.
+    Focus on what IS available in the data, and use all provided metrics to create comprehensive insights.
     """
     
     prompt = ChatPromptTemplate.from_messages([
@@ -311,13 +321,13 @@ async def generate_insights(request: dict):
         }
     except Exception as e:
         # Return fallback insights on error
-        logger.error(f"Error generating insights with Groq: {str(e)}")
+        logger.error(f"Error generating insights with OpenAI: {str(e)}")
         return {
             "success": True,
             "insights": generate_fallback_insights(system_data),
             "generated_at": datetime.now().isoformat(),
             "fallback": True,
-            "message": f"Groq API error. Using fallback insights. Error: {str(e)}"
+            "message": f"OpenAI API error. Using fallback insights. Error: {str(e)}"
         }
 
 @router.post("/actions/ask-ai", response_model=str)
@@ -337,20 +347,43 @@ async def ask_ai(query: models.AIQuery, current_user: models.User = Depends(get_
     context_json = json.dumps(system_context, default=pydantic_encoder, indent=2)
 
     system_prompt = """
-    You are an expert AI assistant for VidhyutAI's Energy Management System (EMS).
-    Your task is to answer the user's question based ONLY on the real-time system data provided.
-    Be concise, helpful, and answer in clear, simple language.
+    You are an expert AI assistant for VidyutAI's Energy Management System (EMS), a comprehensive platform for managing renewable energy systems, battery storage, grid integration, and energy optimization.
+
+    **Your Expertise:**
+    - Renewable energy systems (solar, wind, hybrid)
+    - Battery storage and energy management
+    - Grid integration and demand response
+    - Energy economics and cost optimization
+    - Predictive maintenance and system health
+    - Real-time monitoring and telemetry analysis
+
+    **Core Principles:**
+    1. Answer based ONLY on the real-time system data provided in the context
+    2. If information is not available in the data, clearly state that rather than making assumptions
+    3. Be concise, accurate, and actionable
+    4. Prioritize safety and reliability in all recommendations
+    5. Use clear, professional language accessible to both technical and non-technical users
+
+    **Response Guidelines:**
+    - Provide specific numbers, percentages, and metrics when available in the data
+    - Explain the significance of data points and trends
+    - Offer actionable recommendations when appropriate
+    - Flag any concerns or anomalies clearly
+    - If asked about something not in the data, acknowledge the limitation
 
     **CRITICAL FORMATTING RULES:**
-    - Always use standard markdown.
-    - Use `**bold**` for emphasis.
-    - For lists, use numbered lists for main items and bulleted lists (using '*') for sub-items. Each item MUST be on a new line.
+    - Always use standard markdown formatting
+    - Use `**bold**` for emphasis on key terms and values
+    - For lists, use numbered lists (1., 2., 3.) for main items
+    - Use bulleted lists (using '*') for sub-items
+    - Each item MUST be on a new line
+    - Use code formatting (`backticks`) for technical identifiers (site IDs, asset IDs, etc.)
 
     **--- EXAMPLE OF CORRECT FORMATTING ---**
     USER QUESTION: "list all my assets"
 
     YOUR CORRECT RESPONSE FORMAT:
-    Here is the list of all assets:
+    Based on the current system data, here are all assets:
 
     1.  **site_ahd_gj - Sabarmati Riverfront Solar**
         * `asset_ahd_inv01`: Inverter Unit SR-01
@@ -359,6 +392,8 @@ async def ask_ai(query: models.AIQuery, current_user: models.User = Depends(get_
     2.  **site_srt_gj - Surat Industrial Power Hub**
         * `asset_srt_gt01`: Gas Turbine Primary
     **--- END OF EXAMPLE ---**
+
+    Remember: Accuracy and clarity are paramount. If you cannot answer based on the provided data, say so explicitly.
     """
     
     human_prompt = """

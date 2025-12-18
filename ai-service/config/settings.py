@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     
     # API Keys
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")  # Legacy support (deprecated)
     
     # Database settings
     MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017/vidyutai")

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, Bot, SlidersHorizontal, Settings, X, Bolt, Share2, Building, HardDrive, TrendingUp, Zap, Users, Lightbulb, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, Bot, SlidersHorizontal, Settings, X, Bolt, Share2, Building, HardDrive, TrendingUp, Zap, Users, Lightbulb, MessageSquare, Battery, Search } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,7 +23,10 @@ const optimizationNavItems = [
 const aiMlNavItems = [
   { name: 'AI/ML Insights', path: '/ai-ml-insights', icon: Bot },
   { name: 'Energy Forecasting', path: '/energy-forecasting', icon: TrendingUp },
-  { name: 'AI Predictions', path: '/predictions', icon: Bot },
+  { name: 'Battery RUL Prediction', path: '/battery-rul', icon: Battery },
+  { name: 'Solar Degradation Prediction', path: '/solar-degradation', icon: Zap },
+  { name: 'Energy Loss Prediction', path: '/energy-loss', icon: AlertTriangle },
+  { name: 'Root Cause Analysis', path: '/root-cause-analysis', icon: Search },
   { name: 'AI Explanations', path: '/ai-explanations', icon: MessageSquare },
 ];
 
@@ -55,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
   // Determine which pipeline section is active
   const isPlanningActive = currentPath.includes('/planning-wizard');
   const isOptimizationActive = currentPath.includes('/optimization') || currentPath.includes('/demand-optimization') || currentPath.includes('/source-optimization');
-  const isAIMLActive = currentPath.includes('/ai-ml') || currentPath.includes('/predictions') || currentPath.includes('/ai-explanations') || currentPath.includes('/energy-forecasting');
+  const isAIMLActive = currentPath.includes('/ai-ml') || currentPath.includes('/predictions') || currentPath.includes('/ai-explanations') || currentPath.includes('/energy-forecasting') || currentPath.includes('/battery-rul') || currentPath.includes('/solar-degradation') || currentPath.includes('/energy-loss') || currentPath.includes('/root-cause-analysis');
   const isDashboardActive = currentPath.includes('/unified-dashboard') || currentPath.includes('/dashboard') || currentPath.includes('/site-detail') || currentPath.includes('/digital-twin') || currentPath.includes('/simulator') || currentPath.includes('/alerts') || currentPath.includes('/maintenance');
   const isImpactActionsActive = currentPath.includes('/ai-recommendations') || currentPath.includes('/impact');
 

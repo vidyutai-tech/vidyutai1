@@ -66,6 +66,14 @@ except ImportError:
     PREDICTIONS_AVAILABLE = False
     logger.warning("Predictions router not available - app.api.endpoints.predictions_new not found")
 
+# Import insights routers (for dedicated insight endpoints)
+try:
+    from app.api.endpoints import battery_insights, solar_insights, energy_loss_insights, forecast_insights
+    INSIGHTS_AVAILABLE = True
+except ImportError as e:
+    INSIGHTS_AVAILABLE = False
+    logger.warning(f"Insights routers not available - {e}")
+
 # Initialize FastAPI app
 app = FastAPI(
     title="VidyutAI AI Service",
@@ -109,6 +117,14 @@ if ACTIONS_AVAILABLE:
 if PREDICTIONS_AVAILABLE:
     app.include_router(predictions_new.router, prefix="/api/v1", tags=["AI Predictions"])
     logger.info("Predictions router registered at /api/v1/predictions/*")
+
+# Include dedicated insights routers if available
+if INSIGHTS_AVAILABLE:
+    app.include_router(battery_insights.router, prefix="/api/v1", tags=["Insights - Battery RUL"])
+    app.include_router(solar_insights.router, prefix="/api/v1", tags=["Insights - Solar Degradation"])
+    app.include_router(energy_loss_insights.router, prefix="/api/v1", tags=["Insights - Energy Loss"])
+    app.include_router(forecast_insights.router, prefix="/api/v1", tags=["Insights - Energy Forecast"])
+    logger.info("Insights routers registered at /api/v1/insights/*")
 
 # Initialize components
 data_processor = None

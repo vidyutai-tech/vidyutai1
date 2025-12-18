@@ -1,7 +1,10 @@
 # ems-backend/app/api/api.py
 
 from fastapi import APIRouter
-from app.api.endpoints import auth, sites, assets, data, actions, simulations, planning, forecasting, prediction
+from app.api.endpoints import (
+    auth, sites, assets, data, actions, simulations, planning, 
+    forecasting, prediction
+)
 
 api_router = APIRouter()
 
@@ -15,6 +18,9 @@ api_router.include_router(prediction.router, prefix="", tags=["ML Predictions"])
 api_router.include_router(simulations.router, prefix="", tags=["Simulations & Predictions"])
 api_router.include_router(forecasting.router, prefix="", tags=["Forecasting"])
 api_router.include_router(planning.router, prefix="", tags=["Planning"])
+
+# Note: Dedicated insights endpoints (battery_insights, solar_insights, energy_loss_insights, forecast_insights)
+# are registered directly in app/main.py with /api/v1 prefix, not through api_router
 
 # The general '/sites' router is now included LAST.
 api_router.include_router(sites.router, prefix="/sites", tags=["Sites"])

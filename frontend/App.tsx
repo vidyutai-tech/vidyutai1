@@ -16,6 +16,10 @@ import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import SiteSelectPage from './pages/SiteSelectPage';
 import PredictionsPage from './pages/PredictionsPage';
+import BatteryRULPage from './pages/BatteryRULPage';
+import SolarDegradationPage from './pages/SolarDegradationPage';
+import EnergyLossPage from './pages/EnergyLossPage';
+import RootCauseAnalysisPage from './pages/RootCauseAnalysisPage';
 import ManageSitesPage from './pages/ManageSitesPage';
 import ManageAssetsPage from './pages/ManageAssetsPage';
 import DigitalTwinPage from './pages/DigitalTwinPage';
@@ -602,6 +606,10 @@ const App: React.FC = () => {
                   <Route path="/maintenance" element={<MaintenancePage />} />
                   <Route path="/simulator" element={<SimulatorPage />} />
                   <Route path="/predictions" element={<PredictionsPage />} />
+                  <Route path="/battery-rul" element={<BatteryRULPage />} />
+                  <Route path="/solar-degradation" element={<SolarDegradationPage />} />
+                  <Route path="/energy-loss" element={<EnergyLossPage />} />
+                  <Route path="/root-cause-analysis" element={<RootCauseAnalysisPage />} />
                   <Route path="/manage-sites" element={<ManageSitesPage />} />
                   <Route path="/manage-assets" element={<ManageAssetsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />

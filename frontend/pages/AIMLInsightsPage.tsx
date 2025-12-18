@@ -18,19 +18,49 @@ const AIMLInsightsPage: React.FC = () => {
       gradient: 'bg-gradient-to-br from-indigo-500 to-purple-600'
     },
     {
-      id: 'predictions',
-      title: 'AI Predictions',
-      description: 'Advanced ML models for motor vibration diagnosis, multi-sensor fault detection, and solar power forecasting. Real-time diagnostics using RandomForest, XGBoost, and LSTM models.',
+      id: 'battery-rul',
+      title: 'Battery RUL Prediction',
+      description: 'Remaining Useful Life prediction using Random Forest algorithm. Monitor battery health degradation over usage cycles and predict replacement needs.',
       icon: Brain,
-      path: '/predictions',
-      color: 'from-purple-500 via-pink-500 to-purple-600',
+      path: '/battery-rul',
+      color: 'from-blue-500 via-indigo-500 to-blue-600',
       category: 'Predictions',
+      gradient: 'bg-gradient-to-br from-blue-500 to-indigo-600'
+    },
+    {
+      id: 'solar-degradation',
+      title: 'Solar Degradation Prediction',
+      description: 'Panel performance decline forecast using Gradient Boosting model. Track efficiency over time and optimize maintenance schedules.',
+      icon: Brain,
+      path: '/solar-degradation',
+      color: 'from-amber-500 via-orange-500 to-amber-600',
+      category: 'Predictions',
+      gradient: 'bg-gradient-to-br from-amber-500 to-orange-600'
+    },
+    {
+      id: 'energy-loss',
+      title: 'Energy Loss Prediction',
+      description: 'Distribution system losses analysis for optimization. Identify efficiency issues in cables, transformers, and power quality.',
+      icon: Brain,
+      path: '/energy-loss',
+      color: 'from-red-500 via-pink-500 to-red-600',
+      category: 'Predictions',
+      gradient: 'bg-gradient-to-br from-red-500 to-pink-600'
+    },
+    {
+      id: 'root-cause',
+      title: 'Root Cause Analysis',
+      description: 'AI-powered analysis of system issues and their root causes. Comprehensive analysis across all prediction models to identify systemic problems.',
+      icon: Brain,
+      path: '/root-cause-analysis',
+      color: 'from-purple-500 via-pink-500 to-purple-600',
+      category: 'Analysis',
       gradient: 'bg-gradient-to-br from-purple-500 to-pink-600'
     },
     {
       id: 'explanations',
       title: 'AI Explanations',
-      description: 'Get natural language explanations for all AI recommendations and insights. Understand the reasoning behind predictions and actions in plain, actionable language powered by Groq AI.',
+      description: 'Get natural language explanations for all AI recommendations and insights. Understand the reasoning behind predictions and actions in plain, actionable language powered by OpenAI.',
       icon: MessageSquare,
       path: '/ai-explanations',
       color: 'from-orange-500 via-amber-500 to-orange-600',
@@ -134,7 +164,7 @@ const AIMLInsightsPage: React.FC = () => {
                 <p className="font-bold text-gray-900 dark:text-white">AI Explanations</p>
               </div>
               <p className="text-sm leading-relaxed">
-                Natural language explanations powered by Groq AI for all recommendations, predictions, and insights.
+                Natural language explanations powered by OpenAI for all recommendations, predictions, and insights.
               </p>
             </div>
           </div>

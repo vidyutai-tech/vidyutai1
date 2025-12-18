@@ -501,6 +501,7 @@ const EnergyForecastingPage: React.FC = () => {
         <ActionableInsights 
           context="forecast" 
           forecastData={currentForecast as ForecastResponse | null}
+          forecastSubType={selectedType}
           compact={true}
         />
       </div>

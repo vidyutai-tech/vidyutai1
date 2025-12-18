@@ -18,23 +18,22 @@ from app.models import pydantic_models as models
 from app.core.config import settings
 import os
 
-# Import Groq LLM for AI explanations
-groq_llm = None
+# Import OpenAI LLM for AI explanations
+openai_llm = None
 try:
     from langchain_openai import ChatOpenAI
-    groq_api_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY", "")
-    if groq_api_key:
-        groq_llm = ChatOpenAI(
-            base_url="https://api.groq.com/openai/v1",
-            api_key=groq_api_key,
-            model="llama-3.1-8b-instant",
+    openai_api_key = settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY", "")
+    if openai_api_key:
+        openai_llm = ChatOpenAI(
+            model="gpt-4o-mini",  # Using OpenAI's efficient model
+            api_key=openai_api_key,
             temperature=0.7,
         )
-        print("✅ Groq LLM configured for forecasting explanations")
+        print("✅ OpenAI LLM configured for forecasting explanations")
     else:
-        print("⚠️ GROQ_API_KEY not found for forecasting explanations")
+        print("⚠️ OPENAI_API_KEY not found for forecasting explanations")
 except Exception as e:
-    print(f"⚠️ Groq LLM not available for forecasting: {e}")
+    print(f"⚠️ OpenAI LLM not available for forecasting: {e}")
 
 router = APIRouter()
 
@@ -363,12 +362,12 @@ async def explain_forecast(
     current_user: Optional[models.User] = Depends(get_current_user_optional)
 ):
     """
-    Generate AI explanation of forecast using Groq LLM
+    Generate AI explanation of forecast using OpenAI LLM
     """
-    if not groq_llm:
+    if not openai_llm:
         return {
             "success": False,
-            "explanation": "AI explanation service is not available. Groq API key not configured.",
+            "explanation": "AI explanation service is not available. OpenAI API key not configured.",
             "fallback": True
         }
     
@@ -386,9 +385,24 @@ async def explain_forecast(
         total = summary.get("total_24h", 0)
         
         prompt_template = ChatPromptTemplate.from_messages([
-            ("system", """You are an energy management expert. Provide concise, technical explanations of energy forecasts. 
-            Focus on practical insights and actionable recommendations. Use simple language but be precise.
-            Keep explanations under 200 words. Format with **bold** for key points."""),
+            ("system", """You are an expert energy management consultant specializing in renewable energy systems, grid integration, and demand forecasting.
+
+            Your task is to provide clear, concise, and actionable explanations of energy forecasts that help operators understand patterns, make informed decisions, and optimize system performance.
+
+            **Analysis Approach:**
+            - Identify key patterns and trends in the forecast data
+            - Explain the significance of peaks, valleys, and averages
+            - Relate forecast patterns to operational considerations
+            - Provide one clear, actionable recommendation
+
+            **Response Guidelines:**
+            - Keep explanations under 200 words
+            - Use simple, clear language while maintaining technical accuracy
+            - Format with **bold** for key points and numbers
+            - Focus on practical insights operators can act upon
+            - Explain the "why" behind the patterns, not just the "what"
+
+            Be precise, concise, and actionable."""),
             ("human", """Analyze this {forecast_type} forecast:
 
 **Key Metrics:**
@@ -422,7 +436,7 @@ Keep it concise and to the point.""")
         
         avg_comparison = "above average" if average > (total / 24) else "below average"
         
-        chain = prompt_template | groq_llm
+        chain = prompt_template | openai_llm
         response = await chain.ainvoke({
             "forecast_type": forecast_type,
             "total": round(total, 2),

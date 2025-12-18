@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Lightbulb, Battery, Zap, TrendingUp, RefreshCw, Sparkles, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import Card from '../ui/Card';
 import { AppContext } from '../../contexts/AppContext';
@@ -16,19 +16,36 @@ interface ActionableInsightsProps {
   forecastData?: ForecastResponse | null;
   predictionData?: any;
   compact?: boolean; // If true, shows single list instead of 4 categories
+  forecastSubType?: 'production' | 'consumption'; // For forecast context: production or consumption/demand
+  predictionSubType?: 'battery' | 'solar' | 'loss'; // For predictions context: battery, solar, or loss
 }
 
 const ActionableInsights: React.FC<ActionableInsightsProps> = ({ 
   context = 'forecast',
   forecastData,
   predictionData,
-  compact = false
+  compact = false,
+  forecastSubType,
+  predictionSubType
 }) => {
   const { selectedSite, healthStatus, latestTelemetry } = useContext(AppContext)!;
   const [isGenerating, setIsGenerating] = useState(false);
   const [insights, setInsights] = useState<InsightCategory[]>([]);
   const [error, setError] = useState<string>('');
   const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
+
+  // Reset insights when switching between prediction types or forecast types
+  useEffect(() => {
+    if (context === 'predictions' && predictionSubType) {
+      setInsights([]);
+      setError('');
+      setLastGenerated(null);
+    } else if (context === 'forecast' && forecastSubType) {
+      setInsights([]);
+      setError('');
+      setLastGenerated(null);
+    }
+  }, [context, predictionSubType, forecastSubType]);
 
   const generateInsights = async () => {
     setIsGenerating(true);
@@ -58,6 +75,14 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
         },
         context: context === 'forecast' ? 'energy_forecasting' : 'ai_predictions'
       };
+      
+      // Add subcontext for more granular insights
+      if (context === 'forecast' && forecastSubType) {
+        systemData.forecast_subtype = forecastSubType; // 'production' or 'consumption'
+      }
+      if (context === 'predictions' && predictionSubType) {
+        systemData.prediction_subtype = predictionSubType; // 'battery', 'solar', or 'loss'
+      }
 
       // Only include health & telemetry for non-compact mode (dedicated Actionable Insights page)
       if (!compact) {
@@ -88,19 +113,85 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
         };
       }
 
-      // Add prediction data if available
+      // Add prediction data if available - only include non-null data
       if (predictionData) {
-        systemData.predictions = predictionData;
+        const filteredPredictions: any = {};
+        if (predictionData.battery && predictionData.battery.predictions) {
+          filteredPredictions.battery = predictionData.battery;
+          console.log('Including battery data:', { 
+            hasPredictions: !!predictionData.battery.predictions, 
+            count: predictionData.battery.predictions?.length 
+          });
+        }
+        if (predictionData.solar && predictionData.solar.predictions) {
+          filteredPredictions.solar = predictionData.solar;
+          console.log('Including solar data:', { 
+            hasPredictions: !!predictionData.solar.predictions, 
+            count: predictionData.solar.predictions?.length 
+          });
+        }
+        if (predictionData.loss && predictionData.loss.predictions) {
+          filteredPredictions.loss = predictionData.loss;
+          console.log('Including loss data:', { 
+            hasPredictions: !!predictionData.loss.predictions, 
+            count: predictionData.loss.predictions?.length 
+          });
+        }
+        
+        if (Object.keys(filteredPredictions).length > 0) {
+          systemData.predictions = filteredPredictions;
+          console.log('Sending predictions to backend:', {
+            types: Object.keys(filteredPredictions),
+            subtype: predictionSubType,
+            batteryStructure: filteredPredictions.battery ? {
+              hasPredictions: !!filteredPredictions.battery.predictions,
+              predictionsCount: filteredPredictions.battery.predictions?.length,
+              hasModelInfo: !!filteredPredictions.battery.model_info,
+              keys: Object.keys(filteredPredictions.battery)
+            } : 'not included',
+            solarStructure: filteredPredictions.solar ? {
+              hasPredictions: !!filteredPredictions.solar.predictions,
+              predictionsCount: filteredPredictions.solar.predictions?.length,
+              hasModelInfo: !!filteredPredictions.solar.model_info,
+              keys: Object.keys(filteredPredictions.solar)
+            } : 'not included',
+            lossStructure: filteredPredictions.loss ? {
+              hasPredictions: !!filteredPredictions.loss.predictions,
+              predictionsCount: filteredPredictions.loss.predictions?.length,
+              hasModelInfo: !!filteredPredictions.loss.model_info,
+              keys: Object.keys(filteredPredictions.loss)
+            } : 'not included'
+          });
+        } else {
+          console.warn('No valid prediction data found. Available keys:', Object.keys(predictionData || {}));
+        }
       }
 
-      // Call Groq API via backend proxy to avoid CORS issues
+      // Call appropriate dedicated endpoint based on context
       const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
         ? 'http://localhost:5001/api/v1'
         : import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const token = localStorage.getItem('jwt');
       
-      const url = `${API_BASE_URL}/actions/generate-insights`;
-      console.log('Fetching Insights from:', url);
+      // Determine which endpoint to call based on context and subtype
+      let url = `${API_BASE_URL}/actions/generate-insights`; // Default for dashboard
+      
+      if (context === 'predictions' && predictionSubType) {
+        // Use dedicated prediction endpoints
+        if (predictionSubType === 'battery') {
+          url = `${API_BASE_URL}/insights/battery-rul`;
+        } else if (predictionSubType === 'solar') {
+          url = `${API_BASE_URL}/insights/solar-degradation`;
+        } else if (predictionSubType === 'loss') {
+          url = `${API_BASE_URL}/insights/energy-loss`;
+        }
+      } else if (context === 'forecast') {
+        // Use dedicated forecast endpoint
+        url = `${API_BASE_URL}/insights/energy-forecast`;
+      }
+      // else: dashboard context uses the default /actions/generate-insights
+      
+      console.log('Fetching Insights from:', url, { context, predictionSubType, forecastSubType });
       
       const response = await fetch(url, {
         method: 'POST',
@@ -117,30 +208,84 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
 
       const data = await response.json();
       
-      // Check if using fallback
-      if (data.fallback && data.message) {
-        console.warn('Using fallback insights:', data.message);
+      // Check if response has valid insights data
+      if (!data.success || !data.insights || (typeof data.insights === 'string' && !data.insights.trim())) {
+        // If no valid insights, use fallback
+        if (data.fallback && data.message) {
+          console.warn('Using fallback insights:', data.message);
+          setError(data.message || 'No insights available. Please ensure prediction data is loaded.');
+        }
+        
+        // Use fallback mock insights
+        if (compact) {
+          let compactList: string[] = [];
+          if (context === 'forecast') {
+            let fallbackForecast = forecastData;
+            if (!fallbackForecast) {
+              try {
+                fallbackForecast = await forecastEnergy({
+                  site_id: selectedSite?.id || null,
+                  forecast_type: 'consumption',
+                  forecast_horizon_hours: 24
+                });
+              } catch (err) {
+                console.error('Failed to load forecast for fallback:', err);
+              }
+            }
+            compactList = generateCompactInsights('forecast', fallbackForecast);
+          } else if (context === 'predictions') {
+            compactList = generateCompactInsights('predictions', null);
+          }
+          setInsights([{
+            title: 'Key Insights',
+            icon: <Lightbulb className="w-6 h-6" />,
+            color: 'text-blue-600 dark:text-blue-400',
+            insights: compactList
+          }]);
+        } else {
+          let fallbackForecast = forecastData;
+          if (!fallbackForecast && context === 'forecast') {
+            try {
+              fallbackForecast = await forecastEnergy({
+                site_id: selectedSite?.id || null,
+                forecast_type: 'consumption',
+                forecast_horizon_hours: 24
+              });
+            } catch (err) {
+              console.error('Failed to load forecast for fallback:', err);
+            }
+          }
+          setInsights(generateMockInsights(context, fallbackForecast));
+        }
+        setLastGenerated(new Date());
+        return;
       }
       
-      // Parse the insights from AI response
+      // Parse the insights from AI response (only if we have valid data)
       if (compact) {
         // For compact mode, extract insights as a flat list
-        const compactList = parseCompactInsightsFromAI(data.insights || data.response);
-        setInsights([{
-          title: 'Key Insights',
-          icon: <Lightbulb className="w-6 h-6" />,
-          color: 'text-blue-600 dark:text-blue-400',
-          insights: compactList
-        }]);
+        const insightsText = data.insights || data.response || '';
+        if (insightsText && typeof insightsText === 'string') {
+          const compactList = parseCompactInsightsFromAI(insightsText);
+          setInsights([{
+            title: 'Key Insights',
+            icon: <Lightbulb className="w-6 h-6" />,
+            color: 'text-blue-600 dark:text-blue-400',
+            insights: compactList
+          }]);
+        }
       } else {
-        const parsedInsights = parseInsightsFromAI(data.insights || data.response, context);
-        setInsights(parsedInsights);
+        const insightsText = data.insights || data.response || '';
+        if (insightsText && typeof insightsText === 'string') {
+          const parsedInsights = parseInsightsFromAI(insightsText, context);
+          setInsights(parsedInsights);
+        }
       }
       setLastGenerated(new Date());
       
       // Show a warning if using fallback
-      if (data.fallback) {
-        setError('Note: Using fallback insights. Configure GROQ_API_KEY in AI service for AI-powered insights.');
+      if (data.fallback && data.message) {
+        setError('Note: Using fallback insights. Configure OPENAI_API_KEY in AI service for AI-powered insights.');
       }
 
     } catch (err: any) {
@@ -201,6 +346,12 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
   const parseCompactInsightsFromAI = (aiResponse: string): string[] => {
     // Extract all insights as a flat list
     const insights: string[] = [];
+    
+    // Safety check: ensure aiResponse is a valid string
+    if (!aiResponse || typeof aiResponse !== 'string') {
+      return insights;
+    }
+    
     const lines = aiResponse.split('\n').filter(l => l.trim());
     
     lines.forEach(line => {
@@ -221,6 +372,11 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
 
   const parseInsightsFromAI = (aiResponse: string, contextType: string): InsightCategory[] => {
     const categories: InsightCategory[] = [];
+    
+    // Safety check: ensure aiResponse is a valid string
+    if (!aiResponse || typeof aiResponse !== 'string') {
+      return categories;
+    }
     
     // Split by ## headers (category headers)
     const sections = aiResponse.split(/##\s+/);

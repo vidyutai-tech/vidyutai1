@@ -46,7 +46,9 @@ const AIRecommendationsPage: React.FC = () => {
 
     try {
       // Prepare system data for AI analysis
+      // This is the main Actionable Insights page - include ALL dashboard data
       const systemData = {
+        context: 'dashboard',  // Explicitly set context to dashboard for comprehensive insights
         site: {
           name: selectedSite?.name || 'Unknown Site',
           id: selectedSite?.id || 'N/A'
@@ -74,7 +76,7 @@ const AIRecommendationsPage: React.FC = () => {
         } : null
       };
 
-      // Call Groq API via backend proxy to avoid CORS issues
+      // Call OpenAI API via backend proxy to avoid CORS issues
       const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
         ? 'http://localhost:5001/api/v1'
         : import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -110,7 +112,7 @@ const AIRecommendationsPage: React.FC = () => {
       
       // Show a warning if using fallback
       if (data.fallback) {
-        setError('Note: Using fallback insights. Configure GROQ_API_KEY in AI service for AI-powered insights.');
+        setError('Note: Using fallback insights. Configure OPENAI_API_KEY in AI service for AI-powered insights.');
       }
 
     } catch (err: any) {

@@ -568,16 +568,46 @@ const PredictionsPage: React.FC = () => {
               </div>
             </Card>
 
-            {/* Actionable Insights */}
-            <ActionableInsights 
-              context="predictions" 
-              predictionData={{
-                battery: batteryData,
-                solar: solarData,
-                loss: lossData
-              }}
-              compact={true}
-            />
+            {/* Actionable Insights - Isolated per prediction type with unique keys */}
+            {selectedType === 'battery' && batteryData && (
+              <ActionableInsights 
+                key="battery-insights"
+                context="predictions" 
+                predictionData={{
+                  battery: batteryData,
+                  solar: null,
+                  loss: null
+                }}
+                predictionSubType="battery"
+                compact={true}
+              />
+            )}
+            {selectedType === 'solar' && solarData && (
+              <ActionableInsights 
+                key="solar-insights"
+                context="predictions" 
+                predictionData={{
+                  battery: null,
+                  solar: solarData,
+                  loss: null
+                }}
+                predictionSubType="solar"
+                compact={true}
+              />
+            )}
+            {selectedType === 'loss' && lossData && (
+              <ActionableInsights 
+                key="loss-insights"
+                context="predictions" 
+                predictionData={{
+                  battery: null,
+                  solar: null,
+                  loss: lossData
+                }}
+                predictionSubType="loss"
+                compact={true}
+              />
+            )}
           </>
         )}
       </div>
