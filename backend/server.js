@@ -50,16 +50,37 @@ const io = socketIo(server, {
   cors: {
     origin: [
       process.env.FRONTEND_URL || "http://localhost:5173",
+      process.env.CORS_ORIGIN || "http://localhost:5173",
       "http://localhost:5173",
       "http://localhost:3000"
-    ],
+    ].filter(Boolean), // Remove undefined values
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+// CORS configuration - allow frontend URL from environment
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      process.env.CORS_ORIGIN,
+      "http://localhost:5173",
+      "http://localhost:3000"
+    ].filter(Boolean);
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
