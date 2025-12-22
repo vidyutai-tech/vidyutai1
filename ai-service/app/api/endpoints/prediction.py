@@ -9,8 +9,22 @@ from pydantic import BaseModel, Field, field_validator
 import joblib
 import pandas as pd
 import numpy as np
-import tensorflow as tf
-import xgboost as xgb
+
+# Optional imports - try to import tensorflow, but don't fail if it's not available
+try:
+    import tensorflow as tf
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+    tf = None
+
+try:
+    import xgboost as xgb
+    XGBOOST_AVAILABLE = True
+except ImportError:
+    XGBOOST_AVAILABLE = False
+    xgb = None
+
 from pathlib import Path
 
 from app.models import pydantic_models as models
@@ -77,15 +91,21 @@ try:
     ml_models["vibration_label_encoder"] = joblib.load(models_dir / "vibration_label_encoder.joblib")
     ml_models["vibration_features"] = joblib.load(models_dir / "vibration_model_features.json")
 
-    # 2. Load Solar Forecast Model (LSTM)
-    ml_models["solar_model"] = tf.keras.models.load_model(models_dir / "lstm_solar_forecast_model.keras")
-    ml_models["solar_scaler"] = joblib.load(models_dir / "lstm_solar_scaler.joblib")
+    # 2. Load Solar Forecast Model (LSTM) - only if tensorflow is available
+    if TENSORFLOW_AVAILABLE:
+        ml_models["solar_model"] = tf.keras.models.load_model(models_dir / "lstm_solar_forecast_model.keras")
+        ml_models["solar_scaler"] = joblib.load(models_dir / "lstm_solar_scaler.joblib")
+    else:
+        print("⚠️  TensorFlow not available. Solar forecast model will not be loaded.")
     
-    # 3. Load Motor Fault Diagnosis Model (XGBoost)
-    ml_models["motor_fault_model"] = xgb.XGBClassifier()
-    ml_models["motor_fault_model"].load_model(models_dir / "motor_fault_model.json")
-    ml_models["motor_fault_scaler"] = joblib.load(models_dir / "scaler.joblib")
-    ml_models["motor_fault_label_encoder"] = joblib.load(models_dir / "label_encoder.joblib")
+    # 3. Load Motor Fault Diagnosis Model (XGBoost) - only if xgboost is available
+    if XGBOOST_AVAILABLE:
+        ml_models["motor_fault_model"] = xgb.XGBClassifier()
+        ml_models["motor_fault_model"].load_model(models_dir / "motor_fault_model.json")
+        ml_models["motor_fault_scaler"] = joblib.load(models_dir / "scaler.joblib")
+        ml_models["motor_fault_label_encoder"] = joblib.load(models_dir / "label_encoder.joblib")
+    else:
+        print("⚠️  XGBoost not available. Motor fault model will not be loaded.")
     
     print("✅ All ML models loaded successfully.")
 except FileNotFoundError as e:
@@ -153,8 +173,11 @@ async def predict_vibration(input_data: VibrationInput, current_user: models.Use
 
 @router.post("/predict/solar", response_model=dict)
 async def predict_solar(input_data: SolarInput, current_user: models.User = Depends(get_current_user)):
-    if not ml_models:
-        raise HTTPException(status_code=503, detail="ML models are not available.")
+    if not ml_models or "solar_model" not in ml_models:
+        raise HTTPException(
+            status_code=503, 
+            detail="Solar forecast model is not available. TensorFlow is required for this endpoint."
+        )
 
     input_sequence = np.array(input_data.sequence)
     scaled_sequence = ml_models["solar_scaler"].transform(input_sequence)
@@ -179,8 +202,11 @@ async def predict_solar(input_data: SolarInput, current_user: models.User = Depe
 
 @router.post("/predict/motor-fault", response_model=dict)
 async def predict_motor_fault(input_data: MotorFaultInput, current_user: models.User = Depends(get_current_user)):
-    if not ml_models:
-        raise HTTPException(status_code=503, detail="ML models are not available.")
+    if not ml_models or "motor_fault_model" not in ml_models:
+        raise HTTPException(
+            status_code=503, 
+            detail="Motor fault model is not available. XGBoost is required for this endpoint."
+        )
     
     # Since feature names aren't provided, we create a generic DataFrame
     input_df = pd.DataFrame([input_data.features])
