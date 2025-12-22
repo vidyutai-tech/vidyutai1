@@ -61,3 +61,9 @@ async def websocket_endpoint(websocket: WebSocket, site_id: str):
 @app.get("/", tags=["Root"])
 async def read_root():
     return {"message": "Welcome to the EMS Backend API"}
+
+# Health check endpoint for Render deployment
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Health check endpoint for Render deployment monitoring"""
+    return {"status": "healthy", "service": "VidyutAI AI Service"}
