@@ -4,6 +4,23 @@ const axios = require('axios');
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
+// Simple in-memory cache to prevent duplicate requests (reduces 429 errors)
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCached(key) {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
 // GET anomaly predictions
 router.get('/anomalies', async (req, res) => {
   const { siteId } = req.query;
@@ -200,6 +217,15 @@ router.get('/optimization', async (req, res) => {
 
 // GET battery RUL dashboard
 router.get('/battery-rul/dashboard', async (req, res) => {
+  const cacheKey = 'battery-rul-dashboard';
+  
+  // Check cache first
+  const cached = getCached(cacheKey);
+  if (cached) {
+    console.log('Returning cached battery RUL data');
+    return res.json(cached);
+  }
+
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/battery-rul/dashboard`, {
       timeout: 10000,
@@ -207,9 +233,22 @@ router.get('/battery-rul/dashboard', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
+    
+    // Cache successful response
+    setCache(cacheKey, response.data);
     return res.json(response.data);
   } catch (error) {
     console.error('Error fetching battery RUL dashboard:', error.message);
+    
+    // If 429 error, return cached data if available
+    if (error.response?.status === 429) {
+      const staleCache = cache.get(cacheKey);
+      if (staleCache) {
+        console.log('Returning stale cached data due to rate limit');
+        return res.json(staleCache.data);
+      }
+    }
+    
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch Battery RUL dashboard',
@@ -220,6 +259,15 @@ router.get('/battery-rul/dashboard', async (req, res) => {
 
 // GET solar degradation dashboard
 router.get('/solar-degradation/dashboard', async (req, res) => {
+  const cacheKey = 'solar-degradation-dashboard';
+  
+  // Check cache first to avoid duplicate requests
+  const cached = getCached(cacheKey);
+  if (cached) {
+    console.log('Returning cached solar degradation data');
+    return res.json(cached);
+  }
+
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/solar-degradation/dashboard`, {
       timeout: 10000,
@@ -227,9 +275,22 @@ router.get('/solar-degradation/dashboard', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
+    
+    // Cache successful response
+    setCache(cacheKey, response.data);
     return res.json(response.data);
   } catch (error) {
     console.error('Error fetching solar degradation dashboard:', error.message);
+    
+    // If 429 error, return cached data if available (even if expired)
+    if (error.response?.status === 429) {
+      const staleCache = cache.get(cacheKey);
+      if (staleCache) {
+        console.log('Returning stale cached data due to rate limit');
+        return res.json(staleCache.data);
+      }
+    }
+    
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch Solar Degradation dashboard',
@@ -240,6 +301,15 @@ router.get('/solar-degradation/dashboard', async (req, res) => {
 
 // GET energy loss dashboard
 router.get('/energy-loss/dashboard', async (req, res) => {
+  const cacheKey = 'energy-loss-dashboard';
+  
+  // Check cache first
+  const cached = getCached(cacheKey);
+  if (cached) {
+    console.log('Returning cached energy loss data');
+    return res.json(cached);
+  }
+
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/energy-loss/dashboard`, {
       timeout: 10000,
@@ -247,9 +317,22 @@ router.get('/energy-loss/dashboard', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
+    
+    // Cache successful response
+    setCache(cacheKey, response.data);
     return res.json(response.data);
   } catch (error) {
     console.error('Error fetching energy loss dashboard:', error.message);
+    
+    // If 429 error, return cached data if available
+    if (error.response?.status === 429) {
+      const staleCache = cache.get(cacheKey);
+      if (staleCache) {
+        console.log('Returning stale cached data due to rate limit');
+        return res.json(staleCache.data);
+      }
+    }
+    
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch Energy Loss dashboard',
@@ -261,6 +344,16 @@ router.get('/energy-loss/dashboard', async (req, res) => {
 // Proxy routes for forecast endpoints
 // POST /api/v1/predictions/forecast/energy
 router.post('/forecast/energy', async (req, res) => {
+  // Create cache key from request body to cache similar requests
+  const cacheKey = `forecast-energy-${JSON.stringify(req.body)}`;
+  
+  // Check cache first (only for identical requests)
+  const cached = getCached(cacheKey);
+  if (cached) {
+    console.log('Returning cached forecast data');
+    return res.json(cached);
+  }
+
   try {
     const response = await axios.post(`${AI_SERVICE_URL}/api/v1/forecast/energy`, req.body, {
       timeout: 10000,
@@ -268,9 +361,22 @@ router.post('/forecast/energy', async (req, res) => {
         'Content-Type': 'application/json'
       }
     });
+    
+    // Cache successful response
+    setCache(cacheKey, response.data);
     return res.json(response.data);
   } catch (error) {
     console.error('Error fetching energy forecast:', error.message);
+    
+    // If 429 error, return cached data if available
+    if (error.response?.status === 429) {
+      const staleCache = cache.get(cacheKey);
+      if (staleCache) {
+        console.log('Returning stale cached data due to rate limit');
+        return res.json(staleCache.data);
+      }
+    }
+    
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch energy forecast',

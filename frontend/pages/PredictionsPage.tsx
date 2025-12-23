@@ -570,11 +570,11 @@ const PredictionsPage: React.FC = () => {
 
             {/* Actionable Insights - Isolated per prediction type with unique keys */}
             {selectedType === 'battery' && batteryData && (
-              <ActionableInsights 
+            <ActionableInsights 
                 key="battery-insights"
-                context="predictions" 
-                predictionData={{
-                  battery: batteryData,
+              context="predictions" 
+              predictionData={{
+                battery: batteryData,
                   solar: null,
                   loss: null
                 }}
@@ -588,7 +588,7 @@ const PredictionsPage: React.FC = () => {
                 context="predictions" 
                 predictionData={{
                   battery: null,
-                  solar: solarData,
+                solar: solarData,
                   loss: null
                 }}
                 predictionSubType="solar"
@@ -602,11 +602,11 @@ const PredictionsPage: React.FC = () => {
                 predictionData={{
                   battery: null,
                   solar: null,
-                  loss: lossData
-                }}
+                loss: lossData
+              }}
                 predictionSubType="loss"
-                compact={true}
-              />
+              compact={true}
+            />
             )}
           </>
         )}

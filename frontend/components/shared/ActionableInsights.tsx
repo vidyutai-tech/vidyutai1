@@ -211,8 +211,8 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
       // Check if response has valid insights data
       if (!data.success || !data.insights || (typeof data.insights === 'string' && !data.insights.trim())) {
         // If no valid insights, use fallback
-        if (data.fallback && data.message) {
-          console.warn('Using fallback insights:', data.message);
+      if (data.fallback && data.message) {
+        console.warn('Using fallback insights:', data.message);
           setError(data.message || 'No insights available. Please ensure prediction data is loaded.');
         }
         
@@ -267,18 +267,18 @@ const ActionableInsights: React.FC<ActionableInsightsProps> = ({
         const insightsText = data.insights || data.response || '';
         if (insightsText && typeof insightsText === 'string') {
           const compactList = parseCompactInsightsFromAI(insightsText);
-          setInsights([{
-            title: 'Key Insights',
-            icon: <Lightbulb className="w-6 h-6" />,
-            color: 'text-blue-600 dark:text-blue-400',
-            insights: compactList
-          }]);
+        setInsights([{
+          title: 'Key Insights',
+          icon: <Lightbulb className="w-6 h-6" />,
+          color: 'text-blue-600 dark:text-blue-400',
+          insights: compactList
+        }]);
         }
       } else {
         const insightsText = data.insights || data.response || '';
         if (insightsText && typeof insightsText === 'string') {
           const parsedInsights = parseInsightsFromAI(insightsText, context);
-          setInsights(parsedInsights);
+        setInsights(parsedInsights);
         }
       }
       setLastGenerated(new Date());
