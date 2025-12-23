@@ -12,14 +12,14 @@ import numpy as np
 
 # Optional imports - try to import tensorflow, but don't fail if it's not available
 try:
-    import tensorflow as tf
+import tensorflow as tf
     TENSORFLOW_AVAILABLE = True
 except ImportError:
     TENSORFLOW_AVAILABLE = False
     tf = None
 
 try:
-    import xgboost as xgb
+import xgboost as xgb
     XGBOOST_AVAILABLE = True
 except ImportError:
     XGBOOST_AVAILABLE = False
@@ -93,17 +93,17 @@ try:
 
     # 2. Load Solar Forecast Model (LSTM) - only if tensorflow is available
     if TENSORFLOW_AVAILABLE:
-        ml_models["solar_model"] = tf.keras.models.load_model(models_dir / "lstm_solar_forecast_model.keras")
-        ml_models["solar_scaler"] = joblib.load(models_dir / "lstm_solar_scaler.joblib")
+    ml_models["solar_model"] = tf.keras.models.load_model(models_dir / "lstm_solar_forecast_model.keras")
+    ml_models["solar_scaler"] = joblib.load(models_dir / "lstm_solar_scaler.joblib")
     else:
         print("⚠️  TensorFlow not available. Solar forecast model will not be loaded.")
     
     # 3. Load Motor Fault Diagnosis Model (XGBoost) - only if xgboost is available
     if XGBOOST_AVAILABLE:
-        ml_models["motor_fault_model"] = xgb.XGBClassifier()
-        ml_models["motor_fault_model"].load_model(models_dir / "motor_fault_model.json")
-        ml_models["motor_fault_scaler"] = joblib.load(models_dir / "scaler.joblib")
-        ml_models["motor_fault_label_encoder"] = joblib.load(models_dir / "label_encoder.joblib")
+    ml_models["motor_fault_model"] = xgb.XGBClassifier()
+    ml_models["motor_fault_model"].load_model(models_dir / "motor_fault_model.json")
+    ml_models["motor_fault_scaler"] = joblib.load(models_dir / "scaler.joblib")
+    ml_models["motor_fault_label_encoder"] = joblib.load(models_dir / "label_encoder.joblib")
     else:
         print("⚠️  XGBoost not available. Motor fault model will not be loaded.")
     
