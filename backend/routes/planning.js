@@ -32,25 +32,43 @@ router.post('/technical-sizing', async (req, res) => {
       });
     }
 
-    // Peak to Average ratio based on use case
-    const peakToAvgRatio = {
-      residential: 2.5,  // High peak during evening
-      commercial: 1.8,   // Moderate peak during business hours
-      industrial: 1.3,   // More consistent load
-    }[use_case] || 1.8;
-
-    // Calculate system sizing
+    // Calculate system sizing based on daily consumption
+    // Following standard solar-battery sizing methodology
     const dailyConsumption = parseFloat(total_energy_consumption_kwh);
+    
+    // Average power requirement
     const averagePower = dailyConsumption / 24; // kW
+    
+    // Peak power estimation (considering load diversity)
+    // Residential: higher peak-to-average ratio (evening peak)
+    // Commercial: moderate peak during business hours
+    // Industrial: more consistent load
+    const peakToAvgRatio = {
+      residential: 2.5,
+      commercial: 1.8,
+      industrial: 1.3,
+    }[use_case] || 1.8;
     const peakPower = averagePower * peakToAvgRatio; // kW
 
-    // Solar sizing: 1.5x peak power for adequate generation
-    const solarCapacity = peakPower * 1.5;
+    // Solar sizing: Based on daily energy requirement and peak sun hours
+    // Formula: Solar Capacity (kW) = Daily Energy (kWh) / (Peak Sun Hours × System Efficiency)
+    // Assuming 5 peak sun hours per day and 85% system efficiency (inverter + wiring losses)
+    const peakSunHours = 5;
+    const systemEfficiency = 0.85;
+    const solarCapacity = dailyConsumption / (peakSunHours * systemEfficiency);
 
-    // Battery sizing: 5 hours of average load (for night/backup)
-    const batteryCapacity = averagePower * 5;
+    // Battery sizing: Based on backup requirements
+    // For residential: typically 1 day backup (24 hours)
+    // For commercial: 8-12 hours backup
+    // For industrial: 4-8 hours backup
+    const backupHours = {
+      residential: 24,
+      commercial: 12,
+      industrial: 8,
+    }[use_case] || 12;
+    const batteryCapacity = averagePower * backupHours;
 
-    // Inverter sizing: 1.25x peak power (safety margin)
+    // Inverter sizing: Peak load + 25% safety margin
     const inverterCapacity = peakPower * 1.25;
 
     // Grid connection: Same as peak power
@@ -113,16 +131,31 @@ router.post('/technical-sizing', async (req, res) => {
     const monthlySavings = monthlyGridCost - monthlyCost - monthlyOM;
     const annualSavings = monthlySavings * 12;
 
-    // Payback period
-    const paybackPeriodYears = totalCapex / annualSavings;
+    // Payback period (ensure it's a valid number)
+    const paybackPeriodYears = annualSavings > 0 ? totalCapex / annualSavings : 0;
 
     // Carbon emissions
-    const gridEmissionFactor = 0.82; // kg CO2 per kWh
-    const solarEmissionFactor = 0.05; // kg CO2 per kWh (lifecycle)
+    // More realistic calculation: Only solar-generated energy offsets grid emissions
+    const gridEmissionFactor = 0.82; // kg CO2 per kWh (Indian grid average)
+    const solarEmissionFactor = 0.05; // kg CO2 per kWh (lifecycle - manufacturing + installation)
     const annualConsumption = dailyConsumption * 365;
+    
+    // Calculate actual solar generation (considering peak sun hours and system efficiency)
+    // Reuse peakSunHours and systemEfficiency from above
+    const annualSolarGeneration = solarCapacity * peakSunHours * 365 * systemEfficiency;
+    
+    // Grid emissions if all energy came from grid
     const annualGridEmissions = annualConsumption * gridEmissionFactor;
-    const annualSolarEmissions = annualConsumption * solarEmissionFactor;
-    const annualCO2Reduction = annualGridEmissions - annualSolarEmissions;
+    
+    // Actual emissions: solar-generated energy has lower emissions, rest from grid
+    const solarEnergyUsed = Math.min(annualSolarGeneration, annualConsumption);
+    const gridEnergyUsed = Math.max(0, annualConsumption - solarEnergyUsed);
+    const solarEmissions = solarEnergyUsed * solarEmissionFactor;
+    const gridEmissions = gridEnergyUsed * gridEmissionFactor;
+    const totalEmissions = solarEmissions + gridEmissions;
+    
+    // CO2 reduction
+    const annualCO2Reduction = annualGridEmissions - totalEmissions;
     const carbonOffsetPercent = (annualCO2Reduction / annualGridEmissions) * 100;
     const lifetimeCO2Reduction = (annualCO2Reduction * 25) / 1000; // tonnes over 25 years
 
@@ -214,7 +247,15 @@ router.post('/technical-sizing', async (req, res) => {
         }
 
         // Support both primary_goals (array) and primary_goal (single) for backward compatibility
-        const goals = primary_goals || (primary_goal ? [primary_goal] : ['cost_optimization']);
+        // Validate primary_goals - must be one of: savings, self_sustainability, reliability, carbon_reduction
+        const validGoals = ['savings', 'self_sustainability', 'reliability', 'carbon_reduction'];
+        let goals = primary_goals || (primary_goal ? [primary_goal] : ['savings']);
+        
+        // Filter out invalid goals and default to 'savings' if none are valid
+        goals = goals.filter(g => validGoals.includes(g));
+        if (goals.length === 0) {
+          goals = ['savings']; // Default to savings if no valid goals provided
+        }
 
         const recommendation = {
           id: uuidv4(),

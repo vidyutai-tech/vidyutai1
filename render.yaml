@@ -35,12 +35,12 @@ services:
     region: oregon
     plan: free
     buildCommand: cd ai-service && python -m pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: cd ai-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: cd ai-service && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PORT
         value: 10000  # Render free tier uses port from PORT env var or 10000
       - key: PYTHON_VERSION
-        value: "3.11.11"  # Pin to Python 3.11 for numpy==1.24.3 compatibility
+        value: "3.11.11"  # Pin to Python 3.11 for compatibility (Python 3.14 not fully supported yet)
       # Add these in Render dashboard after deployment:
       # - OPENAI_API_KEY (required for AI insights)
       # - SECRET_KEY (generate a random secret)

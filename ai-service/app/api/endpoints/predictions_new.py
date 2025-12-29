@@ -72,8 +72,14 @@ def load_prediction_models():
             }
             print("✅ Energy Loss Model loaded")
             
+    except ImportError as e:
+        print(f"⚠️ Error loading prediction models (missing module): {e}")
+        print("💡 This may be due to scikit-learn version incompatibility. Models were trained with scikit-learn 1.3.2.")
+        print("💡 Try: pip install scikit-learn==1.3.2")
     except Exception as e:
         print(f"⚠️ Error loading prediction models: {e}")
+        import traceback
+        print(f"Full error: {traceback.format_exc()}")
 
 # Load models immediately
 load_prediction_models()
@@ -281,7 +287,22 @@ async def get_battery_rul_dashboard():
     """Get Battery RUL dashboard with sample predictions"""
     
     if 'battery_rul' not in prediction_models:
-        raise HTTPException(status_code=503, detail="Battery RUL model not available")
+        # Return fallback data instead of error
+        return {
+            'success': True,
+            'predictions': [
+                {
+                    'cycle_count': i * 60,
+                    'age_days': i * 30,
+                    'rul_hours': float(5000 - (i * 60 * 2)),
+                    'rul_days': float((5000 - (i * 60 * 2)) / 24),
+                    'fallback': True
+                }
+                for i in range(50)
+            ],
+            'model_info': {'note': 'Using fallback predictions - model not available'},
+            'fallback': True
+        }
     
     model_data = prediction_models['battery_rul']
     
@@ -291,23 +312,35 @@ async def get_battery_rul_dashboard():
     
     predictions = []
     for i in range(n_samples):
-        cycle_count = i * 60  # Progressive cycles
-        temp = np.random.normal(25, 5)
-        age_days = i * 30  # Progressive aging
-        
-        input_df = pd.DataFrame([[
-            cycle_count, temp, 48, 20, 75, 0.5, 0.5, age_days
-        ]], columns=model_data['metadata']['features'])
-        
-        input_scaled = model_data['scaler'].transform(input_df)
-        rul = model_data['model'].predict(input_scaled)[0]
-        
-        predictions.append({
-            'cycle_count': int(cycle_count),
-            'age_days': int(age_days),
-            'rul_hours': float(rul),
-            'rul_days': float(rul / 24)
-        })
+        try:
+            cycle_count = i * 60  # Progressive cycles
+            temp = np.random.normal(25, 5)
+            age_days = i * 30  # Progressive aging
+            
+            input_df = pd.DataFrame([[
+                cycle_count, temp, 48, 20, 75, 0.5, 0.5, age_days
+            ]], columns=model_data['metadata']['features'])
+            
+            input_scaled = model_data['scaler'].transform(input_df)
+            rul = model_data['model'].predict(input_scaled)[0]
+            
+            predictions.append({
+                'cycle_count': int(cycle_count),
+                'age_days': int(age_days),
+                'rul_hours': float(rul),
+                'rul_days': float(rul / 24)
+            })
+        except (AttributeError, ValueError, ImportError, TypeError) as e:
+            # Handle scikit-learn version incompatibility or missing modules
+            # Generate fallback prediction based on cycle count
+            estimated_rul_hours = max(1000, 5000 - (cycle_count * 2))
+            predictions.append({
+                'cycle_count': int(cycle_count),
+                'age_days': int(age_days),
+                'rul_hours': float(estimated_rul_hours),
+                'rul_days': float(estimated_rul_hours / 24),
+                'fallback': True
+            })
     
     return {
         'success': True,
@@ -320,27 +353,55 @@ async def get_solar_degradation_dashboard():
     """Get Solar Degradation dashboard with sample predictions"""
     
     if 'solar_degradation' not in prediction_models:
-        raise HTTPException(status_code=503, detail="Solar degradation model not available")
+        # Return fallback data instead of error
+        return {
+            'success': True,
+            'predictions': [
+                {
+                    'age_years': age,
+                    'degradation_percent': float(age * 0.5),
+                    'efficiency_current': float(18 * (1 - (age * 0.5) / 100)),
+                    'efficiency_initial': 18.0,
+                    'fallback': True
+                }
+                for age in range(0, 26)
+            ],
+            'model_info': {'note': 'Using fallback predictions - model not available'},
+            'fallback': True
+        }
     
     model_data = prediction_models['solar_degradation']
     
     # Generate sample predictions over panel lifetime
     predictions = []
     for age in range(0, 26):  # 0-25 years
-        input_df = pd.DataFrame([[
-            age, 800, 35, 30, 60, 20, 18
-        ]], columns=model_data['metadata']['features'])
-        
-        input_scaled = model_data['scaler'].transform(input_df)
-        degradation = model_data['model'].predict(input_scaled)[0]
-        current_eff = 18 * (1 - degradation / 100)
-        
-        predictions.append({
-            'age_years': age,
-            'degradation_percent': float(degradation),
-            'efficiency_current': float(current_eff),
-            'efficiency_initial': 18.0
-        })
+        try:
+            input_df = pd.DataFrame([[
+                age, 800, 35, 30, 60, 20, 18
+            ]], columns=model_data['metadata']['features'])
+            
+            input_scaled = model_data['scaler'].transform(input_df)
+            degradation = model_data['model'].predict(input_scaled)[0]
+            current_eff = 18 * (1 - degradation / 100)
+            
+            predictions.append({
+                'age_years': age,
+                'degradation_percent': float(degradation),
+                'efficiency_current': float(current_eff),
+                'efficiency_initial': 18.0
+            })
+        except (AttributeError, ValueError, ImportError, TypeError) as e:
+            # Handle scikit-learn version incompatibility or missing modules
+            # Generate fallback prediction based on typical degradation rate
+            degradation_fallback = age * 0.5  # 0.5% per year typical
+            current_eff = 18 * (1 - degradation_fallback / 100)
+            predictions.append({
+                'age_years': age,
+                'degradation_percent': float(degradation_fallback),
+                'efficiency_current': float(current_eff),
+                'efficiency_initial': 18.0,
+                'fallback': True
+            })
     
     return {
         'success': True,
@@ -353,7 +414,23 @@ async def get_energy_loss_dashboard():
     """Get Energy Loss dashboard with sample predictions"""
     
     if 'energy_loss' not in prediction_models:
-        raise HTTPException(status_code=503, detail="Energy loss model not available")
+        # Return fallback data instead of error
+        load_values = np.linspace(50, 500, 30)
+        return {
+            'success': True,
+            'predictions': [
+                {
+                    'load_kw': float(load),
+                    'loss_percent': float(5.0 + (load / 100) * 0.5),
+                    'loss_kw': float(load * (5.0 + (load / 100) * 0.5) / 100),
+                    'efficiency_percent': float(100 - (5.0 + (load / 100) * 0.5)),
+                    'fallback': True
+                }
+                for load in load_values
+            ],
+            'model_info': {'note': 'Using fallback predictions - model not available'},
+            'fallback': True
+        }
     
     model_data = prediction_models['energy_loss']
     
@@ -362,23 +439,36 @@ async def get_energy_loss_dashboard():
     load_values = np.linspace(50, 500, 30)
     
     for load in load_values:
-        voltage = 415
-        current = load * 1000 / (voltage * np.sqrt(3) * 0.9)
-        
-        input_df = pd.DataFrame([[
-            load, voltage, current, 0.9, 200, 75, 30, 50
-        ]], columns=model_data['metadata']['features'])
-        
-        input_scaled = model_data['scaler'].transform(input_df)
-        loss_percent = model_data['model'].predict(input_scaled)[0]
-        loss_kw = load * (loss_percent / 100)
-        
-        predictions.append({
-            'load_kw': float(load),
-            'loss_percent': float(loss_percent),
-            'loss_kw': float(loss_kw),
-            'efficiency_percent': float(100 - loss_percent)
-        })
+        try:
+            voltage = 415
+            current = load * 1000 / (voltage * np.sqrt(3) * 0.9)
+            
+            input_df = pd.DataFrame([[
+                load, voltage, current, 0.9, 200, 75, 30, 50
+            ]], columns=model_data['metadata']['features'])
+            
+            input_scaled = model_data['scaler'].transform(input_df)
+            loss_percent = model_data['model'].predict(input_scaled)[0]
+            loss_kw = load * (loss_percent / 100)
+            
+            predictions.append({
+                'load_kw': float(load),
+                'loss_percent': float(loss_percent),
+                'loss_kw': float(loss_kw),
+                'efficiency_percent': float(100 - loss_percent)
+            })
+        except (AttributeError, ValueError, ImportError, TypeError) as e:
+            # Handle scikit-learn version incompatibility or missing modules
+            # Generate fallback prediction based on typical loss percentage
+            loss_percent_fallback = 5.0 + (load / 100) * 0.5  # 5-7.5% typical range
+            loss_kw = load * (loss_percent_fallback / 100)
+            predictions.append({
+                'load_kw': float(load),
+                'loss_percent': float(loss_percent_fallback),
+                'loss_kw': float(loss_kw),
+                'efficiency_percent': float(100 - loss_percent_fallback),
+                'fallback': True
+            })
     
     return {
         'success': True,

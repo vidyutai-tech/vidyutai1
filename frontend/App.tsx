@@ -140,7 +140,19 @@ const App: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && selectedSite) {
       const token = localStorage.getItem('jwt');
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001';
+      
+      // Get Socket.IO URL - use same logic as API base URL
+      // For localhost: use explicit localhost URL
+      // For production: use environment variable or derive from API base URL
+      let socketUrl: string;
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        socketUrl = 'http://localhost:5001';
+      } else {
+        // In production, use VITE_SOCKET_URL or derive from API base URL
+        socketUrl = import.meta.env.VITE_SOCKET_URL || 
+                   (import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || window.location.origin);
+      }
+      
       const newSocket = io(socketUrl, {
         auth: { token },
         query: { siteId: selectedSite.id },

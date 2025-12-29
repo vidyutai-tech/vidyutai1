@@ -1,16 +1,16 @@
-const { getDatabase } = require('../database/db');
+const dbAdapter = require('../database/db-adapter');
 const timescale = require('../database/timescale-client');
 const redis = require('../database/redis-client');
 const mqtt = require('./mqtt-client');
 
 /**
  * Real-time Data Simulator
- * Continuously generates and writes realistic timeseries data to SQLite
+ * Continuously generates and writes realistic timeseries data
+ * Works with both SQLite and PostgreSQL
  * Perfect for demo purposes - mimics real IoT sensor data
  */
 class RealtimeSimulator {
   constructor(intervalMs = 600000) { // Default to 10 minutes (600000ms)
-    this.db = getDatabase();
     this.intervalMs = intervalMs;
     this.intervalId = null;
     this.isRunning = false;
@@ -29,12 +29,6 @@ class RealtimeSimulator {
         frequency: { base: 50, variance: 0.3, trend: 0 }
       }
     };
-    
-    // Prepare insert statement for performance
-    this.insertStmt = this.db.prepare(`
-      INSERT INTO timeseries_data (site_id, asset_id, timestamp, metric_type, metric_value, unit)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
   }
 
   /**
@@ -66,49 +60,57 @@ class RealtimeSimulator {
     const now = new Date();
     const timeMultipliers = this.getTimeOfDayMultiplier();
     
-    // Get all active sites
-    const sites = this.db.prepare('SELECT id FROM sites WHERE status = ?').all('online');
+    // Get all active sites using database adapter
+    const sites = await dbAdapter.all('SELECT id FROM sites WHERE status = ?', ['online']);
     
     if (sites.length === 0) {
       console.warn('⚠️  No active sites found. Add sites to database first.');
       return;
     }
 
-    const insertMany = this.db.transaction(() => {
-      sites.forEach(site => {
-        const siteId = site.id;
-        const pattern = this.patterns[siteId] || this.patterns['site-1'];
-        
-        // Generate metrics
-        const metrics = [
-          { type: 'pv_generation', value: this.generateValue(pattern.pv_generation, timeMultipliers.solar), unit: 'kW' },
-          { type: 'net_load', value: this.generateValue(pattern.net_load, timeMultipliers.load), unit: 'kW' },
-          { type: 'battery_discharge', value: this.generateValue(pattern.battery_discharge), unit: 'kW' },
-          { type: 'grid_draw', value: this.generateValue(pattern.grid_draw), unit: 'kW' },
-          { type: 'soc', value: Math.min(100, Math.max(0, this.generateValue(pattern.soc))), unit: '%' },
-          { type: 'voltage', value: this.generateValue(pattern.voltage), unit: 'V' },
-          { type: 'current', value: this.generateValue(pattern.current), unit: 'A' },
-          { type: 'frequency', value: this.generateValue(pattern.frequency), unit: 'Hz' },
-          { type: 'thd', value: Math.max(0, Math.min(15, 2.5 + Math.random() * 3)), unit: '%' },
-          { type: 'power_factor', value: Math.max(0.75, Math.min(1.0, 0.92 + Math.random() * 0.06)), unit: '' },
-          { type: 'voltage_unbalance', value: Math.max(0, Math.min(5, 0.5 + Math.random() * 2)), unit: '%' }
-        ];
+    // Insert metrics for all sites
+    for (const site of sites) {
+      const siteId = site.id;
+      const pattern = this.patterns[siteId] || this.patterns['site-1'];
+      
+      // Generate metrics
+      const metrics = [
+        { type: 'pv_generation', value: this.generateValue(pattern.pv_generation, timeMultipliers.solar), unit: 'kW' },
+        { type: 'net_load', value: this.generateValue(pattern.net_load, timeMultipliers.load), unit: 'kW' },
+        { type: 'battery_discharge', value: this.generateValue(pattern.battery_discharge), unit: 'kW' },
+        { type: 'grid_draw', value: this.generateValue(pattern.grid_draw), unit: 'kW' },
+        { type: 'soc', value: Math.min(100, Math.max(0, this.generateValue(pattern.soc))), unit: '%' },
+        { type: 'voltage', value: this.generateValue(pattern.voltage), unit: 'V' },
+        { type: 'current', value: this.generateValue(pattern.current), unit: 'A' },
+        { type: 'frequency', value: this.generateValue(pattern.frequency), unit: 'Hz' },
+        { type: 'thd', value: Math.max(0, Math.min(15, 2.5 + Math.random() * 3)), unit: '%' },
+        { type: 'power_factor', value: Math.max(0.75, Math.min(1.0, 0.92 + Math.random() * 0.06)), unit: '' },
+        { type: 'voltage_unbalance', value: Math.max(0, Math.min(5, 0.5 + Math.random() * 2)), unit: '%' }
+      ];
 
-        // Insert each metric
-        metrics.forEach(metric => {
-          this.insertStmt.run(
-            siteId,
-            null, // asset_id
-            now.toISOString(),
-            metric.type,
-            parseFloat(metric.value.toFixed(2)),
-            metric.unit
+      // Insert each metric using database adapter
+      for (const metric of metrics) {
+        try {
+          await dbAdapter.run(
+            `INSERT INTO timeseries_data (site_id, asset_id, timestamp, metric_type, metric_value, unit)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+              siteId,
+              null, // asset_id
+              now.toISOString(),
+              metric.type,
+              parseFloat(metric.value.toFixed(2)),
+              metric.unit
+            ]
           );
-        });
-      });
-    });
-
-    insertMany();
+        } catch (error) {
+          // Ignore errors if table doesn't exist (timeseries_data might not be set up)
+          if (!error.message.includes('no such table') && !error.message.includes('does not exist')) {
+            console.error(`Error inserting metric ${metric.type} for site ${siteId}:`, error.message);
+          }
+        }
+      }
+    }
     
     // Write to new infrastructure if enabled (parallel operation)
     await this.writeToNewInfrastructure(sites, now, timeMultipliers);
@@ -181,7 +183,7 @@ class RealtimeSimulator {
   /**
    * Check power quality metrics and generate alerts if issues detected
    */
-  checkPowerQualityAndAlert(siteId, metricsArray) {
+  async checkPowerQualityAndAlert(siteId, metricsArray) {
     // Extract power quality metrics
     const voltageMetric = metricsArray.find(m => m.type === 'voltage');
     const frequencyMetric = metricsArray.find(m => m.type === 'frequency');
@@ -202,47 +204,47 @@ class RealtimeSimulator {
     // Voltage quality check
     const voltageDeviation = Math.abs(voltage - 415) / 415 * 100;
     if (voltageDeviation > 7) {
-      this.createPowerQualityAlert(siteId, 'critical', 'Voltage Out of Range', 
+      await this.createPowerQualityAlert(siteId, 'critical', 'Voltage Out of Range', 
         `Voltage deviation detected: ${voltage.toFixed(1)}V (${voltageDeviation.toFixed(1)}% deviation from nominal 415V). This may cause equipment damage.`);
     } else if (voltageDeviation > 5) {
-      this.createPowerQualityAlert(siteId, 'high', 'Voltage Deviation Warning', 
+      await this.createPowerQualityAlert(siteId, 'high', 'Voltage Deviation Warning', 
         `Voltage deviation: ${voltage.toFixed(1)}V (${voltageDeviation.toFixed(1)}% deviation). Monitor closely.`);
     }
     
     // Frequency stability check
     const frequencyDeviation = Math.abs(frequency - 50.0);
     if (frequencyDeviation > 0.5) {
-      this.createPowerQualityAlert(siteId, 'critical', 'Frequency Instability', 
+      await this.createPowerQualityAlert(siteId, 'critical', 'Frequency Instability', 
         `Frequency deviation: ${frequency.toFixed(2)}Hz (${frequencyDeviation.toFixed(2)}Hz from nominal 50Hz). Grid stability issue detected.`);
     } else if (frequencyDeviation > 0.3) {
-      this.createPowerQualityAlert(siteId, 'high', 'Frequency Deviation Warning', 
+      await this.createPowerQualityAlert(siteId, 'high', 'Frequency Deviation Warning', 
         `Frequency deviation: ${frequency.toFixed(2)}Hz. Monitor grid stability.`);
     }
     
     // THD check
     if (thd > 10) {
-      this.createPowerQualityAlert(siteId, 'critical', 'High Harmonic Distortion', 
+      await this.createPowerQualityAlert(siteId, 'critical', 'High Harmonic Distortion', 
         `THD: ${thd.toFixed(2)}% (exceeds 10%). Equipment damage risk. Immediate action recommended.`);
     } else if (thd > 8) {
-      this.createPowerQualityAlert(siteId, 'high', 'Elevated Harmonic Distortion', 
+      await this.createPowerQualityAlert(siteId, 'high', 'Elevated Harmonic Distortion', 
         `THD: ${thd.toFixed(2)}% (above 8%). Monitor and investigate source of harmonics.`);
     }
     
     // Power Factor check
     if (powerFactor < 0.80) {
-      this.createPowerQualityAlert(siteId, 'high', 'Low Power Factor', 
+      await this.createPowerQualityAlert(siteId, 'high', 'Low Power Factor', 
         `Power factor: ${powerFactor.toFixed(3)} (below 0.80). Energy efficiency reduced. Consider power factor correction.`);
     } else if (powerFactor < 0.85) {
-      this.createPowerQualityAlert(siteId, 'medium', 'Power Factor Warning', 
+      await this.createPowerQualityAlert(siteId, 'medium', 'Power Factor Warning', 
         `Power factor: ${powerFactor.toFixed(3)}. Below optimal range (>0.95).`);
     }
     
     // Voltage Unbalance check
     if (voltageUnbalance > 4) {
-      this.createPowerQualityAlert(siteId, 'critical', 'High Voltage Unbalance', 
+      await this.createPowerQualityAlert(siteId, 'critical', 'High Voltage Unbalance', 
         `Voltage unbalance: ${voltageUnbalance.toFixed(2)}% (exceeds 4%). Phase imbalance detected. Motor damage risk.`);
     } else if (voltageUnbalance > 3) {
-      this.createPowerQualityAlert(siteId, 'high', 'Voltage Unbalance Warning', 
+      await this.createPowerQualityAlert(siteId, 'high', 'Voltage Unbalance Warning', 
         `Voltage unbalance: ${voltageUnbalance.toFixed(2)}% (above 3%). Monitor three-phase balance.`);
     }
   }
@@ -250,30 +252,31 @@ class RealtimeSimulator {
   /**
    * Create a power quality alert (with deduplication)
    */
-  createPowerQualityAlert(siteId, severity, title, message) {
+  async createPowerQualityAlert(siteId, severity, title, message) {
     try {
-      const db = getDatabase();
       const AlertModel = require('../database/models/alerts');
       
       // Check if similar alert already exists (to avoid duplicates)
-      const existingAlert = db.prepare(`
-        SELECT id FROM alerts 
-        WHERE site_id = ? AND title = ? AND status = 'active'
-        ORDER BY created_at DESC LIMIT 1
-      `).get(siteId, title);
+      const existingAlert = await dbAdapter.get(
+        `SELECT id FROM alerts 
+         WHERE site_id = ? AND title = ? AND status = 'active'
+         ORDER BY created_at DESC LIMIT 1`,
+        [siteId, title]
+      );
       
       if (existingAlert) {
         // Update existing alert timestamp instead of creating duplicate
-        db.prepare(`
-          UPDATE alerts SET updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `).run(existingAlert.id);
+        await dbAdapter.run(
+          `UPDATE alerts SET updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`,
+          [existingAlert.id]
+        );
         return;
       }
       
       // Create new alert
       const alertId = `pq_${siteId}_${Date.now()}`;
-      AlertModel.create({
+      await AlertModel.create({
         id: alertId,
         site_id: siteId,
         asset_id: null,
@@ -300,7 +303,8 @@ class RealtimeSimulator {
     }
 
     console.log(`🚀 Starting real-time data simulator (interval: ${this.intervalMs}ms / ${this.intervalMs / 60000} minutes)`);
-    console.log(`📍 Infrastructure: SQLite=✅ | TimescaleDB=${timescale.enabled} | Redis=${redis.enabled} | MQTT=${mqtt.enabled}`);
+    const dbType = dbAdapter.getDbType();
+    console.log(`📍 Infrastructure: Database=${dbType || 'unknown'} | TimescaleDB=${timescale.enabled} | Redis=${redis.enabled} | MQTT=${mqtt.enabled}`);
     this.isRunning = true;
     
     // Generate initial data point
@@ -334,15 +338,16 @@ class RealtimeSimulator {
   /**
    * Clean old data (keep last N hours)
    */
-  cleanOldData(hoursToKeep = 48) {
+  async cleanOldData(hoursToKeep = 48) {
     const cutoff = new Date(Date.now() - hoursToKeep * 60 * 60 * 1000);
-    const deleted = this.db.prepare(`
-      DELETE FROM timeseries_data 
-      WHERE timestamp < ?
-    `).run(cutoff.toISOString());
+    const result = await dbAdapter.run(
+      `DELETE FROM timeseries_data 
+       WHERE timestamp < ?`,
+      [cutoff.toISOString()]
+    );
     
-    console.log(`🧹 Cleaned ${deleted.changes} old timeseries records`);
-    return deleted.changes;
+    console.log(`🧹 Cleaned ${result.changes} old timeseries records`);
+    return result.changes;
   }
 }
 

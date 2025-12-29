@@ -534,6 +534,13 @@ export const savePlanningStep1 = async (data: { preferred_sources: string[]; pri
 
 export const savePlanningStep2 = async (data: { name: string; appliances: Omit<Appliance, 'id'>[]; site_id?: string }): Promise<{ success: boolean; load_profile: LoadProfile }> => {
   console.log('📤 Saving load profile:', data);
+  
+  // Check if token exists
+  const token = localStorage.getItem('jwt');
+  if (!token) {
+    throw new Error('No authentication token found. Please login again.');
+  }
+  
   const response = await fetch(`${API_BASE_URL}/wizard/planning/step2`, {
     method: 'POST',
     headers: getAuthHeaders(),

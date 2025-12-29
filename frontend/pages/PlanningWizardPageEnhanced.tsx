@@ -196,6 +196,7 @@ const PlanningWizardContent: React.FC = () => {
       }
 
       // Step 2: Call technical sizing API with save=true
+      // Use old API by default to match old website calculations
       const requestBody = {
         total_energy_consumption_kwh: totalDailyConsumptionKWh,
         use_case: useCase,
@@ -499,22 +500,21 @@ const PlanningWizardContent: React.FC = () => {
           <div className="flex items-center justify-center space-x-4">
             {[0, 1, 2, 3].map((s) => (
               <React.Fragment key={s}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
-                  step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                }`}>
-                  {step > s ? <Check className="w-6 h-6" /> : s + 1}
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
+                    step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                  }`}>
+                    {step > s ? <Check className="w-6 h-6" /> : s + 1}
+                  </div>
+                  <span className="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                    {s === 0 ? 'Use Case' : s === 1 ? 'Preferences' : s === 2 ? 'Load Profile' : 'Results'}
+                  </span>
                 </div>
                 {s < 3 && (
                   <div className={`w-24 h-1 ${step > s ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
                 )}
               </React.Fragment>
             ))}
-          </div>
-          <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 px-4">
-            <span>Use Case</span>
-            <span>Preferences</span>
-            <span>Load Profile</span>
-            <span>Results</span>
           </div>
         </div>
 
@@ -909,7 +909,7 @@ const PlanningWizardContent: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                       <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
                         <div className="flex items-center space-x-3 mb-3">
-                          <DollarSign className="w-8 h-8 text-green-600" />
+                          <TrendingUp className="w-8 h-8 text-green-600" />
                           <div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">Total CAPEX</p>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -935,7 +935,7 @@ const PlanningWizardContent: React.FC = () => {
 
                       <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
                         <div className="flex items-center space-x-3 mb-3">
-                          <DollarSign className="w-8 h-8 text-purple-600" />
+                          <TrendingUp className="w-8 h-8 text-purple-600" />
                           <div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Savings</p>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">

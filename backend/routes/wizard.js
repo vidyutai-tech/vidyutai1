@@ -8,7 +8,6 @@ const OptimizationConfigModel = require('../database/models/optimizationConfigs'
 
 // Helper to extract user ID from token (simplified - in production use proper JWT)
 const getUserId = (req) => {
-  // This is a simplified version - in production, decode JWT properly
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     console.log('[getUserId] No authorization header found');
@@ -16,40 +15,58 @@ const getUserId = (req) => {
   }
   
   try {
-    let token = authHeader.replace('Bearer ', '').trim();
+    // Remove 'Bearer ' prefix if present
+    let token = authHeader.startsWith('Bearer ') 
+      ? authHeader.substring(7).trim() 
+      : authHeader.trim();
+    
     if (!token) {
-      console.log('[getUserId] Token is empty after removing Bearer');
+      console.log('[getUserId] Token is empty after processing');
       return null;
     }
     
-    // Handle both base64 encoded token and plain token
+    // Decode base64 encoded token (as created in auth.js)
     let decoded;
     try {
-      decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+      const decodedString = Buffer.from(token, 'base64').toString('utf-8');
+      decoded = JSON.parse(decodedString);
     } catch (e) {
-      // If base64 decode fails, try parsing as JSON directly
+      console.error('[getUserId] Failed to decode base64 token:', e.message);
+      console.error('[getUserId] Token (first 50 chars):', token.substring(0, 50));
+      // Try parsing as plain JSON (fallback)
       try {
         decoded = JSON.parse(token);
       } catch (e2) {
-        console.error('[getUserId] Failed to decode token:', e2.message);
+        console.error('[getUserId] Failed to parse token as JSON:', e2.message);
         return null;
       }
     }
     
-    if (!decoded || !decoded.userId) {
-      console.log('[getUserId] Decoded token does not contain userId:', decoded);
+    if (!decoded) {
+      console.log('[getUserId] Decoded token is null or undefined');
       return null;
     }
     
-    // Check if token is expired
-    if (decoded.exp && decoded.exp < Date.now()) {
-      console.log('[getUserId] Token has expired');
+    // Check for userId (the token uses 'userId' not 'user_id')
+    if (!decoded.userId) {
+      console.log('[getUserId] Decoded token does not contain userId. Keys:', Object.keys(decoded));
       return null;
     }
     
+    // Check if token is expired (exp is in milliseconds)
+    if (decoded.exp) {
+      const now = Date.now();
+      if (decoded.exp < now) {
+        console.log('[getUserId] Token has expired. Exp:', new Date(decoded.exp), 'Now:', new Date(now));
+        return null;
+      }
+    }
+    
+    console.log('[getUserId] Successfully extracted userId:', decoded.userId);
     return decoded.userId;
   } catch (e) {
-    console.error('[getUserId] Error decoding token:', e.message);
+    console.error('[getUserId] Unexpected error:', e.message);
+    console.error('[getUserId] Stack:', e.stack);
     return null;
   }
 };
@@ -208,10 +225,19 @@ router.post('/planning/step1', (req, res) => {
 // POST /api/v1/wizard/planning/step2 - P2: Appliances & Load Profile
 router.post('/planning/step2', async (req, res) => {
   try {
+    console.log('[step2] Request received. Auth header present:', !!req.headers.authorization);
+    
     const userId = getUserId(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
+      console.error('[step2] Authentication failed - no userId extracted');
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Unauthorized',
+        message: 'Authentication required. Please login again.'
+      });
     }
+    
+    console.log('[step2] Authenticated user:', userId);
 
     const { site_id, name, appliances } = req.body;
 
@@ -625,5 +651,6 @@ router.get('/optimization/configs', (req, res) => {
 // Export getUserId for use in other routes
 module.exports = router;
 module.exports.getUserId = getUserId;
+
 
 

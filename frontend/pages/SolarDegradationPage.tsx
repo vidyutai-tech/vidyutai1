@@ -32,7 +32,10 @@ const SolarDegradationPage: React.FC = () => {
     }
   };
 
-  const formatNumber = (num: number, decimals = 2) => {
+  const formatNumber = (num: number | undefined | null, decimals = 2) => {
+    if (num === undefined || num === null || isNaN(num)) {
+      return 'N/A';
+    }
     return num.toLocaleString('en-IN', { maximumFractionDigits: decimals });
   };
 
@@ -43,7 +46,7 @@ const SolarDegradationPage: React.FC = () => {
           <p className="font-semibold text-gray-900 dark:text-white">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {formatNumber(entry.value)}
+              {entry.name}: {formatNumber(entry?.value)}
             </p>
           ))}
         </div>
@@ -118,7 +121,9 @@ const SolarDegradationPage: React.FC = () => {
                     <div className="text-right">
                       <p className="text-sm text-gray-600 dark:text-gray-400">Model Accuracy</p>
                       <p className="text-2xl font-bold text-amber-600">
-                        R² = {(solarData.model_info.r2 * 100).toFixed(1)}%
+                        R² = {solarData.model_info?.r2 
+                          ? (solarData.model_info.r2 * 100).toFixed(1) 
+                          : 'N/A'}%
                       </p>
                     </div>
                   </div>
@@ -126,7 +131,7 @@ const SolarDegradationPage: React.FC = () => {
 
                 <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={solarData.predictions.slice(0, solarYears)}>
+                    <LineChart data={solarData.predictions?.slice(0, solarYears) || []}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis 
                         dataKey="age_years" 
@@ -159,7 +164,7 @@ const SolarDegradationPage: React.FC = () => {
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mean Error</p>
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      ±{formatNumber(solarData.model_info.mae, 3)}%
+                      ±{formatNumber(solarData.model_info?.mae, 3)}%
                     </p>
                   </div>
                   <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">

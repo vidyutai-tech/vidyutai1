@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import { Plus, Trash2, Zap, AlertCircle } from 'lucide-react';
 import Card from '../ui/Card';
 import { LoadProfileContext } from '../../contexts/LoadProfileContext';
@@ -20,7 +20,11 @@ const ApplianceSelector: React.FC = () => {
     priority: 'medium' as 'critical' | 'high' | 'medium' | 'low',
   });
 
-  const availableAppliances = getAppliancesForUseCase(useCase);
+  const availableAppliances = useMemo(() => {
+    const appliances = getAppliancesForUseCase(useCase);
+    // Sort alphabetically by name
+    return [...appliances].sort((a, b) => a.name.localeCompare(b.name));
+  }, [useCase]);
 
   const handleAddFromDropdown = () => {
     const selected = availableAppliances.find(a => a.name === selectedApplianceName);
@@ -114,7 +118,7 @@ const ApplianceSelector: React.FC = () => {
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {peakLoad.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">kW (70% diversity)</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">kW (priority-based)</p>
           </div>
         </Card>
         <Card>
@@ -344,7 +348,7 @@ const ApplianceSelector: React.FC = () => {
                     <td></td>
                   </tr>
                   <tr>
-                    <td colSpan={5} className="p-3 text-right">PEAK LOAD (70% diversity):</td>
+                    <td colSpan={5} className="p-3 text-right">PEAK LOAD (priority-based):</td>
                     <td className="p-3 text-right text-lg text-orange-600 dark:text-orange-400">
                       {peakLoad.toFixed(2)} kW
                     </td>

@@ -38,9 +38,13 @@ except ImportError:
 try:
     from app.api.endpoints import demand_optimization
     DEMAND_OPTIMIZATION_AVAILABLE = True
-except ImportError:
+    logger.info(f"✅ Demand optimization module imported successfully. Router: {demand_optimization.router}")
+except ImportError as e:
     DEMAND_OPTIMIZATION_AVAILABLE = False
-    logger.warning("Demand optimization router not available - app.api.endpoints.demand_optimization not found")
+    logger.warning(f"⚠️ Demand optimization router not available - app.api.endpoints.demand_optimization not found: {e}")
+except Exception as e:
+    DEMAND_OPTIMIZATION_AVAILABLE = False
+    logger.error(f"❌ Error importing demand optimization: {e}")
 
 # Import forecasting router
 try:
@@ -100,8 +104,17 @@ if OPTIMIZATION_AVAILABLE:
 
 # Include demand optimization router if available
 if DEMAND_OPTIMIZATION_AVAILABLE:
-    app.include_router(demand_optimization.router, prefix="/api/v1", tags=["Demand Optimization"])
-    logger.info("Demand optimization router registered at /api/v1/demand-optimize")
+    try:
+        app.include_router(demand_optimization.router, prefix="/api/v1", tags=["Demand Optimization"])
+        logger.info("✅ Demand optimization router registered at /api/v1/demand-optimize")
+        # Log all routes in the router for debugging
+        for route in demand_optimization.router.routes:
+            if hasattr(route, 'path') and hasattr(route, 'methods'):
+                logger.info(f"   Route: {list(route.methods)} /api/v1{route.path}")
+    except Exception as e:
+        logger.error(f"❌ Failed to register demand optimization router: {e}")
+else:
+    logger.warning("⚠️ Demand optimization router not available - skipping registration")
 
 # Include forecasting router if available
 if FORECASTING_AVAILABLE:
