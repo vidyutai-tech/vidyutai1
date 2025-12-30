@@ -83,6 +83,23 @@ const ApplianceSelector: React.FC = () => {
     });
   };
 
+  const handleUpdateRating = (index: number, rating: number) => {
+    const app = appliances[index];
+    updateAppliance(index, {
+      ...app,
+      rating: rating,
+      dailyConsumption: rating * app.quantity * app.hoursPerDay,
+    });
+  };
+
+  const handleUpdatePriority = (index: number, priority: 'critical' | 'high' | 'medium' | 'low') => {
+    const app = appliances[index];
+    updateAppliance(index, {
+      ...app,
+      priority: priority,
+    });
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'critical': return 'text-red-600 bg-red-50 dark:bg-red-900/20';
@@ -299,7 +316,16 @@ const ApplianceSelector: React.FC = () => {
                   {appliances.map((app, index) => (
                     <tr key={index} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="p-3 font-medium text-gray-900 dark:text-white">{app.appliance}</td>
-                      <td className="p-3 text-center text-gray-600 dark:text-gray-400">{app.rating}</td>
+                      <td className="p-3 text-center">
+                        <input
+                          type="number"
+                          value={app.rating}
+                          onChange={(e) => handleUpdateRating(index, parseFloat(e.target.value) || 0)}
+                          min="0"
+                          step="1"
+                          className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </td>
                       <td className="p-3 text-center">
                         <input
                           type="number"
@@ -321,9 +347,24 @@ const ApplianceSelector: React.FC = () => {
                         />
                       </td>
                       <td className="p-3 text-center">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(app.priority)}`}>
-                          {app.priority}
-                        </span>
+                        <select
+                          value={app.priority}
+                          onChange={(e) => handleUpdatePriority(index, e.target.value as 'critical' | 'high' | 'medium' | 'low')}
+                          className={`w-24 px-2 py-1 rounded text-xs font-semibold border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            app.priority === 'critical' 
+                              ? 'border-red-300 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' 
+                              : app.priority === 'high'
+                              ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800'
+                              : app.priority === 'medium'
+                              ? 'border-yellow-300 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800'
+                              : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+                          }`}
+                        >
+                          <option value="critical">Critical</option>
+                          <option value="high">High</option>
+                          <option value="medium">Medium</option>
+                          <option value="low">Low</option>
+                        </select>
                       </td>
                       <td className="p-3 text-right font-semibold text-gray-900 dark:text-white">
                         {app.dailyConsumption.toFixed(0)}

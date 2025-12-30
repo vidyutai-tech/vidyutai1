@@ -25,15 +25,30 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
+import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
 const DemandOptimizationPage = () => {
   const { currentUser } = useContext(AppContext)!;
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get common config from location state (from Optimization Setup)
-  const commonConfig = (location.state as any)?.commonConfig;
-  const uploadedFile = (location.state as any)?.uploadedFile;
+  // Get common config from location state (from Optimization Setup) or localStorage
+  const locationConfig = (location.state as any)?.commonConfig;
+  const locationFile = (location.state as any)?.uploadedFile;
+  
+  // Check localStorage for saved config
+  const savedConfig = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('optimizationConfig');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Use location config first, then saved config, then null
+  const commonConfig = locationConfig || savedConfig;
+  const uploadedFile = locationFile;
 
   // Demand-specific form data (only curtailment penalties)
   const [demandSpecificData, setDemandSpecificData] = useState({
@@ -106,6 +121,21 @@ const DemandOptimizationPage = () => {
   const formatKWh = (value: number | string | null | undefined, digits = 2): string => {
     const formatted = formatNumber(value, digits);
     return formatted === "-" ? "-" : `${formatted} kWh`;
+  };
+
+  // Handle config from inline setup
+  const handleInlineConfigReady = (config: any) => {
+    // Store config in localStorage (without file, as files can't be serialized)
+    const { uploadedFile: file, ...configWithoutFile } = config;
+    localStorage.setItem('optimizationConfig', JSON.stringify(configWithoutFile));
+    
+    const merged = {
+      ...config,
+      ...demandSpecificData,
+      objective_type: "cost",
+      uploadedFile: config.uploadedFile || uploadedFile || null,
+    };
+    setMergedFormData(merged);
   };
 
   // Merge common config with demand-specific data
@@ -448,10 +478,11 @@ const DemandOptimizationPage = () => {
           </div>
 
           {!commonConfig && (
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p className="text-yellow-800 dark:text-yellow-300">
-                ⚠️ No configuration found. Please start from <button onClick={() => navigate('/optimization-setup')} className="underline font-semibold">Optimization Setup</button> first.
-              </p>
+            <div className="mb-6">
+              <InlineOptimizationSetup 
+                onConfigReady={handleInlineConfigReady}
+                compact={true}
+              />
             </div>
           )}
 
@@ -554,12 +585,41 @@ const DemandOptimizationPage = () => {
                   <span className="ml-2 font-semibold">{mergedFormData.diesel_capacity} kW</span>
                 </div>
               </div>
-              <button
-                onClick={() => navigate('/optimization-setup', { state: { commonConfig: mergedFormData } })}
-                className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Edit common parameters →
-              </button>
+              <div className="mt-4 space-y-2">
+                {!mergedFormData.uploadedFile && !uploadedFile && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Currently no data uploaded. If you want to upload,{' '}
+                    <button
+                      onClick={() => {
+                        // Scroll to inline setup if it exists, or navigate to optimization setup
+                        const inlineSetup = document.querySelector('[data-inline-setup]');
+                        if (inlineSetup) {
+                          inlineSetup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          // Try to expand it if it's collapsed
+                          const expandButton = inlineSetup.querySelector('button');
+                          if (expandButton) expandButton.click();
+                        } else {
+                          navigate('/optimization-setup', { state: { commonConfig: mergedFormData } });
+                        }
+                      }}
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                    >
+                      click here
+                    </button>
+                  </p>
+                )}
+                {(mergedFormData.uploadedFile || uploadedFile) && (
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    ✓ Custom data file uploaded: {(mergedFormData.uploadedFile || uploadedFile)?.name || 'File'}
+                  </p>
+                )}
+                <button
+                  onClick={() => navigate('/optimization-setup', { state: { commonConfig: mergedFormData } })}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Edit common parameters →
+                </button>
+              </div>
             </div>
           )}
 
