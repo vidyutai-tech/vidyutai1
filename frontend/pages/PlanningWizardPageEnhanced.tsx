@@ -864,7 +864,7 @@ const PlanningWizardContent: React.FC = () => {
             {/* Technical Sizing Results */}
             {technicalSizing && (
               <>
-                <Card title="Recommended Tech Rating">
+                <Card title="Recommended Rating">
                   <div className="p-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                       <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
@@ -903,17 +903,62 @@ const PlanningWizardContent: React.FC = () => {
                   </div>
                 </Card>
 
+                {/* Technical Analysis - Detailed Parameters */}
+                <Card title="Technical Analysis">
+                  <div className="p-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Battery Capacity (kAh):</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">
+                          {technicalSizing.battery_capacity_ah ? technicalSizing.battery_capacity_ah.toFixed(2) : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Battery Energy (kWh):</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">
+                          {technicalSizing.battery_capacity_kwh.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Battery Nominal Voltage (V):</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">
+                          {technicalSizing.battery_voltage_v || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">DC-DC Converter Rating (kW):</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">
+                          {technicalSizing.dc_converter_capacity_kw.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Inverter Rating (kVA):</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">
+                          {technicalSizing.inverter_rating_kva ? technicalSizing.inverter_rating_kva.toFixed(2) : technicalSizing.inverter_capacity_kw.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">Solar Panel Power Rating (kW):</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">
+                          {technicalSizing.solar_capacity_kw.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
                 {/* Economic Analysis */}
                 <Card title="Economic Analysis">
                   <div className="p-6">
+                    {/* Summary Cards - Show Dual Mode values */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                       <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
                         <div className="flex items-center space-x-3 mb-3">
                           <TrendingUp className="w-8 h-8 text-green-600" />
                           <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Total CAPEX</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Total CAPEX (Dual Mode)</p>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              ₹{(economicAnalysis.total_capex / 100000).toFixed(2)} L
+                              ₹{((economicAnalysis.dual_mode?.total_capex || economicAnalysis.total_capex) / 100000).toFixed(2)} L
                             </p>
                           </div>
                         </div>
@@ -924,9 +969,9 @@ const PlanningWizardContent: React.FC = () => {
                         <div className="flex items-center space-x-3 mb-3">
                           <TrendingUp className="w-8 h-8 text-blue-600" />
                           <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Payback Period</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Payback Period (Dual Mode)</p>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {economicAnalysis.payback_period_years.toFixed(1)} yrs
+                              {(economicAnalysis.dual_mode?.payback_period_years || economicAnalysis.payback_period_years).toFixed(1)} yrs
                             </p>
                           </div>
                         </div>
@@ -937,15 +982,121 @@ const PlanningWizardContent: React.FC = () => {
                         <div className="flex items-center space-x-3 mb-3">
                           <TrendingUp className="w-8 h-8 text-purple-600" />
                           <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Savings</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Savings (Dual Mode)</p>
                             <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              ₹{economicAnalysis.monthly_savings.toLocaleString()}
+                              ₹{(economicAnalysis.dual_mode?.monthly_savings || economicAnalysis.monthly_savings).toLocaleString()}
                             </p>
                           </div>
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">vs grid-only system</p>
                       </div>
                     </div>
+
+                    {/* Dual Mode vs On-Grid Comparison Table */}
+                    {(economicAnalysis.dual_mode && economicAnalysis.on_grid) && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-4">Dual Mode vs On-Grid Comparison</h3>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm border-collapse">
+                            <thead className="bg-gray-100 dark:bg-gray-800">
+                              <tr>
+                                <th className="p-3 text-left border border-gray-300 dark:border-gray-600">Parameter</th>
+                                <th className="p-3 text-right border border-gray-300 dark:border-gray-600">Dual Mode (₹)</th>
+                                <th className="p-3 text-right border border-gray-300 dark:border-gray-600">On-Grid (₹)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Solar Panel Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.dual_mode.solar_cost_rs.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.on_grid.solar_cost_rs.toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Battery Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.dual_mode.battery_cost_rs.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">0</td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Inverter Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.dual_mode.inverter_cost_rs.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.on_grid.inverter_cost_rs.toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">DC-DC Converter Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.dual_mode.dc_converter_cost_rs.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">0</td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Installation Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.dual_mode.installation_cost_rs.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.on_grid.installation_cost_rs.toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-semibold">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Total CAPEX</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400">
+                                  {economicAnalysis.dual_mode.total_capex.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400">
+                                  {economicAnalysis.on_grid.total_capex.toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Annual O&M Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.dual_mode.annual_om_cost_rs.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {economicAnalysis.on_grid.annual_om_cost_rs.toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Annual Revenue</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-green-600 dark:text-green-400">
+                                  {economicAnalysis.dual_mode.annual_revenue_rs?.toLocaleString() || 'N/A'}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-green-600 dark:text-green-400">
+                                  {economicAnalysis.on_grid.annual_revenue_rs?.toLocaleString() || 'N/A'}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Annual Savings</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-green-600 dark:text-green-400">
+                                  {economicAnalysis.dual_mode.annual_savings.toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-green-600 dark:text-green-400">
+                                  {economicAnalysis.on_grid.annual_savings.toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="bg-gray-100 dark:bg-gray-800 font-bold">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Payback Period (years)</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-orange-600 dark:text-orange-400">
+                                  {economicAnalysis.dual_mode.payback_period_years.toFixed(2)}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-orange-600 dark:text-orange-400">
+                                  {economicAnalysis.on_grid.payback_period_years.toFixed(2)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Cost Breakdown Table */}
                     <div className="overflow-x-auto">
@@ -992,9 +1143,90 @@ const PlanningWizardContent: React.FC = () => {
                   </div>
                 </Card>
 
+                {/* Capital Cost & Annual Generation */}
+                {(economicAnalysis.dual_mode && economicAnalysis.on_grid) && (
+                  <Card title="Capital Cost & Annual Generation">
+                    <div className="p-6">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">Annual Energy Generation Dual Mode (kWh):</span>
+                          <span className="text-gray-900 dark:text-white font-semibold">
+                            {economicAnalysis.annual_generation_kwh_dual_mode?.toFixed(2) || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">Annual Energy Generation On-Grid (kWh):</span>
+                          <span className="text-gray-900 dark:text-white font-semibold">
+                            {economicAnalysis.annual_generation_kwh_on_grid?.toFixed(2) || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">Annual Revenue Dual Mode (Rs):</span>
+                          <span className="text-green-600 dark:text-green-400 font-semibold">
+                            {economicAnalysis.dual_mode.annual_revenue_rs?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">Annual Revenue On-Grid (Rs):</span>
+                          <span className="text-green-600 dark:text-green-400 font-semibold">
+                            {economicAnalysis.on_grid.annual_revenue_rs?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">Capital Cost Dual Mode (Rs):</span>
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                            {economicAnalysis.dual_mode.total_capex.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">Capital Cost On-Grid (Rs):</span>
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                            {economicAnalysis.on_grid.total_capex.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
                 {/* Emissions Analysis */}
                 <Card title="Environmental Impact">
                   <div className="p-6">
+                    {/* Carbon Emission Comparison Table */}
+                    {(emissionsAnalysis.dual_mode && emissionsAnalysis.on_grid) && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-4">Carbon Emission Comparison</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          Using renewable resources to generate energy will reduce fossil fuel burning for energy generation, ultimately saving carbon emissions.
+                        </p>
+                        <div className="overflow-x-auto mb-4">
+                          <table className="w-full text-sm border-collapse">
+                            <thead className="bg-gray-100 dark:bg-gray-800">
+                              <tr>
+                                <th className="p-3 text-left border border-gray-300 dark:border-gray-600">System Type</th>
+                                <th className="p-3 text-right border border-gray-300 dark:border-gray-600">Total Emissions (Ton)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600 font-semibold">Dual Mode System</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 font-semibold">
+                                  {emissionsAnalysis.dual_mode.total_emissions_ton.toFixed(2)}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600 font-semibold">On-Grid System</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 font-semibold">
+                                  {emissionsAnalysis.on_grid.total_emissions_ton.toFixed(2)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="p-6 bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
                         <div className="flex items-center space-x-3 mb-3">
