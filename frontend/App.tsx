@@ -25,7 +25,6 @@ import ManageAssetsPage from './pages/ManageAssetsPage';
 import DigitalTwinPage from './pages/DigitalTwinPage';
 import DemandOptimizationPage from './pages/DemandOptimizationPage';
 import SourceOptimizationPage from './pages/SourceOptimizationPage';
-import PostLoginWizardPage from './pages/PostLoginWizardPage';
 import PlanningWizardPage from './pages/PlanningWizardPage';
 import PlanningWizardPageEnhanced from './pages/PlanningWizardPageEnhanced';
 import OptimizationSetupPage from './pages/OptimizationSetupPage';
@@ -58,7 +57,6 @@ const App: React.FC = () => {
 
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-  const [hasCompletedWizard, setHasCompletedWizard] = useState<boolean | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [flowCompleted, setFlowCompleted] = useState<boolean>(false);
 
@@ -110,30 +108,20 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Load user profile and determine wizard completion status
-  // Wizard is complete if profile exists with both site_type and workflow_preference set
+  // Load user profile (wizard removed, profile loading kept for future use)
   useEffect(() => {
     if (isAuthenticated && currentUser) {
       getUserProfile()
         .then(profile => {
           if (profile) {
             setUserProfile(profile);
-            // Wizard is complete if profile has both site_type and workflow_preference
-            const wizardCompleted = !!(profile.site_type && profile.workflow_preference);
-            setHasCompletedWizard(wizardCompleted);
-          } else {
-            // No profile exists, wizard not completed
-            setHasCompletedWizard(false);
           }
         })
         .catch(err => {
           console.error('Failed to load user profile:', err);
-          // On error, assume wizard not completed to be safe
-          setHasCompletedWizard(false);
         });
     } else {
-      // Not authenticated, reset wizard status
-      setHasCompletedWizard(null);
+      setUserProfile(null);
     }
   }, [isAuthenticated, currentUser]);
 
@@ -451,13 +439,11 @@ const App: React.FC = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
     setSelectedSite(null);
-    setHasCompletedWizard(null);
     setSocketConnected(false);
     localStorage.removeItem('jwt');
     localStorage.removeItem('user');
     localStorage.removeItem('selectedSiteId');
     localStorage.removeItem('selectedSite');
-    // Note: We no longer store hasCompletedWizard in localStorage - it's determined from user profile
     if (socket) {
       socket.close();
       setSocket(null);
@@ -575,37 +561,6 @@ const App: React.FC = () => {
           onSignupClick={handleShowSignup}
           showSignupSuccess={showSignupSuccess}
         />
-      );
-    }
-    
-    // Post-Login Wizard (show only once after signup, if not completed)
-    // Show wizard if hasCompletedWizard is false (meaning it hasn't been completed for this user)
-    if (hasCompletedWizard === false) {
-      return (
-        <HashRouter>
-          <Routes>
-            <Route path="*" element={
-              <PostLoginWizardPage 
-                onComplete={async () => {
-                  // Profile has been saved to backend, reload it to update wizard status
-                  try {
-                    const profile = await getUserProfile();
-                    if (profile && profile.site_type && profile.workflow_preference) {
-                      setUserProfile(profile);
-                  setHasCompletedWizard(true);
-                    }
-                  } catch (err) {
-                    console.error('Failed to reload profile after wizard completion:', err);
-                  }
-                  // Navigate using window.location since we're in a separate router
-                  setTimeout(() => {
-                    window.location.hash = '#/main-options';
-                  }, 100);
-                }} 
-              />
-            } />
-          </Routes>
-        </HashRouter>
       );
     }
     
