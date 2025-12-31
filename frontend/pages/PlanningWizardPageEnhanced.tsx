@@ -949,6 +949,28 @@ const PlanningWizardContent: React.FC = () => {
                           {technicalSizing.solar_capacity_kw.toFixed(2)}
                         </span>
                       </div>
+                      {technicalSizing.hydrogen_system && (
+                        <>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Fuel Cell Rating (kW):</span>
+                            <span className="text-gray-900 dark:text-white font-semibold">
+                              {technicalSizing.hydrogen_system.fuel_cell_capacity_kw?.toFixed(2) || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Electrolyzer Rating (kW):</span>
+                            <span className="text-gray-900 dark:text-white font-semibold">
+                              {technicalSizing.hydrogen_system.electrolyzer_capacity_kw?.toFixed(2) || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">H2 Tank Capacity (kg):</span>
+                            <span className="text-gray-900 dark:text-white font-semibold">
+                              {technicalSizing.hydrogen_system.h2_tank_capacity_kg?.toFixed(2) || 'N/A'}
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </Card>

@@ -391,8 +391,13 @@ export const forecastEnergy = async (input: ForecastInput): Promise<ForecastResp
     const min = Math.min(...values);
     const minIndex = values.indexOf(min);
     
+    // Calculate actual forecast hours from data (assuming 15-minute intervals)
+    const forecastHours = data.data.length * 0.25;
+    
     data.summary = {
-      total_24h: total,
+      total_24h: total, // Keep for backward compatibility
+      total: total, // Add total without 24h assumption
+      forecast_hours: forecastHours,
       average: average,
       peak: peak,
       peak_hour: data.data[peakIndex]?.hour || 12,

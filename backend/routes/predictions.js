@@ -21,6 +21,24 @@ function setCache(key, data) {
   cache.set(key, { data, timestamp: Date.now() });
 }
 
+// Retry helper with exponential backoff for 429 errors
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      // Only retry on 429 errors
+      if (error.response?.status === 429 && attempt < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
+        console.log(`Rate limited (429), retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
 // GET anomaly predictions
 router.get('/anomalies', async (req, res) => {
   const { siteId } = req.query;
@@ -227,12 +245,14 @@ router.get('/battery-rul/dashboard', async (req, res) => {
   }
 
   try {
-    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/battery-rul/dashboard`, {
-      timeout: 60000, // Increased to 60 seconds to allow for model loading
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await retryWithBackoff(() => 
+      axios.get(`${AI_SERVICE_URL}/api/v1/predictions/battery-rul/dashboard`, {
+        timeout: 60000, // Increased to 60 seconds to allow for model loading
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    );
     
     // Cache successful response
     setCache(cacheKey, response.data);
@@ -240,7 +260,7 @@ router.get('/battery-rul/dashboard', async (req, res) => {
   } catch (error) {
     console.error('Error fetching battery RUL dashboard:', error.message);
     
-    // If 429 error, return cached data if available
+    // If 429 error, return cached data if available (even if expired)
     if (error.response?.status === 429) {
       const staleCache = cache.get(cacheKey);
       if (staleCache) {
@@ -252,7 +272,9 @@ router.get('/battery-rul/dashboard', async (req, res) => {
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch Battery RUL dashboard',
-      message: error.message
+      message: error.response?.status === 429 
+        ? 'Rate limit exceeded. Please try again in a few moments.'
+        : error.message
     });
   }
 });
@@ -269,12 +291,14 @@ router.get('/solar-degradation/dashboard', async (req, res) => {
   }
 
   try {
-    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/solar-degradation/dashboard`, {
-      timeout: 60000, // Increased to 60 seconds to allow for model loading
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await retryWithBackoff(() =>
+      axios.get(`${AI_SERVICE_URL}/api/v1/predictions/solar-degradation/dashboard`, {
+        timeout: 60000, // Increased to 60 seconds to allow for model loading
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    );
     
     // Cache successful response
     setCache(cacheKey, response.data);
@@ -294,7 +318,9 @@ router.get('/solar-degradation/dashboard', async (req, res) => {
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch Solar Degradation dashboard',
-      message: error.message
+      message: error.response?.status === 429 
+        ? 'Rate limit exceeded. Please try again in a few moments.'
+        : error.message
     });
   }
 });
@@ -311,12 +337,14 @@ router.get('/energy-loss/dashboard', async (req, res) => {
   }
 
   try {
-    const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/energy-loss/dashboard`, {
-      timeout: 60000, // Increased to 60 seconds to allow for model loading
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await retryWithBackoff(() =>
+      axios.get(`${AI_SERVICE_URL}/api/v1/predictions/energy-loss/dashboard`, {
+        timeout: 60000, // Increased to 60 seconds to allow for model loading
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    );
     
     // Cache successful response
     setCache(cacheKey, response.data);
@@ -336,7 +364,9 @@ router.get('/energy-loss/dashboard', async (req, res) => {
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch Energy Loss dashboard',
-      message: error.message
+      message: error.response?.status === 429 
+        ? 'Rate limit exceeded. Please try again in a few moments.'
+        : error.message
     });
   }
 });
@@ -355,12 +385,14 @@ router.post('/forecast/energy', async (req, res) => {
   }
 
   try {
-    const response = await axios.post(`${AI_SERVICE_URL}/api/v1/forecast/energy`, req.body, {
-      timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await retryWithBackoff(() =>
+      axios.post(`${AI_SERVICE_URL}/api/v1/forecast/energy`, req.body, {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    );
     
     // Cache successful response
     setCache(cacheKey, response.data);
@@ -380,7 +412,9 @@ router.post('/forecast/energy', async (req, res) => {
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to fetch energy forecast',
-      message: error.message
+      message: error.response?.status === 429 
+        ? 'Rate limit exceeded. Please try again in a few moments.'
+        : error.message
     });
   }
 });

@@ -45,6 +45,24 @@ const EnergyForecastingPage: React.FC = () => {
   const [aiExplanation, setAiExplanation] = useState<string>('');
   const [explaining, setExplaining] = useState(false);
 
+  // Clear forecast if hours don't match
+  useEffect(() => {
+    const currentForecast = selectedType === 'production' ? productionForecast : consumptionForecast;
+    if (currentForecast && currentForecast.data) {
+      // Check if forecast data matches selected hours
+      const dataHours = currentForecast.data.length * 0.25; // Assuming 15-minute intervals
+      const expectedHours = forecastHours;
+      // If mismatch is significant (>1 hour difference), clear the forecast
+      if (Math.abs(dataHours - expectedHours) > 1) {
+        if (selectedType === 'production') {
+          setProductionForecast(null);
+        } else {
+          setConsumptionForecast(null);
+        }
+      }
+    }
+  }, [forecastHours, selectedType]);
+
   const gridColor = theme === 'dark' ? '#374151' : '#e5e7eb';
   const textColor = theme === 'dark' ? '#9ca3af' : '#6b7281';
 
@@ -106,7 +124,15 @@ const EnergyForecastingPage: React.FC = () => {
         }
       }
     } catch (err: any) {
-      setError(err.message || `Failed to generate ${type} forecast`);
+      const errorMessage = err.message || `Failed to generate ${type} forecast`;
+      setError(errorMessage);
+      
+      // If it's a rate limit error, provide helpful message
+      if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+        setError('Rate limit exceeded. Please wait a moment and try again. The system is processing your request.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -226,9 +252,9 @@ const EnergyForecastingPage: React.FC = () => {
           {summary && (
             <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">24h Total</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Total Forecast</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {formatNumber(summary.total_24h)} kWh
+                  {formatNumber(summary.total || summary.total_24h)} kWh
                 </p>
               </div>
               <div>
@@ -268,8 +294,22 @@ const EnergyForecastingPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-300">
-            {error}
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                  Forecasting failed
+                </p>
+                <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                  {error}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -363,6 +403,11 @@ const EnergyForecastingPage: React.FC = () => {
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {forecastHours}-hour forecast with confidence intervals
+                    {chartData.length > 0 && (
+                      <span className="ml-2 text-xs text-gray-400">
+                        ({chartData.length} data points)
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -447,7 +492,7 @@ const EnergyForecastingPage: React.FC = () => {
               <div className="p-4">
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Forecast</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatNumber(currentForecast.summary.total_24h)} kWh
+                  {formatNumber(currentForecast.summary.total || currentForecast.summary.total_24h)} kWh
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Over {forecastHours} hours</p>
               </div>

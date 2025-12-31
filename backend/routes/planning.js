@@ -50,24 +50,60 @@ router.post('/technical-sizing', async (req, res) => {
     }[use_case] || 1.8;
     const peakPower = averagePower * peakToAvgRatio; // kW
 
+    // Determine primary goal (use first goal if multiple, default to savings)
+    const validGoals = ['savings', 'self_sustainability', 'reliability', 'carbon_reduction'];
+    let primaryGoal = 'savings';
+    if (primary_goals && Array.isArray(primary_goals) && primary_goals.length > 0) {
+      primaryGoal = primary_goals.find(g => validGoals.includes(g)) || primary_goals[0];
+    } else if (primary_goal && validGoals.includes(primary_goal)) {
+      primaryGoal = primary_goal;
+    }
+
     // Solar sizing: Based on daily energy requirement and peak sun hours
     // Formula: Solar Capacity (kW) = Daily Energy (kWh) / (Peak Sun Hours × System Efficiency)
     // Old website uses ~77% system efficiency (matching: 9.90 kWh/day / 2.56 kW = 3.867 kWh/kW/day, 3.867/5 = 77.3%)
     const peakSunHours = 5;
     const systemEfficiency = 0.773; // 77.3% efficiency (matching old website)
-    const solarCapacity = dailyConsumption / (peakSunHours * systemEfficiency);
+    
+    // Adjust solar capacity based on primary goal
+    let solarMultiplier = 1.0;
+    if (primaryGoal === 'self_sustainability') {
+      solarMultiplier = 1.3; // 30% more solar for self-sustainability
+    } else if (primaryGoal === 'carbon_reduction') {
+      solarMultiplier = 1.2; // 20% more solar for carbon reduction
+    } else if (primaryGoal === 'savings') {
+      solarMultiplier = 0.9; // 10% less solar to reduce initial cost
+    } else if (primaryGoal === 'reliability') {
+      solarMultiplier = 1.1; // 10% more solar for reliability
+    }
+    
+    const baseSolarCapacity = dailyConsumption / (peakSunHours * systemEfficiency);
+    const solarCapacity = baseSolarCapacity * solarMultiplier;
 
-    // Battery sizing: Based on backup requirements (matching old website logic)
+    // Battery sizing: Based on backup requirements and primary goal
     // Old website uses a more conservative approach - battery capacity is typically less than daily consumption
     // For residential: ~0.8-0.9x daily consumption (considering depth of discharge and efficiency)
     // For commercial: ~0.6-0.7x daily consumption
     // For industrial: ~0.5-0.6x daily consumption
-    const batteryToDailyRatio = {
+    const baseBatteryToDailyRatio = {
       residential: 0.83, // ~83% of daily consumption (matches old website: 8.21 kWh for 9.90 kWh/day)
       commercial: 0.65,
       industrial: 0.55,
     }[use_case] || 0.65;
-    const batteryCapacity = dailyConsumption * batteryToDailyRatio;
+    
+    // Adjust battery capacity based on primary goal
+    let batteryMultiplier = 1.0;
+    if (primaryGoal === 'reliability') {
+      batteryMultiplier = 1.5; // 50% more battery for reliability (longer backup)
+    } else if (primaryGoal === 'self_sustainability') {
+      batteryMultiplier = 1.3; // 30% more battery for self-sustainability
+    } else if (primaryGoal === 'savings') {
+      batteryMultiplier = 0.8; // 20% less battery to reduce cost
+    } else if (primaryGoal === 'carbon_reduction') {
+      batteryMultiplier = 1.2; // 20% more battery to reduce grid dependence
+    }
+    
+    const batteryCapacity = dailyConsumption * baseBatteryToDailyRatio * batteryMultiplier;
 
     // Inverter sizing: Old website shows inverter = solar * 1.25 (e.g., 3.19 kVA for 2.56 kW solar)
     // This matches DC-DC converter rating, suggesting inverter is sized to handle solar output, not peak load
@@ -246,6 +282,36 @@ router.post('/technical-sizing', async (req, res) => {
     const batteryCapacityAh = (batteryCapacity * 1000) / batteryVoltage; // Convert kWh to Ah
     const inverterRatingKVA = inverterCapacity; // kVA ≈ kW for most inverters
     
+    // Generate goal-specific recommendations
+    const goalRecommendations = {
+      savings: [
+        `Optimized for cost savings: Reduced solar and battery sizing to minimize initial investment`,
+        `Focus on grid integration to reduce upfront costs while maintaining energy security`,
+      ],
+      self_sustainability: [
+        `Maximized renewable energy: Increased solar capacity by 30% to maximize self-sufficiency`,
+        `Enhanced battery storage by 30% to store excess solar generation`,
+        `Reduced grid dependence for greater energy independence`,
+      ],
+      reliability: [
+        `Enhanced reliability: Increased battery capacity by 50% for extended backup duration`,
+        `Solar capacity increased by 10% to ensure consistent power generation`,
+        `System designed to provide ${(batteryCapacity / averagePower).toFixed(1)} hours of backup power`,
+      ],
+      carbon_reduction: [
+        `Carbon-optimized design: Increased solar capacity by 20% to minimize grid emissions`,
+        `Enhanced battery storage by 20% to maximize renewable energy utilization`,
+        `Reduced carbon footprint through greater renewable energy integration`,
+      ],
+    };
+
+    const baseRecommendations = [
+      `Solar capacity ${solarCapacity.toFixed(2)} kW can generate ${(solarCapacity * peakSunHours * systemEfficiency).toFixed(2)} kWh/day (5 sun-hours)`,
+      `Battery ${batteryCapacity.toFixed(2)} kWh provides ${(batteryCapacity / averagePower).toFixed(1)} hours of backup`,
+      `Inverter ${inverterCapacity.toFixed(2)} kVA sized to handle solar output with 25% safety margin`,
+      hydrogenSystem ? `Hydrogen system provides long-duration backup with ${hydrogenSystem.h2_tank_capacity_kg.toFixed(2)} kg H2 storage` : null,
+    ];
+
     const technicalAnalysis = {
       solar_capacity_kw: solarCapacity,
       battery_capacity_kwh: batteryCapacity,
@@ -260,11 +326,10 @@ router.post('/technical-sizing', async (req, res) => {
       peak_power_kw: peakPower,
       average_power_kw: averagePower,
       hydrogen_system: hydrogenSystem,
+      primary_goal: primaryGoal,
       recommendations: [
-        `Solar capacity ${solarCapacity.toFixed(2)} kW can generate ${(solarCapacity * peakSunHours * systemEfficiency).toFixed(2)} kWh/day (5 sun-hours)`,
-        `Battery ${batteryCapacity.toFixed(2)} kWh provides ${(batteryCapacity / averagePower).toFixed(1)} hours of backup`,
-        `Inverter ${inverterCapacity.toFixed(2)} kVA sized to handle solar output with 25% safety margin`,
-        hydrogenSystem ? `Hydrogen system provides long-duration backup with ${hydrogenSystem.h2_tank_capacity_kg.toFixed(2)} kg H2 storage` : null,
+        ...(goalRecommendations[primaryGoal] || []),
+        ...baseRecommendations,
       ].filter(Boolean),
     };
 
