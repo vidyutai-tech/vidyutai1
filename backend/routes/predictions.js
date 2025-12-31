@@ -228,7 +228,7 @@ router.get('/battery-rul/dashboard', async (req, res) => {
 
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/battery-rul/dashboard`, {
-      timeout: 10000,
+      timeout: 60000, // Increased to 60 seconds to allow for model loading
       headers: {
         'Content-Type': 'application/json'
       }
@@ -270,7 +270,7 @@ router.get('/solar-degradation/dashboard', async (req, res) => {
 
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/solar-degradation/dashboard`, {
-      timeout: 10000,
+      timeout: 60000, // Increased to 60 seconds to allow for model loading
       headers: {
         'Content-Type': 'application/json'
       }
@@ -312,7 +312,7 @@ router.get('/energy-loss/dashboard', async (req, res) => {
 
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/predictions/energy-loss/dashboard`, {
-      timeout: 10000,
+      timeout: 60000, // Increased to 60 seconds to allow for model loading
       headers: {
         'Content-Type': 'application/json'
       }

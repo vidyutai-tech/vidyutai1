@@ -13,7 +13,7 @@ const PlanningWizardContent: React.FC = () => {
   const loadProfileContext = useContext(LoadProfileContext);
   if (!loadProfileContext) throw new Error('LoadProfileContext required');
   
-  const { appliances, totalDailyConsumptionKWh, peakLoad, useCase, setUseCase } = loadProfileContext;
+  const { appliances, totalDailyConsumptionKWh, peakLoad, useCase, setUseCase, initializeAppliancesFromTemplate, clearAppliances } = loadProfileContext;
   
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +85,10 @@ const PlanningWizardContent: React.FC = () => {
     }
 
     setError('');
+    // Clear existing appliances and pre-initialize with template appliances for the selected use case
+    clearAppliances();
     setUseCase(selectedUseCase);
+    initializeAppliancesFromTemplate(selectedUseCase);
     setStep(1);
   };
 
@@ -304,9 +307,12 @@ const PlanningWizardContent: React.FC = () => {
 
     localStorage.setItem(`plan_${Date.now()}`, JSON.stringify(planData));
     
-    // Show success message and navigate
-    alert('Plan saved successfully!');
-    navigate('/main-options');
+    // Refresh saved plans list and show "My Saved Plans" view
+    loadSavedPlans();
+    
+    // Clear current wizard state and show saved plans
+    setStep(0);
+    setShowPreviousPlans(true);
   };
 
   const handleDeletePlan = (planId: string) => {

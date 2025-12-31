@@ -341,12 +341,14 @@ const ImpactPage: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={demandResponseCostData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="case" tick={{ fill: 'currentColor', fontSize: 12 }} />
+                <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
                 <YAxis 
-                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, position: 'insideLeft' }}
+                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, position: 'insideLeft', offset: 0 }}
                   tick={{ fill: 'currentColor' }}
+                  tickFormatter={(value) => Number(value).toFixed(2)}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
                   {demandResponseCostData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -385,12 +387,14 @@ const ImpactPage: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={loadShiftingCostData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="case" tick={{ fill: 'currentColor', fontSize: 12 }} />
+                <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
                 <YAxis 
-                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, position: 'insideLeft' }}
+                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, position: 'insideLeft', offset: 15 }}
                   tick={{ fill: 'currentColor' }}
+                  tickFormatter={(value) => Number(value).toFixed(2)}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
                   {loadShiftingCostData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -431,12 +435,14 @@ const ImpactPage: React.FC = () => {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={emissionComparisonData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="case" tick={{ fill: 'currentColor', fontSize: 12 }} />
+              <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
               <YAxis 
-                label={{ value: `Emission (kg${timeUnit})`, angle: -90, position: 'insideLeft' }}
+                label={{ value: `Emission (kg${timeUnit})`, angle: -90, position: 'insideLeft', offset: 0 }}
                 tick={{ fill: 'currentColor' }}
+                tickFormatter={(value) => Number(value).toFixed(2)}
               />
               <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
               <Bar dataKey="emissions" name="Emissions" radius={[8, 8, 0, 0]}>
                 {emissionComparisonData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -509,7 +515,7 @@ const ImpactPage: React.FC = () => {
               <XAxis type="number" tick={{ fill: 'currentColor' }} label={{ value: `Cost (INR${timeUnit})`, position: 'insideBottom', offset: -5 }} />
               <YAxis type="category" dataKey="component" tick={{ fill: 'currentColor', fontSize: 11 }} width={100} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
               <Bar dataKey="ruleBased" name="Rule-Based" fill="#ef4444" radius={[0, 4, 4, 0]} />
               <Bar dataKey="optimized" name="Optimized" fill="#3b82f6" radius={[0, 4, 4, 0]} />
               {includeHydrogen && <Bar dataKey="hydrogenOpt" name="With Hydrogen" fill="#14b8a6" radius={[0, 4, 4, 0]} />}
@@ -551,13 +557,14 @@ const ImpactPage: React.FC = () => {
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={componentEmissionsData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="component" tick={{ fill: 'currentColor' }} />
+              <XAxis dataKey="component" label={{ value: 'Component', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor' }} />
               <YAxis 
-                label={{ value: `Emissions (kg CO₂${timeUnit})`, angle: -90, position: 'insideLeft' }}
+                label={{ value: `Emissions (kg CO₂${timeUnit})`, angle: -90, position: 'insideLeft', offset: 0 }}
                 tick={{ fill: 'currentColor' }}
+                tickFormatter={(value) => Number(value).toFixed(2)}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
               <Bar dataKey="ruleBased" name="Rule-Based" fill="#dc2626" radius={[8, 8, 0, 0]} />
               <Bar dataKey="optimized" name="CO₂ Optimized" fill="#10b981" radius={[8, 8, 0, 0]} />
             </BarChart>

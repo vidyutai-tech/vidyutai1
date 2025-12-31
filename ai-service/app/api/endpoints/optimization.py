@@ -561,7 +561,34 @@ def run_optimization(params, load_profile_24h, price_profile_24h, solar_profile_
     plot_bytes = buf.read()
     plt.close()
 
-    return summary, plot_bytes
+    # Build structured chart data for frontend Recharts
+    chart_data = {
+        "time_series": [],
+        "metadata": {
+            "num_days": num_days,
+            "time_resolution_minutes": time_resolution_minutes,
+            "bess_min_soc_percent": bess_min_soc * 100,
+            "bess_max_soc_percent": bess_max_soc * 100,
+            "h2_min_soc_percent": h2_min_soc * 100,
+            "h2_max_soc_percent": h2_max_soc * 100
+        }
+    }
+    
+    for i, t in enumerate(T):
+        chart_data["time_series"].append({
+            "time_hours": float(results['Time_Hours'][i]),
+            "load_demand": float(results['Load_Demand'][i]),
+            "grid_power": float(results['Grid_Power'][i]),
+            "diesel_power": float(results['Diesel_Power'][i]),
+            "pv_used": float(results['PV_Used'][i]),
+            "net_battery_power": float(results['Net_Battery_Power'][i]),
+            "net_h2_power": float(results['Net_H2_Power'][i]),
+            "battery_soc": float(results['Battery_SOC'][i]),
+            "h2_soc": float(results['H2_SOC'][i]),
+            "price": float(results['Price'][i])
+        })
+
+    return summary, plot_bytes, chart_data
 
 
 @router.post("/optimize")
@@ -703,7 +730,7 @@ async def optimize(
 
     # Run Optimization + Generate Plot
     try:
-        summary, plot_bytes = run_optimization(params, load_profile, price_profile, solar_profile_input)
+        summary, plot_bytes, chart_data = run_optimization(params, load_profile, price_profile, solar_profile_input)
 
         # Debug: Verify emissions are in summary
         if "Emissions" in summary:
@@ -717,7 +744,8 @@ async def optimize(
         return JSONResponse({
             "status": "success",
             "summary": summary,
-            "plot_base64": plot_base64
+            "plot_base64": plot_base64,
+            "chart_data": chart_data
         })
 
     except ValueError as e:

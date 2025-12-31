@@ -198,9 +198,9 @@ const SiteDetailPage: React.FC = () => {
                   stroke={theme === 'dark' ? '#A0AEC0' : '#4A5568'}
                 />
                 <YAxis 
-                  label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 2 }}
                   stroke={theme === 'dark' ? '#A0AEC0' : '#4A5568'}
-                  tickFormatter={(value) => Number(value).toFixed(2)}
+                  tickFormatter={(value) => Number(value)}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: theme === 'dark' ? '#1A202C' : '#FFFFFF', border: `1px solid ${theme === 'dark' ? '#4A5568' : '#e2e8f0'}` }}

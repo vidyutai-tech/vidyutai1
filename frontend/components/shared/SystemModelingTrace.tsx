@@ -82,7 +82,7 @@ const SystemModelingTrace: React.FC<SystemModelingTraceProps> = ({
               interval="preserveStartEnd"
             />
             <YAxis
-              label={{ value: `${title} (${unit})`, angle: -90, position: 'insideLeft' }}
+              label={{ value: `${title} (${unit})`, angle: -90, position: 'insideLeft', offset: 0 }}
               tick={{ fill: 'currentColor' }}
               tickFormatter={(value) => Number(value).toFixed(2)}
             />
@@ -98,7 +98,7 @@ const SystemModelingTrace: React.FC<SystemModelingTraceProps> = ({
                 return point ? new Date(point.timestamp).toLocaleString() : label;
               }}
             />
-            <Legend />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} />
             
             {/* Confidence Band */}
             <Area

@@ -367,7 +367,7 @@ const EnergyForecastingPage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="h-96 mt-6">
+              <div className="h-96 mt-6 pb-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>
@@ -388,13 +388,14 @@ const EnergyForecastingPage: React.FC = () => {
                       interval={Math.max(1, Math.floor(forecastHours / 12))}
                       angle={-45}
                       textAnchor="end"
-                      height={80}
-                      label={{ value: 'Date & Time', position: 'insideBottom', offset: -10, fill: textColor }}
+                      height={120}
+                      label={{ value: 'Date & Time', position: 'insideBottom', offset: -5, fill: textColor }}
                     />
                     <YAxis 
                       stroke={textColor}
                       tick={{ fontSize: 12 }}
-                      label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', fill: textColor }}
+                      label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 0, fill: textColor }}
+                      tickFormatter={(value) => Number(value).toFixed(2)}
                     />
                     <Tooltip 
                       contentStyle={{ 

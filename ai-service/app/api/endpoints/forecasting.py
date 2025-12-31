@@ -108,17 +108,22 @@ def generate_realistic_forecast(
         pattern = lambda h: 0.4 + 0.4 * np.exp(-((h - 12)**2) / 32)
         daily_variation = 0.5  # 50% variation
     
-    # Generate forecast
-    for i in range(forecast_hours):
-        hour = (current_hour + i) % 24
-        timestamp = datetime.now() + timedelta(hours=i)
+    # Generate forecast at 15-minute intervals for granular data
+    total_minutes = forecast_hours * 60
+    num_intervals = (total_minutes // 15) + 1  # +1 to include the start point
+    
+    for i in range(num_intervals):
+        minutes_offset = i * 15
+        hour_offset = minutes_offset / 60.0
+        timestamp = datetime.now() + timedelta(minutes=minutes_offset)
+        hour = timestamp.hour + (timestamp.minute / 60.0)  # Fractional hour for smoother pattern
         
-        # Base pattern value
+        # Base pattern value (using fractional hour for smooth transitions)
         pattern_value = pattern(hour)
         
         # Add realistic noise and trends
-        noise = np.random.normal(0, 0.05)  # Small random noise
-        trend = 1.0 + (i / forecast_hours) * 0.1  # Slight upward trend
+        noise = np.random.normal(0, 0.03)  # Smaller noise for more granular data
+        trend = 1.0 + (hour_offset / forecast_hours) * 0.1  # Slight upward trend
         
         # Calculate forecast value
         forecast_value = base_value * pattern_value * trend * (1 + noise)
@@ -130,7 +135,7 @@ def generate_realistic_forecast(
         
         forecast_data.append({
             "timestamp": timestamp.isoformat(),
-            "hour": hour,
+            "hour": int(timestamp.hour),
             "value": round(forecast_value, 2),
             "confidence_lower": round(confidence_lower, 2),
             "confidence_upper": round(confidence_upper, 2),
@@ -173,16 +178,21 @@ async def forecast_energy(
                 for feature in features_list[:5]:  # Use first 5 features
                     feature_values[feature] = base_value * np.random.uniform(0.8, 1.2)
                 
-                # Generate forecast for each hour
+                # Generate forecast at 15-minute intervals for granular data
                 forecast_data = []
-                for i in range(input_data.forecast_horizon_hours):
-                    hour = (current_hour + i) % 24
-                    timestamp = datetime.now() + timedelta(hours=i)
+                total_minutes = input_data.forecast_horizon_hours * 60
+                num_intervals = (total_minutes // 15) + 1  # +1 to include the start point
+                
+                for i in range(num_intervals):
+                    minutes_offset = i * 15
+                    timestamp = datetime.now() + timedelta(minutes=minutes_offset)
+                    hour = timestamp.hour + (timestamp.minute / 60.0)  # Fractional hour for smoother pattern
+                    hour_int = timestamp.hour
                     
                     # Adjust features based on hour (time-of-day effects)
                     adjusted_features = feature_values.copy()
                     if "solar" in str(features_list).lower() or "pv" in str(features_list).lower():
-                        # Solar features peak at noon
+                        # Solar features peak at noon (using fractional hour for smooth transitions)
                         solar_factor = max(0, np.sin((hour - 6) * np.pi / 12)) if 6 <= hour <= 18 else 0
                         for key in adjusted_features:
                             if "solar" in key.lower() or "pv" in key.lower():
@@ -197,7 +207,7 @@ async def forecast_energy(
                     scaled_features = scaler.transform(input_df)
                     prediction = model.predict(scaled_features)[0]
                     
-                    # Apply time-of-day pattern
+                    # Apply time-of-day pattern (using fractional hour for smooth transitions)
                     if input_data.forecast_type == "production":
                         pattern = max(0, np.sin((hour - 6) * np.pi / 12)) if 6 <= hour <= 18 else 0
                         prediction *= pattern
@@ -209,7 +219,7 @@ async def forecast_energy(
                     
                     forecast_data.append({
                         "timestamp": timestamp.isoformat(),
-                        "hour": hour,
+                        "hour": hour_int,
                         "value": round(float(prediction), 2),
                         "confidence_lower": round(float(prediction * 0.9), 2),
                         "confidence_upper": round(float(prediction * 1.1), 2),
@@ -278,9 +288,14 @@ async def forecast_energy_with_features(
         current_hour = datetime.now().hour
         forecast_data = []
         
-        for i in range(input_data.forecast_horizon_hours):
-            hour = (current_hour + i) % 24
-            timestamp = datetime.now() + timedelta(hours=i)
+        # Generate forecast at 15-minute intervals for granular data
+        total_minutes = input_data.forecast_horizon_hours * 60
+        num_intervals = (total_minutes // 15) + 1  # +1 to include the start point
+        
+        for i in range(num_intervals):
+            minutes_offset = i * 15
+            timestamp = datetime.now() + timedelta(minutes=minutes_offset)
+            hour_int = timestamp.hour
             
             # Prepare feature vector
             feature_vector = [input_data.features.get(f, 0.0) for f in features_list]
@@ -293,7 +308,7 @@ async def forecast_energy_with_features(
             
             forecast_data.append({
                 "timestamp": timestamp.isoformat(),
-                "hour": hour,
+                "hour": hour_int,
                 "value": round(float(prediction), 2),
                 "confidence_lower": round(float(prediction * 0.9), 2),
                 "confidence_upper": round(float(prediction * 1.1), 2)

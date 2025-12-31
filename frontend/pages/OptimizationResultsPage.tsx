@@ -170,14 +170,18 @@ const OptimizationResultsPage: React.FC = () => {
             {summary?.Costs?.Breakdown && (
               <Card title="Cost Breakdown">
                 <div className="space-y-2">
-                  {Object.entries(summary.Costs.Breakdown).map(([key, value]: [string, any]) => (
-                    <div key={key} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{key}</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        ₹{Number(value).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                  {Object.entries(summary.Costs.Breakdown).map(([key, value]: [string, any]) => {
+                    // Format label by replacing underscores with spaces
+                    const formattedLabel = key.replace(/_/g, ' ');
+                    return (
+                      <div key={key} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{formattedLabel}</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          ₹{Number(value).toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
             )}

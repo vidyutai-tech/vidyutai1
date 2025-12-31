@@ -32,50 +32,85 @@ def load_prediction_models():
     """Load all prediction models"""
     global prediction_models
     
+    print(f"🔍 Loading prediction models from: {models_dir}")
+    print(f"🔍 Models directory exists: {models_dir.exists()}")
+    
     try:
         # Battery RUL Model
         battery_model_path = models_dir / "battery_rul_model.joblib"
         battery_scaler_path = models_dir / "battery_rul_scaler.joblib"
         battery_meta_path = models_dir / "battery_rul_metadata.json"
         
-        if battery_model_path.exists():
-            prediction_models['battery_rul'] = {
-                'model': joblib.load(battery_model_path),
-                'scaler': joblib.load(battery_scaler_path),
-                'metadata': json.load(open(battery_meta_path))
-            }
-            print("✅ Battery RUL Model loaded")
+        print(f"🔍 Battery model path: {battery_model_path.exists()}, scaler: {battery_scaler_path.exists()}, meta: {battery_meta_path.exists()}")
+        
+        if battery_model_path.exists() and battery_scaler_path.exists() and battery_meta_path.exists():
+            try:
+                prediction_models['battery_rul'] = {
+                    'model': joblib.load(battery_model_path),
+                    'scaler': joblib.load(battery_scaler_path),
+                    'metadata': json.load(open(battery_meta_path))
+                }
+                print("✅ Battery RUL Model loaded successfully")
+            except Exception as e:
+                print(f"❌ Error loading Battery RUL model: {e}")
+                import traceback
+                print(f"Full error: {traceback.format_exc()}")
+        else:
+            print(f"⚠️ Battery RUL model files not found. Model: {battery_model_path.exists()}, Scaler: {battery_scaler_path.exists()}, Metadata: {battery_meta_path.exists()}")
         
         # Solar Degradation Model  
         solar_model_path = models_dir / "solar_degradation_model.joblib"
         solar_scaler_path = models_dir / "solar_degradation_scaler.joblib"
         solar_meta_path = models_dir / "solar_degradation_metadata.json"
         
-        if solar_model_path.exists():
-            prediction_models['solar_degradation'] = {
-                'model': joblib.load(solar_model_path),
-                'scaler': joblib.load(solar_scaler_path),
-                'metadata': json.load(open(solar_meta_path))
-            }
-            print("✅ Solar Degradation Model loaded")
+        print(f"🔍 Solar model path: {solar_model_path.exists()}, scaler: {solar_scaler_path.exists()}, meta: {solar_meta_path.exists()}")
+        
+        if solar_model_path.exists() and solar_scaler_path.exists() and solar_meta_path.exists():
+            try:
+                prediction_models['solar_degradation'] = {
+                    'model': joblib.load(solar_model_path),
+                    'scaler': joblib.load(solar_scaler_path),
+                    'metadata': json.load(open(solar_meta_path))
+                }
+                print("✅ Solar Degradation Model loaded successfully")
+            except Exception as e:
+                print(f"❌ Error loading Solar Degradation model: {e}")
+                import traceback
+                print(f"Full error: {traceback.format_exc()}")
+        else:
+            print(f"⚠️ Solar Degradation model files not found. Model: {solar_model_path.exists()}, Scaler: {solar_scaler_path.exists()}, Metadata: {solar_meta_path.exists()}")
         
         # Energy Loss Model
         loss_model_path = models_dir / "energy_loss_model.joblib"
         loss_scaler_path = models_dir / "energy_loss_scaler.joblib"
         loss_meta_path = models_dir / "energy_loss_metadata.json"
         
-        if loss_model_path.exists():
-            prediction_models['energy_loss'] = {
-                'model': joblib.load(loss_model_path),
-                'scaler': joblib.load(loss_scaler_path),
-                'metadata': json.load(open(loss_meta_path))
-            }
-            print("✅ Energy Loss Model loaded")
+        print(f"🔍 Energy Loss model path: {loss_model_path.exists()}, scaler: {loss_scaler_path.exists()}, meta: {loss_meta_path.exists()}")
+        
+        if loss_model_path.exists() and loss_scaler_path.exists() and loss_meta_path.exists():
+            try:
+                prediction_models['energy_loss'] = {
+                    'model': joblib.load(loss_model_path),
+                    'scaler': joblib.load(loss_scaler_path),
+                    'metadata': json.load(open(loss_meta_path))
+                }
+                print("✅ Energy Loss Model loaded successfully")
+            except Exception as e:
+                print(f"❌ Error loading Energy Loss model: {e}")
+                import traceback
+                print(f"Full error: {traceback.format_exc()}")
+        else:
+            print(f"⚠️ Energy Loss model files not found. Model: {loss_model_path.exists()}, Scaler: {loss_scaler_path.exists()}, Metadata: {loss_meta_path.exists()}")
+        
+        print(f"📊 Total models loaded: {len(prediction_models)}")
+        print(f"📊 Loaded model keys: {list(prediction_models.keys())}")
             
     except ImportError as e:
         print(f"⚠️ Error loading prediction models (missing module): {e}")
         print("💡 This may be due to scikit-learn version incompatibility. Models were trained with scikit-learn 1.3.2.")
         print("💡 Try: pip install scikit-learn==1.3.2")
+        import traceback
+        print(f"Full error: {traceback.format_exc()}")
     except Exception as e:
         print(f"⚠️ Error loading prediction models: {e}")
         import traceback

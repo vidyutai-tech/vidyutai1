@@ -226,9 +226,18 @@ router.post('/technical-sizing', async (req, res) => {
     const onGridTotalEmissionsKgAnnual = onGridTotalEmissionsKgLifetime / systemLifetimeYears;
     
     // Carbon offset calculation (for display - based on Dual Mode vs pure grid)
+    // NOTE: Carbon offset uses OPERATIONAL emissions only (not manufacturing) to match old website logic
+    // Pure grid annual emissions (baseline)
+    const pureGridEmissionsAnnual = annualConsumption * gridEmissionFactor;
+    // Dual Mode annual OPERATIONAL emissions only (solar operational + grid purchases)
+    // Exclude manufacturing emissions for carbon offset calculation
+    const dualModeOperationalEmissionsAnnual = (dualModeSolarOperationalEmissions + dualModeGridEmissionsLifetime) / systemLifetimeYears;
+    // Annual CO2 reduction (operational only)
+    const annualCO2Reduction = pureGridEmissionsAnnual - dualModeOperationalEmissionsAnnual;
+    // Carbon offset percentage: (Reduction / Baseline) * 100
+    const carbonOffsetPercent = (annualCO2Reduction / pureGridEmissionsAnnual) * 100;
+    // Lifetime CO2 reduction (25 years)
     const pureGridEmissionsLifetime = lifetimeConsumption * gridEmissionFactor;
-    const annualCO2Reduction = (pureGridEmissionsLifetime - dualModeTotalEmissionsKgLifetime) / systemLifetimeYears;
-    const carbonOffsetPercent = (annualCO2Reduction / (annualConsumption * gridEmissionFactor)) * 100;
     const lifetimeCO2Reduction = (pureGridEmissionsLifetime - dualModeTotalEmissionsKgLifetime) / 1000; // tonnes over 25 years
 
     // Calculate additional technical parameters (matching old website format)

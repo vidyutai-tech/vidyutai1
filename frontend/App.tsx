@@ -83,11 +83,8 @@ const App: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
 
-  // Check wizard completion status
-  useEffect(() => {
-    const completed = localStorage.getItem('hasCompletedWizard');
-    setHasCompletedWizard(completed === 'true');
-  }, []);
+  // Wizard completion status is determined by user profile from backend
+  // Wizard is considered complete if user profile exists with both site_type and workflow_preference set
 
   // Sync user state from localStorage on mount and when authentication changes
   useEffect(() => {
@@ -113,16 +110,30 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Load user profile
+  // Load user profile and determine wizard completion status
+  // Wizard is complete if profile exists with both site_type and workflow_preference set
   useEffect(() => {
     if (isAuthenticated && currentUser) {
       getUserProfile()
         .then(profile => {
           if (profile) {
             setUserProfile(profile);
+            // Wizard is complete if profile has both site_type and workflow_preference
+            const wizardCompleted = !!(profile.site_type && profile.workflow_preference);
+            setHasCompletedWizard(wizardCompleted);
+          } else {
+            // No profile exists, wizard not completed
+            setHasCompletedWizard(false);
           }
         })
-        .catch(err => console.error('Failed to load user profile:', err));
+        .catch(err => {
+          console.error('Failed to load user profile:', err);
+          // On error, assume wizard not completed to be safe
+          setHasCompletedWizard(false);
+        });
+    } else {
+      // Not authenticated, reset wizard status
+      setHasCompletedWizard(null);
     }
   }, [isAuthenticated, currentUser]);
 
@@ -446,7 +457,7 @@ const App: React.FC = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('selectedSiteId');
     localStorage.removeItem('selectedSite');
-    localStorage.removeItem('hasCompletedWizard');
+    // Note: We no longer store hasCompletedWizard in localStorage - it's determined from user profile
     if (socket) {
       socket.close();
       setSocket(null);
@@ -567,17 +578,25 @@ const App: React.FC = () => {
       );
     }
     
-    // Post-Login Wizard (if not completed)
+    // Post-Login Wizard (show only once after signup, if not completed)
+    // Show wizard if hasCompletedWizard is false (meaning it hasn't been completed for this user)
     if (hasCompletedWizard === false) {
       return (
         <HashRouter>
           <Routes>
             <Route path="*" element={
               <PostLoginWizardPage 
-                onComplete={() => {
+                onComplete={async () => {
+                  // Profile has been saved to backend, reload it to update wizard status
+                  try {
+                    const profile = await getUserProfile();
+                    if (profile && profile.site_type && profile.workflow_preference) {
+                      setUserProfile(profile);
                   setHasCompletedWizard(true);
-                  // Update localStorage
-                  localStorage.setItem('hasCompletedWizard', 'true');
+                    }
+                  } catch (err) {
+                    console.error('Failed to reload profile after wizard completion:', err);
+                  }
                   // Navigate using window.location since we're in a separate router
                   setTimeout(() => {
                     window.location.hash = '#/main-options';

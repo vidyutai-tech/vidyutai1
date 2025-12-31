@@ -121,8 +121,8 @@ const SolarDegradationPage: React.FC = () => {
                     <div className="text-right">
                       <p className="text-sm text-gray-600 dark:text-gray-400">Model Accuracy</p>
                       <p className="text-2xl font-bold text-amber-600">
-                        R² = {solarData.model_info?.r2 
-                          ? (solarData.model_info.r2 * 100).toFixed(1) 
+                        R² = {solarData.model_info?.r2 !== undefined && solarData.model_info?.r2 !== null && !isNaN(solarData.model_info.r2)
+                          ? ((solarData.model_info.r2) * 100).toFixed(1)
                           : 'N/A'}%
                       </p>
                     </div>
@@ -137,13 +137,15 @@ const SolarDegradationPage: React.FC = () => {
                         dataKey="age_years" 
                         label={{ value: 'Age (Years)', position: 'insideBottom', offset: -5 }}
                         tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
                       />
                       <YAxis 
-                        label={{ value: 'Efficiency (%)', angle: -90, position: 'insideLeft' }}
+                        label={{ value: 'Efficiency (%)', angle: -90, position: 'insideLeft', offset: 10 }}
                         tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Legend />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} />
                       <Line 
                         type="monotone" 
                         dataKey="efficiency_current" 
@@ -164,7 +166,9 @@ const SolarDegradationPage: React.FC = () => {
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mean Error</p>
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      ±{formatNumber(solarData.model_info?.mae, 3)}%
+                      {solarData.model_info?.mae !== undefined && solarData.model_info?.mae !== null && !isNaN(solarData.model_info.mae)
+                        ? `±${formatNumber(solarData.model_info.mae, 3)}%`
+                        : 'N/A'}
                     </p>
                   </div>
                   <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">

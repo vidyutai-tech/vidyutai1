@@ -158,10 +158,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
             Energy Management System
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Intelligent power flow optimization for renewable energy systems. 
-            Real-time monitoring and AI-powered decision making for maximum efficiency.
-          </p>
+          <div className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto space-y-2">
+            <p>
+              Intelligent power flow optimization for renewable energy systems.
+            </p>
+            <p>
+              Real-time monitoring.
+            </p>
+            <p>
+              AI-powered decision making for maximum efficiency.
+            </p>
+          </div>
         </div>
 
         {/* Mode Selector */}

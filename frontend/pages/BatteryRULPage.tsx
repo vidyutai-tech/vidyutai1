@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Battery, Loader } from 'lucide-react';
 import Card from '../components/ui/Card';
@@ -12,6 +12,8 @@ const BatteryRULPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [batteryCycles, setBatteryCycles] = useState(50);
   const [batteryData, setBatteryData] = useState<any>(null);
+  const [batteryCapacity, setBatteryCapacity] = useState<number>(100); // kWh
+  const [dailyUsage, setDailyUsage] = useState<number>(50); // kWh/day
 
   useEffect(() => {
     loadBatteryData();
@@ -35,6 +37,46 @@ const BatteryRULPage: React.FC = () => {
   const formatNumber = (num: number, decimals = 2) => {
     return num.toLocaleString('en-IN', { maximumFractionDigits: decimals });
   };
+
+  // Convert hours to years (1 year = 8760 hours)
+  const hoursToYears = (hours: number): number => {
+    return hours / 8760;
+  };
+
+  // Calculate battery cycles based on capacity and daily usage
+  // A battery cycle is one complete charge and discharge
+  // Typically, we consider depth of discharge (DOD) - assume 80% DOD for lithium batteries
+  const calculateCycles = (days: number): number => {
+    if (batteryCapacity <= 0 || dailyUsage <= 0) return 0;
+    const depthOfDischarge = 0.8; // 80% DOD (standard for lithium batteries)
+    const usableCapacity = batteryCapacity * depthOfDischarge;
+    
+    // Cycles per day = daily usage / usable capacity per cycle
+    // Cap at 2 cycles per day maximum (realistic limit)
+    const cyclesPerDay = Math.min(dailyUsage / usableCapacity, 2);
+    
+    return cyclesPerDay * days;
+  };
+
+  // Generate cycles vs time data
+  const cyclesVsTimeData = useMemo(() => {
+    if (!batteryData || !batteryData.predictions) return [];
+    
+    return batteryData.predictions.slice(0, batteryCycles).map((pred: any) => {
+      const days = pred.age_days || 0;
+      const cycles = calculateCycles(days);
+      const years = days / 365;
+      
+      return {
+        time_days: days,
+        time_years: years,
+        cycles: cycles,
+        rul_years: hoursToYears(pred.rul_hours),
+        rul_hours: pred.rul_hours,
+        cycle_count: pred.cycle_count,
+      };
+    });
+  }, [batteryData, batteryCycles, batteryCapacity, dailyUsage]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -136,17 +178,35 @@ const BatteryRULPage: React.FC = () => {
                         dataKey="cycle_count" 
                         label={{ value: 'Charge/Discharge Cycles', position: 'insideBottom', offset: -5 }}
                         tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
                       />
                       <YAxis 
-                        label={{ value: 'RUL (hours)', angle: -90, position: 'insideLeft' }}
+                        label={{ value: 'RUL (years)', angle: -90, position: 'insideLeft', offset: 0 }}
                         tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
                       />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
+                      <Tooltip 
+                        content={({ active, payload, label }: any) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            const rulYears = hoursToYears(data.rul_hours);
+                            return (
+                              <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg">
+                                <p className="font-semibold text-gray-900 dark:text-white">Cycle: {formatNumber(Number(label))}</p>
+                                <p style={{ color: payload[0].color }} className="text-sm">
+                                  RUL: {formatNumber(rulYears, 2)} years ({formatNumber(data.rul_hours, 0)} hours)
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} />
                       <Area 
                         type="monotone" 
-                        dataKey="rul_hours" 
-                        name="Remaining Useful Life"
+                        dataKey={(item: any) => hoursToYears(item.rul_hours)}
+                        name="Remaining Useful Life (years)"
                         stroke="#3b82f6" 
                         strokeWidth={2}
                         fill="url(#colorRUL)"
@@ -163,7 +223,7 @@ const BatteryRULPage: React.FC = () => {
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Mean Error</p>
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      ±{formatNumber(batteryData.model_info.mae)} hours
+                      ±{formatNumber(hoursToYears(batteryData.model_info.mae), 2)} years
                     </p>
                   </div>
                   <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -173,6 +233,125 @@ const BatteryRULPage: React.FC = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Battery Configuration */}
+            <Card className="mt-6">
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Battery Configuration
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Battery Installed Capacity (kWh)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="0.1"
+                      value={batteryCapacity}
+                      onChange={(e) => setBatteryCapacity(parseFloat(e.target.value) || 100)}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Daily Battery Usage (kWh/day)
+                    </label>
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={dailyUsage}
+                      onChange={(e) => setDailyUsage(parseFloat(e.target.value) || 50)}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                {batteryCapacity > 0 && dailyUsage > 0 && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Estimated Cycles per Day</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">
+                      {formatNumber(calculateCycles(1), 3)} cycles/day
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Based on {dailyUsage} kWh/day usage from {batteryCapacity} kWh capacity (80% depth of discharge)
+                    </p>
+                    {dailyUsage > batteryCapacity * 0.8 * 2 && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                        ⚠️ Note: Daily usage exceeds realistic battery cycling (max ~2 cycles/day). Consider increasing battery capacity.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Cycles vs Time Chart */}
+            {cyclesVsTimeData.length > 0 && (
+              <Card className="mt-6">
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Battery Cycles vs Time
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    Calculated cycles based on installed capacity and daily usage over time
+                  </p>
+                  
+                  <div className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={cyclesVsTimeData}>
+                        <defs>
+                          <linearGradient id="colorCycles" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis 
+                          dataKey="time_years" 
+                          label={{ value: 'Time (years)', position: 'insideBottom', offset: -5 }}
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => Number(value).toFixed(1)}
+                        />
+                        <YAxis 
+                          label={{ value: 'Battery Cycles', angle: -90, position: 'insideLeft', offset: 0 }}
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => Math.round(Number(value)).toString()}
+                        />
+                        <Tooltip 
+                          content={({ active, payload, label }: any) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              return (
+                                <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg">
+                                  <p className="font-semibold text-gray-900 dark:text-white">
+                                    Time: {formatNumber(Number(label), 2)} years ({formatNumber(data.time_days, 0)} days)
+                                  </p>
+                                  <p style={{ color: payload[0].color }} className="text-sm">
+                                    Cycles: {formatNumber(data.cycles, 2)}
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                        <Area 
+                          type="monotone" 
+                          dataKey="cycles" 
+                          name="Battery Cycles"
+                          stroke="#8b5cf6" 
+                          strokeWidth={2}
+                          fill="url(#colorCycles)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Key Insights */}
             <Card className="mt-6">
@@ -185,6 +364,9 @@ const BatteryRULPage: React.FC = () => {
                   <p>• Maintaining optimal temperature (20-30°C) extends battery life significantly</p>
                   <p>• High discharge rates accelerate degradation</p>
                   <p>• Regular monitoring helps predict replacement needs and prevent failures</p>
+                  {batteryCapacity > 0 && dailyUsage > 0 && (
+                    <p>• At current usage rate ({formatNumber(calculateCycles(1), 2)} cycles/day), battery will complete {formatNumber(calculateCycles(365), 0)} cycles per year</p>
+                  )}
                 </div>
               </div>
             </Card>

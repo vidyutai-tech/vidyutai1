@@ -81,8 +81,8 @@ const AIMLInsightsPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Main Options
           </button>
-          <div className="mb-4">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+          <div className="mb-4 overflow-visible">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3 leading-normal pb-2">
               AI/ML Insights
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-xl max-w-3xl">

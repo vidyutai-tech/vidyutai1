@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AppContext } from "../contexts/AppContext";
 import axios from "axios";
 import { Snackbar, Alert } from "@mui/material";
+import DemandOptimizationCharts from "../components/shared/DemandOptimizationCharts";
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -28,7 +29,7 @@ import {
 import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
 const DemandOptimizationPage = () => {
-  const { currentUser } = useContext(AppContext)!;
+  const { currentUser, theme } = useContext(AppContext)!;
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -61,11 +62,13 @@ const DemandOptimizationPage = () => {
   const [mergedFormData, setMergedFormData] = useState<any>(null);
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [chartData, setChartData] = useState<any[]>([]);
   const [plotUrl, setPlotUrl] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use backend proxy instead of direct AI service call to avoid CORS issues
   const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -183,9 +186,13 @@ const DemandOptimizationPage = () => {
     const parsed = JSON.parse(savedResponse);
     setResponse(parsed);
     if (parsed.chart_data) {
-      setChartData(parsed.chart_data);
+      if (Array.isArray(parsed.chart_data)) {
+        setChartData(parsed.chart_data);
+      } else {
+        setChartData(parsed.chart_data.time_series || []);
+      }
     }
-    if (parsed.plot_base64) {
+    if (parsed.plot_base64 && !parsed.chart_data) {
       setPlotUrl(`data:image/png;base64,${parsed.plot_base64}`);
     }
   }, []);
@@ -229,8 +236,21 @@ const DemandOptimizationPage = () => {
     }
 
     setLoading(true);
+    setProgress(0);
     setError(null);
     setOpen(false);
+    
+    // Start progress simulation
+    progressIntervalRef.current = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          // Slow down near the end, wait for actual completion
+          return prev;
+        }
+        // Increment progress with some randomness to make it feel natural
+        return prev + Math.random() * 15 + 5;
+      });
+    }, 500);
 
     try {
       // Get auth token
@@ -276,8 +296,18 @@ const DemandOptimizationPage = () => {
 
       if (res.data.status === "success") {
         setResponse(res.data);
-        setChartData(res.data.chart_data || []);
-        if (res.data.plot_base64) {
+        // Handle new chart_data structure (with time_series and metadata) or old array structure
+        if (res.data.chart_data) {
+          if (Array.isArray(res.data.chart_data)) {
+            // Old structure - convert to new structure for backward compatibility
+            setChartData(res.data.chart_data);
+          } else {
+            // New structure already
+            setChartData(res.data.chart_data.time_series || []);
+          }
+        }
+        // Only set plotUrl if chart_data is not available (backward compatibility)
+        if (res.data.plot_base64 && !res.data.chart_data) {
           setPlotUrl(`data:image/png;base64,${res.data.plot_base64}`);
         } else {
           setPlotUrl(null);
@@ -303,7 +333,18 @@ const DemandOptimizationPage = () => {
       }
       setOpen(true);
     } finally {
-      setLoading(false);
+      // Clear progress interval
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      // Complete progress bar
+      setProgress(100);
+      // Small delay to show 100% before hiding
+      setTimeout(() => {
+        setLoading(false);
+        setProgress(0);
+      }, 300);
     }
   };
 
@@ -315,6 +356,9 @@ const DemandOptimizationPage = () => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
       }
     };
   }, []);
@@ -328,15 +372,21 @@ const DemandOptimizationPage = () => {
   const formattedBreakdown = useMemo(() => {
     if (!response?.summary?.Costs?.Breakdown) return [];
     const breakdown = response.summary.Costs.Breakdown;
+    
+    // Helper function to format labels (replace underscores with spaces)
+    const formatLabel = (label: string) => {
+      return label.replace(/_/g, ' ');
+    };
+    
     if (Array.isArray(breakdown)) {
       return breakdown.map((item: any) => ({
-        label: item.label,
+        label: formatLabel(item.label),
         value: item.value,
       }));
     }
     if (breakdown && typeof breakdown === "object") {
       return Object.entries(breakdown).map(([label, value]) => ({
-        label,
+        label: formatLabel(label),
         value,
       }));
     }
@@ -459,7 +509,8 @@ const DemandOptimizationPage = () => {
                 Configure Demand Optimization
               </h2>
               <p className="mt-3 max-w-2xl text-sm text-base-content/70 md:text-[0.95rem]">
-                Configure curtailment penalties for multi-load prioritization. Common parameters are already set from Optimization Setup.
+                Optimize energy demand patterns across multiple loads with priority-based curtailment. 
+                Manages critical vs. flexible loads and determines optimal load serving strategy to minimize total cost.
               </p>
             </div>
             {mergedFormData && (
@@ -475,6 +526,34 @@ const DemandOptimizationPage = () => {
                 </span>
               </div>
             )}
+          </div>
+
+          {/* Purpose and Usage Info Box */}
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+            <div className="flex items-start gap-3">
+              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Purpose & Usage</h4>
+                <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1.5">
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>When to use:</strong> Manage energy demand across multiple loads (critical and flexible) with different priorities</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>What it does:</strong> Uses MILP optimization to determine which loads to serve or curtail based on penalties, ensuring critical loads are always served</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>Output:</strong> Per-load dispatch analysis, curtailment decisions, cost breakdown, and 7-subplot visualization charts</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>Note:</strong> Requires 5 load profiles in your data file. Loads 1-2 are critical (always served), Loads 3-5 can be curtailed based on penalties</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           {!commonConfig && (
@@ -623,22 +702,56 @@ const DemandOptimizationPage = () => {
             </div>
           )}
 
-          <div className="flex justify-center pt-4">
+          <div className="flex flex-col items-center pt-4 space-y-3">
             <button
               onClick={handleSubmit}
-              className="btn h-12 min-h-12 rounded-2xl border-none bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 px-10 text-base font-semibold text-white shadow-lg shadow-indigo-300/40 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+              className="relative btn h-12 min-h-12 rounded-2xl border-none bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 px-10 text-base font-semibold text-white shadow-lg shadow-indigo-300/40 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70 overflow-hidden"
               disabled={loading || !mergedFormData}
             >
-              {loading ? "Optimizing..." : "Run Demand Optimization"}
+              {loading && (
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 transition-all duration-300 ease-out"
+                  style={{ 
+                    width: `${progress}%`,
+                    transition: 'width 0.3s ease-out'
+                  }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Optimizing... {Math.round(progress)}%
+                  </>
+                ) : (
+                  "Run Demand Optimization"
+                )}
+              </span>
             </button>
+            {loading && (
+              <div className="w-full max-w-md">
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 transition-all duration-300 ease-out rounded-full"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-2">
+                  Processing optimization... This may take a few moments
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {response && (
         <div className="space-y-8">
-          {/* Optimization Summary */}
-          {plotUrl && (
+          {/* Optimization Summary - Use Recharts if chart_data is available, otherwise fallback to image */}
+          {(response.chart_data || plotUrl) && (
             <div className="rounded-3xl border border-base-200/70 bg-base-100/95 shadow-xl shadow-purple-100/40">
               <div className="space-y-4 p-6 md:p-8">
                 <div className="flex items-center justify-between">
@@ -654,16 +767,20 @@ const DemandOptimizationPage = () => {
                     </p>
                   </div>
                   <span className="rounded-full border border-purple-400/30 bg-purple-50 px-4 py-1 text-xs font-semibold text-purple-600">
-                    Multi-load analysis
+                    {response.chart_data && typeof response.chart_data === 'object' && response.chart_data.time_series ? 'Interactive charts' : 'Multi-load analysis'}
                   </span>
                 </div>
-                <div className="flex justify-center overflow-x-auto">
-                  <img
-                    src={plotUrl}
-                    alt="Demand Optimization Results"
-                    className="max-w-full rounded-2xl shadow-lg"
-                  />
-                </div>
+                {response.chart_data && typeof response.chart_data === 'object' && response.chart_data.time_series ? (
+                  <DemandOptimizationCharts chartData={response.chart_data} theme={theme} />
+                ) : plotUrl ? (
+                  <div className="flex justify-center overflow-x-auto">
+                    <img
+                      src={plotUrl}
+                      alt="Demand Optimization Results"
+                      className="max-w-full rounded-2xl shadow-lg"
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>
           )}

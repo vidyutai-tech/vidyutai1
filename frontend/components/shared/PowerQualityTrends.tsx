@@ -121,18 +121,22 @@ const PowerQualityTrends: React.FC = () => {
       {/* Quality Index Chart */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Overall Quality Index</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={trendData}>
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart data={trendData} margin={{ left: 10, right: 10, top: 50, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-600" />
             <XAxis 
               dataKey="time" 
-              tick={{ fill: 'currentColor', fontSize: 12 }}
+              label={{ value: 'Time', position: 'insideBottom', offset: -5 }}
+              tick={{ fill: 'currentColor', fontSize: 12, angle: -45, textAnchor: 'end' }}
               interval="preserveStartEnd"
+              height={80}
             />
             <YAxis 
               domain={[0, 100]}
-              label={{ value: 'Quality Index', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Quality Index', angle: -90, position: 'insideLeft', offset: 0, style: { textAnchor: 'middle' } }}
               tick={{ fill: 'currentColor' }}
+              tickFormatter={(value) => Number(value).toFixed(2)}
+              width={60}
             />
             <Tooltip 
               contentStyle={{ 
@@ -166,24 +170,30 @@ const PowerQualityTrends: React.FC = () => {
       {/* Individual Metrics Chart */}
       <div>
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Detailed Metrics</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={trendData}>
+        <ResponsiveContainer width="100%" height={330}>
+          <LineChart data={trendData} margin={{ left: 10, right: 10, top: 50, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-600" />
             <XAxis 
               dataKey="time" 
-              tick={{ fill: 'currentColor', fontSize: 12 }}
+              label={{ value: 'Time', position: 'insideBottom', offset: -5 }}
+              tick={{ fill: 'currentColor', fontSize: 12, angle: -45, textAnchor: 'end' }}
               interval="preserveStartEnd"
+              height={80}
             />
             <YAxis 
               yAxisId="left"
-              label={{ value: 'Voltage (V) / Frequency (Hz)', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Voltage (V) / Frequency (Hz)', angle: -90, position: 'insideLeft', offset: 0, style: { textAnchor: 'middle' } }}
               tick={{ fill: 'currentColor' }}
+              tickFormatter={(value) => Number(value).toFixed(2)}
+              width={70}
             />
             <YAxis 
               yAxisId="right"
               orientation="right"
-              label={{ value: 'THD (%) / PF / Unbalance (%)', angle: 90, position: 'insideRight' }}
+              label={{ value: 'THD (%) / PF / Unbalance (%)', angle: 90, position: 'insideRight', offset: 0, style: { textAnchor: 'middle' } }}
               tick={{ fill: 'currentColor' }}
+              tickFormatter={(value) => Number(value).toFixed(2)}
+              width={70}
             />
             <Tooltip 
               contentStyle={{ 
@@ -192,7 +202,7 @@ const PowerQualityTrends: React.FC = () => {
                 borderRadius: '8px'
               }}
             />
-            <Legend />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} />
             <Line yAxisId="left" type="monotone" dataKey="voltage" stroke="#f59e0b" strokeWidth={2} dot={false} name="Voltage (V)" />
             <Line yAxisId="left" type="monotone" dataKey="frequency" stroke="#3b82f6" strokeWidth={2} dot={false} name="Frequency (Hz)" />
             <Line yAxisId="right" type="monotone" dataKey="thd" stroke="#ef4444" strokeWidth={2} dot={false} name="THD (%)" />

@@ -597,20 +597,38 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
     plot_bytes = buf.read()
     plt.close()
 
-    # Build chart_data for frontend
-    base_time = datetime.now().replace(minute=0, second=0, microsecond=0)
-    chart_data = []
+    # Build comprehensive chart_data for frontend Recharts
+    chart_data = {
+        "time_series": [],
+        "metadata": {
+            "num_days": num_days,
+            "time_resolution_minutes": time_resolution_minutes,
+            "pv_energy_cost": float(pv_energy_cost),
+            "battery_om_cost": float(battery_om_cost),
+            "fuel_cell_om_cost": float(fuel_cell_om_cost),
+            "electrolyzer_om_cost": float(electrolyzer_om_cost),
+            "critical_loads": critical_loads,
+            "curtailable_loads": dr_loads
+        }
+    }
+    
     for t in T:
-        ts = base_time + timedelta(minutes=t * time_resolution_minutes)
-        chart_data.append({
-            "timestamp": ts.isoformat(),
-            "load_kwh": float(load_demand_total[t]) * step_size,
-            "solar_kwh": float(value(P_pv_used[t])) * step_size,
-            "grid_kwh": float(max(0.0, value(P_grid[t]))) * step_size,
-            "battery_discharge_kwh": float(value(P_discharge[t])) * step_size,
-            "battery_charge_kwh": float(value(P_charge[t])) * step_size,
-            "battery_soc_percent": float(results['Battery_SOC'][t]),
-        })
+        entry = {
+            "time_hours": float(time_hours[t]),
+            "load_demand": float(results['Load_Demand'][t]),
+            "grid_power": float(results['Grid_Power'][t]),
+            "diesel_power": float(results['Diesel_Power'][t]),
+            "pv_used": float(results['PV_Used'][t]),
+            "net_battery_power": float(results['Net_Battery_Power'][t]),
+            "net_h2_power": float(results['Net_H2_Power'][t]),
+            "price": float(results['Price'][t]),
+        }
+        # Add per-load data
+        for i in load_ids:
+            entry[f"load{i}_demand"] = float(results[f'Load{i}_Demand'][t])
+            entry[f"load{i}_served"] = float(results[f'Load{i}_Served'][t])
+            entry[f"load{i}_curtailed"] = float(results[f'Load{i}_Curtailed'][t])
+        chart_data["time_series"].append(entry)
 
     return summary, plot_bytes, chart_data
 

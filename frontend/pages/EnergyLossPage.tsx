@@ -135,13 +135,15 @@ const EnergyLossPage: React.FC = () => {
                         dataKey="load_kw" 
                         label={{ value: 'Load (kW)', position: 'insideBottom', offset: -5 }}
                         tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
                       />
                       <YAxis 
-                        label={{ value: 'Loss (%)', angle: -90, position: 'insideLeft' }}
+                        label={{ value: 'Loss (%)', angle: -90, position: 'insideLeft', offset: 0 }}
                         tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => Number(value).toFixed(2)}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Legend />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} />
                       <Line 
                         type="monotone" 
                         dataKey="loss_percent" 
