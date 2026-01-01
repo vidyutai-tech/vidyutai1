@@ -27,7 +27,7 @@ const aiMlNavItems = [
   { name: 'Solar Degradation Prediction', path: '/solar-degradation', icon: Zap },
   { name: 'Energy Loss Prediction', path: '/energy-loss', icon: AlertTriangle },
   { name: 'Root Cause Analysis', path: '/root-cause-analysis', icon: Search },
-  { name: 'AI Explanations', path: '/ai-explanations', icon: MessageSquare },
+  { name: 'AI Interpretations', path: '/ai-explanations', icon: MessageSquare },
 ];
 
 const dashboardNavItems = [

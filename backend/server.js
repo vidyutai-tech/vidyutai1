@@ -21,6 +21,8 @@ const insightsRoutes = require('./routes/insights');
 const wizardRoutes = require('./routes/wizard');
 const planningRoutes = require('./routes/planning');
 const optimizationRoutes = require('./routes/optimization');
+const xaiRoutes = require('./routes/xai');
+const gdprRoutes = require('./routes/gdpr');
 
 // Initialize Express app
 const app = express();
@@ -133,6 +135,8 @@ app.use('/api/v1/insights', insightsRoutes); // Dedicated insights endpoints
 app.use('/api/v1/wizard', wizardRoutes);
 app.use('/api/v1/planning', planningRoutes);
 app.use('/api/v1', optimizationRoutes);
+app.use('/api/v1/xai', xaiRoutes); // XAI routes - proxy to Python AI service
+app.use('/api/v1/gdpr', gdprRoutes); // GDPR compliance routes
 
 // Simulator endpoint (also available as /api/v1/simulate for convenience)
 app.post('/api/v1/simulate', async (req, res) => {

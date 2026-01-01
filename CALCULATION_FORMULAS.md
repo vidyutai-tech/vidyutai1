@@ -32,13 +32,25 @@ Annual Consumption = Daily Consumption × 365 days
 
 ### 1.2 Solar Capacity Sizing
 
-**Solar Capacity (kW)**
+**Base Solar Capacity (kW)**
 ```
-Solar Capacity = Daily Consumption / (Peak Sun Hours × System Efficiency)
+Base Solar Capacity = Daily Consumption / (Peak Sun Hours × System Efficiency)
 
 Where:
 - Peak Sun Hours = 5 hours/day
 - System Efficiency = 0.773 (77.3%)
+```
+
+**Primary Goal Multipliers (Applied to Base Solar Capacity):**
+```
+Solar Capacity = Base Solar Capacity × Solar Multiplier
+
+Where Solar Multiplier:
+- Cost Savings: 0.9 (10% reduction to minimize initial investment)
+- Self-Sustainability: 1.3 (30% increase to maximize renewable energy)
+- Reliability: 1.1 (10% increase for consistent power generation)
+- Carbon Reduction: 1.2 (20% increase to minimize grid emissions)
+- Default (if no goal specified): 1.0
 ```
 
 **Daily Solar Generation (kWh)**
@@ -50,14 +62,26 @@ Daily Solar Generation = Solar Capacity × Peak Sun Hours × System Efficiency
 
 ### 1.3 Battery Capacity Sizing
 
-**Battery Capacity (kWh)**
+**Base Battery Capacity (kWh)**
 ```
-Battery Capacity = Daily Consumption × Battery-to-Daily Ratio
+Base Battery Capacity = Daily Consumption × Base Battery-to-Daily Ratio
 
-Where Battery-to-Daily Ratio:
+Where Base Battery-to-Daily Ratio:
 - Residential: 0.83 (83%)
 - Commercial: 0.65 (65%)
 - Industrial: 0.55 (55%)
+```
+
+**Primary Goal Multipliers (Applied to Base Battery Capacity):**
+```
+Battery Capacity = Base Battery Capacity × Battery Multiplier
+
+Where Battery Multiplier:
+- Cost Savings: 0.8 (20% reduction to minimize initial investment)
+- Self-Sustainability: 1.3 (30% increase to maximize renewable energy storage)
+- Reliability: 1.5 (50% increase for extended backup duration)
+- Carbon Reduction: 1.2 (20% increase to reduce grid dependence)
+- Default (if no goal specified): 1.0
 ```
 
 **Battery Capacity (Ah)**
@@ -109,20 +133,40 @@ Diesel Capacity = Peak Power × 1.1
 
 **Electrolyzer Capacity (kW)**
 ```
-Electrolyzer Capacity = Solar Capacity × 0.2 (20% of solar)
+Electrolyzer Capacity = Solar Capacity × 0.2 (20% of solar capacity)
+
+Purpose: Converts excess solar energy to hydrogen for long-duration storage
 ```
 
 **Fuel Cell Capacity (kW)**
 ```
-Fuel Cell Capacity = Peak Power × 0.5 (50% of peak)
+Fuel Cell Capacity = Peak Power × 0.5 (50% of peak power)
+
+Purpose: Provides backup power generation from stored hydrogen
+Note: This rating is displayed in Technical Analysis when hydrogen is enabled
 ```
 
 **H2 Tank Capacity (kg)**
 ```
 H2 Tank Capacity = Battery Capacity (kWh) / 33.3
 
-Where: 1 kg H2 ≈ 33.3 kWh
+Where: 1 kg H2 ≈ 33.3 kWh (energy equivalent)
+Purpose: Stores hydrogen for fuel cell operation during extended outages
 ```
+
+**Hydrogen System Cost Calculation:**
+```
+Electrolyzer Cost = Electrolyzer Capacity × ₹50,000
+Fuel Cell Cost = Fuel Cell Capacity × ₹60,000
+H2 Tank Cost = H2 Tank Capacity × ₹5,000
+Total Hydrogen CAPEX = Electrolyzer Cost + Fuel Cell Cost + H2 Tank Cost
+```
+
+**Display in Technical Analysis:**
+When hydrogen system is enabled, the following fields are shown:
+- Fuel Cell Rating (kW): `Fuel Cell Capacity`
+- Electrolyzer Rating (kW): `Electrolyzer Capacity`
+- H2 Tank Capacity (kg): `H2 Tank Capacity`
 
 ---
 
@@ -374,61 +418,176 @@ Lifetime CO₂ Reduction (tonnes) = (Pure Grid Lifetime Emissions - Dual Mode Li
 
 ---
 
-## 4. EXAMPLE CALCULATION
+## 4. PRIMARY GOAL OPTIMIZATION STRATEGY
+
+The system adjusts solar and battery sizing based on the selected primary goal to optimize for different objectives:
+
+### 4.1 Cost Savings Optimization
+**Strategy:** Minimize initial investment while maintaining basic functionality
+- Solar: 10% reduction (multiplier: 0.9)
+- Battery: 20% reduction (multiplier: 0.8)
+- **Result:** Lower CAPEX, faster payback, but reduced self-sufficiency
+
+### 4.2 Self-Sustainability Optimization
+**Strategy:** Maximize renewable energy usage and independence from grid
+- Solar: 30% increase (multiplier: 1.3)
+- Battery: 30% increase (multiplier: 1.3)
+- **Result:** Higher renewable energy generation, better energy independence, longer backup duration
+
+### 4.3 Reliability Optimization
+**Strategy:** Ensure continuous power supply with extended backup duration
+- Solar: 10% increase (multiplier: 1.1)
+- Battery: 50% increase (multiplier: 1.5)
+- **Result:** Extended backup hours, better resilience during outages, higher reliability
+
+### 4.4 Carbon Reduction Optimization
+**Strategy:** Minimize grid emissions through increased renewable energy
+- Solar: 20% increase (multiplier: 1.2)
+- Battery: 20% increase (multiplier: 1.2)
+- **Result:** Lower carbon footprint, reduced grid dependence, balanced cost-performance
+
+---
+
+## 5. EXAMPLE CALCULATIONS
+
+### Example 1: Base Calculation (No Primary Goal)
 
 **Input:**
 - Daily Consumption: 9.90 kWh/day
 - Use Case: Residential
+- Primary Goal: None (default)
 
 **Step 1: Technical Sizing**
 ```
 Average Power = 9.90 / 24 = 0.4125 kW
 Peak Power = 0.4125 × 2.5 = 1.03125 kW
-Solar Capacity = 9.90 / (5 × 0.773) = 2.56 kW
-Battery Capacity = 9.90 × 0.83 = 8.217 kWh ≈ 8.21 kWh
+Base Solar Capacity = 9.90 / (5 × 0.773) = 2.56 kW
+Solar Capacity = 2.56 × 1.0 = 2.56 kW (no multiplier)
+Base Battery Capacity = 9.90 × 0.83 = 8.217 kWh
+Battery Capacity = 8.217 × 1.0 = 8.21 kWh (no multiplier)
 Inverter Capacity = 2.56 × 1.25 = 3.2 kW ≈ 3.19 kW
 DC-DC Converter = 2.56 × 1.25 = 3.2 kW ≈ 3.19 kW
 ```
 
-**Step 2: Economic Analysis**
+### Example 2: Cost Savings Goal
+
+**Input:**
+- Daily Consumption: 9.90 kWh/day
+- Use Case: Residential
+- Primary Goal: Cost Savings
+
+**Step 1: Technical Sizing**
 ```
-Solar Cost = 2.56 × ₹40,000 = ₹102,400
-Battery Cost = 8.21 × ₹8,000 = ₹65,680
-Inverter Cost = 3.19 × ₹8,000 = ₹25,520
-DC-DC Converter Cost = 3.19 × ₹1,500 = ₹4,785
-Installation = (102,400 + 65,680 + 25,520 + 4,785) × 0.10 = ₹19,838.50
-Total CAPEX = ₹217,223.50
+Average Power = 9.90 / 24 = 0.4125 kW
+Peak Power = 0.4125 × 2.5 = 1.03125 kW
+Base Solar Capacity = 9.90 / (5 × 0.773) = 2.56 kW
+Solar Capacity = 2.56 × 0.9 = 2.304 kW (10% reduction)
+Base Battery Capacity = 9.90 × 0.83 = 8.217 kWh
+Battery Capacity = 8.217 × 0.8 = 6.574 kWh ≈ 6.57 kWh (20% reduction)
+Inverter Capacity = 2.304 × 1.25 = 2.88 kW
+DC-DC Converter = 2.304 × 1.25 = 2.88 kW
 ```
 
-**Step 3: Annual Generation**
+### Example 3: Reliability Goal
+
+**Input:**
+- Daily Consumption: 9.90 kWh/day
+- Use Case: Residential
+- Primary Goal: Reliability
+
+**Step 1: Technical Sizing**
 ```
-Annual Consumption = 9.90 × 365 = 3,613.5 kWh
-Dual Mode Annual Generation = 2.56 × 5 × 365 × 0.80 = 3,737.6 kWh
-On-Grid Annual Generation = 2.56 × 5 × 365 × 0.85 = 3,972.8 kWh
+Average Power = 9.90 / 24 = 0.4125 kW
+Peak Power = 0.4125 × 2.5 = 1.03125 kW
+Base Solar Capacity = 9.90 / (5 × 0.773) = 2.56 kW
+Solar Capacity = 2.56 × 1.1 = 2.816 kW (10% increase)
+Base Battery Capacity = 9.90 × 0.83 = 8.217 kWh
+Battery Capacity = 8.217 × 1.5 = 12.326 kWh ≈ 12.33 kWh (50% increase)
+Backup Hours = 12.33 / 0.4125 = 29.9 hours (extended backup)
+Inverter Capacity = 2.816 × 1.25 = 3.52 kW
+DC-DC Converter = 2.816 × 1.25 = 3.52 kW
 ```
 
-**Step 4: Carbon Emissions**
+### Example 4: With Hydrogen System
+
+**Input:**
+- Daily Consumption: 9.90 kWh/day
+- Use Case: Residential
+- Primary Goal: Self-Sustainability
+- Include Hydrogen: Yes
+
+**Step 1: Technical Sizing**
 ```
-Pure Grid Annual Emissions = 3,613.5 × 0.82 = 2,963.07 kg CO₂
-Dual Mode Operational Annual = (Solar Operational + Grid Emissions) / 25
-Carbon Offset % = (Reduction / 2,963.07) × 100
+Base Solar Capacity = 9.90 / (5 × 0.773) = 2.56 kW
+Solar Capacity = 2.56 × 1.3 = 3.328 kW (30% increase for self-sustainability)
+Base Battery Capacity = 9.90 × 0.83 = 8.217 kWh
+Battery Capacity = 8.217 × 1.3 = 10.682 kWh (30% increase)
+Peak Power = 0.4125 × 2.5 = 1.03125 kW
 ```
+
+**Step 2: Hydrogen System Sizing**
+```
+Electrolyzer Capacity = 3.328 × 0.2 = 0.666 kW
+Fuel Cell Capacity = 1.03125 × 0.5 = 0.516 kW
+H2 Tank Capacity = 10.682 / 33.3 = 0.321 kg
+```
+
+**Step 3: Hydrogen System Costs**
+```
+Electrolyzer Cost = 0.666 × ₹50,000 = ₹33,300
+Fuel Cell Cost = 0.516 × ₹60,000 = ₹30,960
+H2 Tank Cost = 0.321 × ₹5,000 = ₹1,605
+Total Hydrogen CAPEX = ₹33,300 + ₹30,960 + ₹1,605 = ₹65,865
+```
+
+### Example 5: Economic Analysis (Cost Savings Goal)
+
+**Input:**
+- Daily Consumption: 9.90 kWh/day
+- Use Case: Residential
+- Primary Goal: Cost Savings
+- Solar Capacity: 2.304 kW (from Example 2)
+- Battery Capacity: 6.574 kWh (from Example 2)
+
+**Step 1: Equipment Costs**
+```
+Solar Cost = 2.304 × ₹40,000 = ₹92,160
+Battery Cost = 6.574 × ₹8,000 = ₹52,592
+Inverter Cost = 2.88 × ₹8,000 = ₹23,040
+DC-DC Converter Cost = 2.88 × ₹1,500 = ₹4,320
+Equipment Total = ₹172,112
+```
+
+**Step 2: Installation & CAPEX**
+```
+Installation = ₹172,112 × 0.10 = ₹17,211.20
+Total CAPEX = ₹172,112 + ₹17,211.20 = ₹189,323.20
+```
+
+**Comparison with Reliability Goal:**
+- Cost Savings CAPEX: ₹189,323.20
+- Reliability CAPEX (from Example 3): Higher due to larger battery
+- **Savings:** Cost Savings goal reduces CAPEX by optimizing for lower initial investment
+
+### Example 6: Annual Generation Comparison
+
+**Input:** Daily Consumption: 9.90 kWh/day
+
+**Cost Savings Goal:**
+```
+Solar Capacity = 2.304 kW
+Annual Generation = 2.304 × 5 × 365 × 0.80 = 3,363.84 kWh
+```
+
+**Self-Sustainability Goal:**
+```
+Solar Capacity = 3.328 kW (from Example 4)
+Annual Generation = 3.328 × 5 × 365 × 0.80 = 4,854.88 kWh
+```
+
+**Result:** Self-Sustainability generates 44% more energy, demonstrating the optimization strategy
 
 ---
 
-## 5. NOTES
-
-1. **System Efficiency (77.3%)**: This accounts for inverter losses, DC-DC converter losses, and battery round-trip efficiency in the solar sizing calculation.
-
-2. **Battery Sizing**: The battery-to-daily ratio is conservative to account for depth of discharge (DoD) limitations and efficiency losses.
-
-3. **Carbon Offset**: Uses operational emissions only (excludes manufacturing) to match the old website's calculation methodology.
-
-4. **Payback Period**: Calculated as simple payback (CAPEX / Annual Savings), not discounted payback.
-
-5. **Grid Tariffs**: These are default values and can be adjusted based on location and utility rates.
-
----
-
-**Last Updated:** Based on `backend/routes/planning.js` implementation
+**Last Updated:** Based on `backend/routes/planning.js` implementation (Updated with Primary Goal Optimization - 2025)
 

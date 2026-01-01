@@ -4,18 +4,19 @@ Provides inference for:
 1. Battery RUL Prediction
 2. Solar Panel Degradation
 3. Energy Loss Analysis
+4. XAI (Explainable AI) - Feature Importance and Local Explanations
 """
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import joblib
 import numpy as np
 import pandas as pd
 from pathlib import Path
 import json
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_optional
 from app.models import pydantic_models as models
 
 router = APIRouter()
@@ -509,5 +510,255 @@ async def get_energy_loss_dashboard():
         'success': True,
         'predictions': predictions,
         'model_info': model_data['metadata']['metrics']
+    }
+
+# ========== XAI (Explainable AI) Endpoints ==========
+
+def get_feature_importance(model, model_type: str) -> Dict[str, Any]:
+    """Extract feature importance from tree-based models"""
+    try:
+        if hasattr(model, 'feature_importances_'):
+            importances = model.feature_importances_
+            return {
+                'method': 'feature_importances_',
+                'importances': importances.tolist() if hasattr(importances, 'tolist') else list(importances)
+            }
+        else:
+            return {
+                'method': 'not_available',
+                'importances': []
+            }
+    except Exception as e:
+        return {
+            'method': 'error',
+            'error': str(e),
+            'importances': []
+        }
+
+def calculate_local_contribution(model, scaler, features: List[str], input_values: np.ndarray, prediction: float) -> Dict[str, Any]:
+    """Calculate local feature contributions for a specific prediction"""
+    try:
+        # For tree-based models, we can use feature importance weighted by input values
+        if hasattr(model, 'feature_importances_'):
+            importances = model.feature_importances_
+            
+            # Normalize importances
+            total_importance = np.sum(np.abs(importances))
+            if total_importance > 0:
+                normalized_importances = importances / total_importance
+            else:
+                normalized_importances = importances
+            
+            # Calculate contribution: importance * normalized_input_value
+            # Normalize input values to 0-1 scale for better interpretation
+            input_normalized = (input_values - input_values.min()) / (input_values.max() - input_values.min() + 1e-10)
+            
+            # Contribution = importance * normalized_input
+            contributions = normalized_importances * input_normalized[0]
+            
+            # Create feature contribution mapping
+            feature_contributions = {}
+            for i, feature in enumerate(features):
+                feature_contributions[feature] = {
+                    'contribution': float(contributions[i]),
+                    'importance': float(importances[i]),
+                    'input_value': float(input_values[0][i]),
+                    'normalized_input': float(input_normalized[0][i])
+                }
+            
+            # Sort by absolute contribution
+            sorted_contributions = sorted(
+                feature_contributions.items(),
+                key=lambda x: abs(x[1]['contribution']),
+                reverse=True
+            )
+            
+            return {
+                'success': True,
+                'contributions': {k: v for k, v in sorted_contributions},
+                'top_contributors': [
+                    {
+                        'feature': k,
+                        'contribution': v['contribution'],
+                        'importance': v['importance'],
+                        'input_value': v['input_value']
+                    }
+                    for k, v in sorted_contributions[:5]
+                ]
+            }
+        else:
+            return {
+                'success': False,
+                'error': 'Model does not support feature importance extraction'
+            }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+@router.get("/xai/feature-importance/{model_type}")
+async def get_feature_importance_endpoint(
+    model_type: str
+):
+    """Get global feature importance for a model type"""
+    
+    model_key_map = {
+        'battery-rul': 'battery_rul',
+        'solar-degradation': 'solar_degradation',
+        'energy-loss': 'energy_loss'
+    }
+    
+    model_key = model_key_map.get(model_type)
+    if not model_key:
+        raise HTTPException(status_code=400, detail=f"Invalid model type. Use: {', '.join(model_key_map.keys())}")
+    
+    if model_key not in prediction_models:
+        raise HTTPException(status_code=503, detail=f"{model_type} model not available")
+    
+    model_data = prediction_models[model_key]
+    model = model_data['model']
+    features = model_data['metadata']['features']
+    
+    # Get feature importance
+    importance_result = get_feature_importance(model, model_data['metadata']['model_type'])
+    
+    if importance_result['method'] == 'not_available':
+        raise HTTPException(status_code=501, detail="Feature importance not available for this model type")
+    
+    importances = importance_result['importances']
+    
+    # Create feature-importance pairs
+    feature_importance_pairs = [
+        {
+            'feature': feature,
+            'importance': float(importance),
+            'importance_percent': float(importance * 100 / sum(importances)) if sum(importances) > 0 else 0
+        }
+        for feature, importance in zip(features, importances)
+    ]
+    
+    # Sort by importance
+    feature_importance_pairs.sort(key=lambda x: x['importance'], reverse=True)
+    
+    return {
+        'success': True,
+        'model_type': model_type,
+        'model_algorithm': model_data['metadata']['model_type'],
+        'features': features,
+        'feature_importance': feature_importance_pairs,
+        'total_features': len(features),
+        'interpretability': {
+            'scope': 'global',
+            'method': 'feature_importances_',
+            'description': 'Shows which features are most important for the model\'s predictions overall'
+        }
+    }
+
+@router.post("/xai/local-explanation/{model_type}")
+async def get_local_explanation(
+    model_type: str,
+    input_data: Dict[str, Any]
+):
+    """Get local explanation for a specific prediction"""
+    
+    model_key_map = {
+        'battery-rul': 'battery_rul',
+        'solar-degradation': 'solar_degradation',
+        'energy-loss': 'energy_loss'
+    }
+    
+    model_key = model_key_map.get(model_type)
+    if not model_key:
+        raise HTTPException(status_code=400, detail=f"Invalid model type. Use: {', '.join(model_key_map.keys())}")
+    
+    if model_key not in prediction_models:
+        raise HTTPException(status_code=503, detail=f"{model_type} model not available")
+    
+    model_data = prediction_models[model_key]
+    model = model_data['model']
+    scaler = model_data['scaler']
+    features = model_data['metadata']['features']
+    
+    # Prepare input
+    try:
+        input_values = np.array([[input_data.get(f, 0) for f in features]])
+        input_scaled = scaler.transform(input_values)
+        prediction = model.predict(input_scaled)[0]
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error processing input: {str(e)}")
+    
+    # Get local contribution
+    contribution_result = calculate_local_contribution(model, scaler, features, input_values, prediction)
+    
+    if not contribution_result.get('success'):
+        raise HTTPException(status_code=500, detail=contribution_result.get('error', 'Failed to calculate contributions'))
+    
+    # Generate natural language explanation
+    top_contributors = contribution_result['top_contributors']
+    explanation_parts = []
+    
+    if top_contributors:
+        explanation_parts.append(f"The prediction of {prediction:.2f} is primarily influenced by:")
+        for i, contributor in enumerate(top_contributors[:3], 1):
+            feature_name = contributor['feature'].replace('_', ' ').title()
+            contribution_pct = abs(contributor['contribution']) * 100
+            explanation_parts.append(
+                f"{i}. {feature_name} (contribution: {contribution_pct:.1f}%)"
+            )
+    
+    return {
+        'success': True,
+        'model_type': model_type,
+        'prediction': float(prediction),
+        'input_features': {f: float(input_values[0][i]) for i, f in enumerate(features)},
+        'feature_contributions': contribution_result['contributions'],
+        'top_contributors': top_contributors,
+        'explanation': ' '.join(explanation_parts),
+        'interpretability': {
+            'scope': 'local',
+            'method': 'feature_contribution',
+            'description': 'Shows which features contributed most to this specific prediction'
+        }
+    }
+
+@router.get("/xai/models")
+async def get_available_xai_models():
+    """Get list of models available for XAI interpretation
+    
+    Returns available models with their XAI support capabilities.
+    """
+    
+    available_models = []
+    
+    for model_key, model_data in prediction_models.items():
+        model_type_map = {
+            'battery_rul': 'battery-rul',
+            'solar_degradation': 'solar-degradation',
+            'energy_loss': 'energy-loss'
+        }
+        
+        model_type = model_type_map.get(model_key)
+        if model_type:
+            model = model_data['model']
+            has_importance = hasattr(model, 'feature_importances_')
+            
+            available_models.append({
+                'model_key': model_key,
+                'model_type': model_type,
+                'model_algorithm': model_data['metadata']['model_type'],
+                'features': model_data['metadata']['features'],
+                'metrics': model_data['metadata']['metrics'],
+                'xai_support': {
+                    'feature_importance': has_importance,
+                    'local_explanation': has_importance,
+                    'global_interpretability': has_importance
+                }
+            })
+    
+    return {
+        'success': True,
+        'available_models': available_models,
+        'total_models': len(available_models)
     }
 
