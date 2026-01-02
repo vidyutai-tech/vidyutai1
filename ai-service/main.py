@@ -181,6 +181,23 @@ async def startup_event():
         model_manager = ModelManager()
         logger.info("Model manager initialized")
         
+        # Load prediction models in background (non-blocking)
+        # This prevents blocking the health check endpoint during deployment
+        if PREDICTIONS_AVAILABLE:
+            import asyncio
+            from app.api.endpoints import predictions_new
+            async def load_models_background():
+                try:
+                    logger.info("Loading prediction models in background...")
+                    predictions_new.load_prediction_models()
+                    logger.info("Prediction models loaded successfully")
+                except Exception as e:
+                    logger.warning(f"Error loading prediction models in background: {e}")
+                    # Don't fail startup if model loading fails - they can be loaded lazily
+            
+            # Schedule background task (non-blocking)
+            asyncio.create_task(load_models_background())
+        
         logger.info("VidyutAI AI Service started successfully")
     except Exception as e:
         logger.error(f"Error during startup: {str(e)}")

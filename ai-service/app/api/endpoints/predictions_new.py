@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import json
+import asyncio
 
 from app.api.deps import get_current_user, get_current_user_optional
 from app.models import pydantic_models as models
@@ -27,6 +28,7 @@ models_dir = _base_path / "ml-models"
 
 # Global models dict
 prediction_models = {}
+_models_loading_lock = asyncio.Lock()  # Async lock to prevent concurrent loading
 
 # Load models on startup
 def load_prediction_models():
@@ -117,8 +119,33 @@ def load_prediction_models():
         import traceback
         print(f"Full error: {traceback.format_exc()}")
 
-# Load models immediately
-load_prediction_models()
+# Helper function to ensure models are loaded (lazy loading)
+async def ensure_models_loaded():
+    """Ensure prediction models are loaded (lazy loading) - thread-safe and non-blocking"""
+    global prediction_models
+    # Check if already loaded (fast path)
+    if prediction_models:
+        return
+    
+    # Acquire lock to prevent concurrent loading
+    async with _models_loading_lock:
+        # Double-check after acquiring lock (another request might have loaded them)
+        if prediction_models:
+            return
+        
+        # Load models in executor to avoid blocking event loop
+        # This is safe because it's protected by the lock (only one request loads)
+        try:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, load_prediction_models)
+        except Exception as e:
+            # Log error but don't crash - models will be unavailable
+            print(f"⚠️ Error loading prediction models: {e}")
+            import traceback
+            print(f"Full error: {traceback.format_exc()}")
+
+# Models will be loaded lazily on first request or in background during startup
+# This prevents blocking the health check endpoint during deployment
 
 # Pydantic Models
 class BatteryRULInput(BaseModel):
@@ -158,6 +185,9 @@ async def predict_battery_rul(
     current_user: models.User = Depends(get_current_user)
 ):
     """Predict Battery Remaining Useful Life"""
+    
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
     
     if 'battery_rul' not in prediction_models:
         raise HTTPException(status_code=503, detail="Battery RUL model not available. Run training script first.")
@@ -210,6 +240,9 @@ async def predict_solar_degradation(
     current_user: models.User = Depends(get_current_user)
 ):
     """Predict Solar Panel Degradation"""
+    
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
     
     if 'solar_degradation' not in prediction_models:
         raise HTTPException(status_code=503, detail="Solar degradation model not available")
@@ -266,6 +299,9 @@ async def predict_energy_loss(
 ):
     """Predict Energy Loss in Distribution System"""
     
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
+    
     if 'energy_loss' not in prediction_models:
         raise HTTPException(status_code=503, detail="Energy loss model not available")
     
@@ -321,6 +357,9 @@ async def predict_energy_loss(
 @router.get("/predictions/battery-rul/dashboard")
 async def get_battery_rul_dashboard():
     """Get Battery RUL dashboard with sample predictions"""
+    
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
     
     if 'battery_rul' not in prediction_models:
         # Return fallback data instead of error
@@ -388,6 +427,9 @@ async def get_battery_rul_dashboard():
 async def get_solar_degradation_dashboard():
     """Get Solar Degradation dashboard with sample predictions"""
     
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
+    
     if 'solar_degradation' not in prediction_models:
         # Return fallback data instead of error
         return {
@@ -448,6 +490,9 @@ async def get_solar_degradation_dashboard():
 @router.get("/predictions/energy-loss/dashboard")
 async def get_energy_loss_dashboard():
     """Get Energy Loss dashboard with sample predictions"""
+    
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
     
     if 'energy_loss' not in prediction_models:
         # Return fallback data instead of error
@@ -613,6 +658,9 @@ async def get_feature_importance_endpoint(
     if not model_key:
         raise HTTPException(status_code=400, detail=f"Invalid model type. Use: {', '.join(model_key_map.keys())}")
     
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
+    
     if model_key not in prediction_models:
         raise HTTPException(status_code=503, detail=f"{model_type} model not available")
     
@@ -671,6 +719,9 @@ async def get_local_explanation(
     model_key = model_key_map.get(model_type)
     if not model_key:
         raise HTTPException(status_code=400, detail=f"Invalid model type. Use: {', '.join(model_key_map.keys())}")
+    
+    # Lazy load models if not already loaded
+    await ensure_models_loaded()
     
     if model_key not in prediction_models:
         raise HTTPException(status_code=503, detail=f"{model_type} model not available")
