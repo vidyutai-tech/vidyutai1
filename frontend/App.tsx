@@ -28,7 +28,6 @@ import SourceOptimizationPage from './pages/SourceOptimizationPage';
 import PlanningWizardPage from './pages/PlanningWizardPage';
 import PlanningWizardPageEnhanced from './pages/PlanningWizardPageEnhanced';
 import OptimizationSetupPage from './pages/OptimizationSetupPage';
-import OptimizationResultsPage from './pages/OptimizationResultsPage';
 import PlanningAndOptimizationPage from './pages/PlanningAndOptimizationPage';
 import MainOptionsPage from './pages/MainOptionsPage';
 import OptimizationFlowPage from './pages/OptimizationFlowPage';
@@ -575,7 +574,6 @@ const App: React.FC = () => {
             <Route path="/planning-wizard-old" element={<PlanningWizardPage />} />
             <Route path="/optimization-flow" element={<OptimizationFlowPage />} />
             <Route path="/optimization-setup" element={<OptimizationSetupPage />} />
-            <Route path="/optimization-results" element={<OptimizationResultsPage />} />
             <Route path="/demand-optimization" element={<DemandOptimizationPage />} />
             <Route path="/source-optimization" element={<SourceOptimizationPage />} />
             <Route path="/ai-ml-insights" element={<AIMLInsightsPage />} />

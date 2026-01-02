@@ -15,7 +15,6 @@ const planningNavItems = [
 const optimizationNavItems = [
   { name: 'Optimization Flow', path: '/optimization-flow', icon: TrendingUp },
   { name: 'Optimization Setup', path: '/optimization-setup', icon: Settings },
-  { name: 'Optimization Results', path: '/optimization-results', icon: TrendingUp },
   { name: 'Demand Optimization', path: '/demand-optimization', icon: Users },
   { name: 'Source Optimization', path: '/source-optimization', icon: Zap },
 ];

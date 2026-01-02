@@ -17,15 +17,6 @@ const OptimizationFlowPage: React.FC = () => {
       step: 'O1'
     },
     {
-      id: 'results',
-      title: 'Optimization Results',
-      description: 'View optimization results, KPIs, cost savings, and emissions analysis',
-      icon: TrendingUp,
-      path: '/optimization-results',
-      color: 'from-green-500 to-green-600',
-      step: 'O2'
-    },
-    {
       id: 'demand',
       title: 'Demand Optimization',
       description: 'Optimize energy demand patterns, load shifting, and demand management strategies',
@@ -108,13 +99,6 @@ const OptimizationFlowPage: React.FC = () => {
               <div>
                 <p className="font-semibold">Optimization Setup</p>
                 <p className="text-sm">Configure load data, tariffs, PV/battery/grid parameters. Auto-load from planning if available.</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <span className="font-semibold text-green-600 dark:text-green-400 mr-3">O2:</span>
-              <div>
-                <p className="font-semibold">Optimization Results</p>
-                <p className="text-sm">View KPIs: cost savings, emissions reduction, battery life impact, grid independence.</p>
               </div>
             </div>
             <div className="flex items-start">
