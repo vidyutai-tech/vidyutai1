@@ -7,6 +7,7 @@ interface LoadProfileContextType {
   updateAppliance: (index: number, appliance: ApplianceUsage) => void;
   removeAppliance: (index: number) => void;
   clearAppliances: () => void;
+  initializeAppliancesFromTemplate: (useCaseType: 'residential' | 'commercial' | 'industrial') => void;
   totalDailyConsumption: number; // Wh
   totalDailyConsumptionKWh: number; // kWh
   peakLoad: number; // kW

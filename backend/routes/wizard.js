@@ -408,6 +408,78 @@ router.post('/planning/step3', async (req, res) => {
 
       const planningData = await planningResponse.json();
 
+      // Handle Flask-style response structure
+      // Transform Flask response to match database schema
+      let technical_sizing = {};
+      let economic_analysis = {};
+      let emissions_analysis = {};
+
+      if (planningData['Technical Analysis']) {
+        // Flask-style response - transform it
+        const tech = planningData['Technical Analysis'];
+        const econ = planningData['Economic Analysis'];
+        const capitalGen = planningData['Capital Cost & Annual Generation'];
+        const costEnergy = planningData['Cost of Energy Generation'];
+        const onGridCost = planningData['On-Grid Cost of Energy Generation'];
+        const payback = planningData['Simple Payback Period'];
+        const carbon = planningData['Carbon Emission'];
+
+        technical_sizing = {
+          solar_capacity_kw: parseFloat(tech['Solar Panel Power Rating (kW)'] || '0'),
+          battery_capacity_kwh: parseFloat(tech['Battery Energy (kWh)'] || '0'),
+          battery_nominal_voltage_v: parseInt(tech['Battery Nominal Voltage (V)'] || '12'),
+          battery_capacity_ah: parseFloat(tech['Battery Capacity (kAh)'] || '0') * 1000, // Convert kAh to Ah
+          inverter_capacity_kw: parseFloat(tech['Inverter Rating (kVA)'] || '0'),
+          dc_converter_capacity_kw: parseFloat(tech['DC-DC Converter Rating (kW)'] || '0'),
+          grid_connection_kw: 0, // Not in Flask response, set default
+          diesel_capacity_kw: null,
+          recommendations: []
+        };
+
+        economic_analysis = {
+          solar_cost_rs: parseFloat(econ['Solar Panel Cost (Rs)'] || '0'),
+          battery_cost_rs: parseFloat(econ['Battery Cost (Rs)'] || '0'),
+          inverter_cost_rs: parseFloat(econ['Inverter Cost (Rs)'] || '0'),
+          dc_converter_cost_rs: parseFloat(econ['DC-DC Converter Cost (Rs)'] || '0'),
+          installation_cost_dual_mode_rs: parseFloat(econ['Installation Cost Dual Mode (Rs)'] || '0'),
+          installation_cost_on_grid_rs: parseFloat(econ['Installation Cost On-Grid (Rs)'] || '0'),
+          annual_om_cost_dual_mode_rs: parseFloat(econ['Annual O&M Cost Dual Mode (Rs)'] || '0'),
+          annual_om_cost_on_grid_rs: parseFloat(econ['Annual O&M Cost On-Grid (Rs)'] || '0'),
+          capital_cost_dual_mode_rs: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+          capital_cost_on_grid_rs: parseFloat(capitalGen['Capital Cost On-Grid (Rs)'] || '0'),
+          annual_energy_generation_dual_mode_kwh: parseFloat(capitalGen['Annual Energy Generation Dual Mode (kWh)'] || '0'),
+          annual_energy_generation_on_grid_kwh: parseFloat(capitalGen['Annual Energy Generation On-Grid (kWh)'] || '0'),
+          annual_revenue_dual_mode_rs: parseFloat(capitalGen['Annual Revenue Dual Mode (Rs)']?.replace(/,/g, '') || '0'),
+          annual_revenue_on_grid_rs: parseFloat(capitalGen['Annual Revenue On-Grid (Rs)']?.replace(/,/g, '') || '0'),
+          cost_energy_dual_mode_rs_per_kwh: parseFloat(costEnergy['Dual Mode Cost (Rs/kWh)'] || '0'),
+          cost_energy_on_grid_rs_per_kwh: parseFloat(onGridCost['On-Grid Cost (Rs/kWh)'] || '0'),
+          simple_payback_dual_mode_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+          simple_payback_on_grid_years: parseFloat(payback['On-Grid System (years)'] || '0'),
+          // Legacy fields
+          total_capex: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+          annual_opex: parseFloat(econ['Annual O&M Cost Dual Mode (Rs)'] || '0'),
+          payback_period_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+          npv_10_years: 0, // Not in Flask response
+          roi_percentage: 0, // Not in Flask response
+          monthly_savings: 0, // Not in Flask response
+          // Store full Flask response for UI display
+          flask_response: planningData
+        };
+
+        emissions_analysis = {
+          carbon_emission_dual_mode_ton: parseFloat(carbon['Dual Mode System (Ton)'] || '0'),
+          carbon_emission_on_grid_ton: parseFloat(carbon['On-Grid System (Ton)'] || '0'),
+          annual_co2_reduction_kg: 0, // Not directly in Flask response
+          carbon_offset_percentage: 0,
+          lifetime_co2_reduction_tonnes: 0
+        };
+      } else {
+        // Legacy response structure (backward compatibility)
+        technical_sizing = planningData.technical_sizing || {};
+        economic_analysis = planningData.economic_analysis || {};
+        emissions_analysis = planningData.emissions_analysis || {};
+      }
+
       // Create planning recommendation
       const recommendation = {
         id: uuidv4(),
@@ -417,9 +489,9 @@ router.post('/planning/step3', async (req, res) => {
         preferred_sources,
         primary_goals: goals,
         allow_diesel: allow_diesel || false,
-        technical_sizing: planningData.technical_sizing || {},
-        economic_analysis: planningData.economic_analysis || {},
-        emissions_analysis: planningData.emissions_analysis || {},
+        technical_sizing: technical_sizing,
+        economic_analysis: economic_analysis,
+        emissions_analysis: emissions_analysis,
         scenario_link: action === 'proceed_to_optimization' ? uuidv4() : null,
         status: action === 'save' ? 'saved' : 'draft'
       };
@@ -434,7 +506,8 @@ router.post('/planning/step3', async (req, res) => {
         success: true,
         recommendation,
         action,
-        saved: true
+        saved: true,
+        flask_response: planningData['Technical Analysis'] ? planningData : null // Pass Flask response if available
       });
     } catch (aiError) {
       console.error('AI service error:', aiError);

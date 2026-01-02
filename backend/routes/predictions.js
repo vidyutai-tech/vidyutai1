@@ -48,7 +48,7 @@ router.get('/anomalies', async (req, res) => {
     try {
       const response = await axios.get(`${AI_SERVICE_URL}/api/v1/anomalies`, {
         params: { siteId },
-        timeout: 3000
+        timeout: 60000 // Increased to 60 seconds for ML predictions
       });
       return res.json(response.data);
     } catch (aiError) {
@@ -92,7 +92,7 @@ router.get('/maintenance', async (req, res) => {
     try {
       const response = await axios.get(`${AI_SERVICE_URL}/api/v1/maintenance`, {
         params: { siteId, assetId },
-        timeout: 3000
+        timeout: 60000 // Increased to 60 seconds for ML predictions
       });
       return res.json(response.data);
     } catch (aiError) {
@@ -137,7 +137,7 @@ router.get('/forecast', async (req, res) => {
     try {
       const response = await axios.get(`${AI_SERVICE_URL}/api/v1/forecast`, {
         params: { siteId, horizon },
-        timeout: 3000
+        timeout: 60000 // Increased to 60 seconds for ML predictions
       });
       return res.json(response.data);
     } catch (aiError) {
@@ -182,7 +182,7 @@ router.get('/optimization', async (req, res) => {
     try {
       const response = await axios.get(`${AI_SERVICE_URL}/api/v1/optimization`, {
         params: { siteId },
-        timeout: 3000
+        timeout: 60000 // Increased to 60 seconds for ML predictions
       });
       return res.json(response.data);
     } catch (aiError) {
@@ -387,7 +387,7 @@ router.post('/forecast/energy', async (req, res) => {
   try {
     const response = await retryWithBackoff(() =>
       axios.post(`${AI_SERVICE_URL}/api/v1/forecast/energy`, req.body, {
-        timeout: 10000,
+        timeout: 90000, // Increased to 90 seconds for forecast predictions
         headers: {
           'Content-Type': 'application/json'
         }
@@ -424,7 +424,7 @@ router.get('/forecast/summary', async (req, res) => {
   try {
     const response = await axios.get(`${AI_SERVICE_URL}/api/v1/forecast/summary`, {
       params: req.query,
-      timeout: 10000,
+      timeout: 60000, // Increased to 60 seconds for ML predictions
       headers: {
         'Content-Type': 'application/json'
       }
@@ -444,7 +444,7 @@ router.get('/forecast/summary', async (req, res) => {
 router.post('/forecast/explain', async (req, res) => {
   try {
     const response = await axios.post(`${AI_SERVICE_URL}/api/v1/forecast/explain`, req.body, {
-      timeout: 10000,
+      timeout: 90000, // Increased to 90 seconds for explanation generation
       headers: {
         'Content-Type': 'application/json'
       }

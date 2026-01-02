@@ -78,6 +78,18 @@ except ImportError as e:
     INSIGHTS_AVAILABLE = False
     logger.warning(f"Insights routers not available - {e}")
 
+# Import planning router
+try:
+    from app.api.endpoints import planning
+    PLANNING_AVAILABLE = True
+    logger.info("✅ Planning router imported successfully")
+except ImportError as e:
+    PLANNING_AVAILABLE = False
+    logger.warning(f"⚠️ Planning router not available - {e}")
+except Exception as e:
+    PLANNING_AVAILABLE = False
+    logger.error(f"❌ Error importing planning router: {e}")
+
 # Initialize FastAPI app
 app = FastAPI(
     title="VidyutAI AI Service",
@@ -96,6 +108,16 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router, prefix="/api")
+
+# Include planning router if available (register with /api/v1 prefix)
+if PLANNING_AVAILABLE:
+    try:
+        app.include_router(planning.router, prefix="/api/v1", tags=["Planning"])
+        logger.info("✅ Planning router registered at /api/v1/planning/recommend")
+    except Exception as e:
+        logger.error(f"❌ Failed to register planning router: {e}")
+else:
+    logger.warning("⚠️ Planning router not available - skipping registration")
 
 # Include optimization router if available
 if OPTIMIZATION_AVAILABLE:
@@ -193,5 +215,12 @@ if __name__ == "__main__":
     # Get port from environment or use default
     port = int(os.getenv("PORT", 8000))
     
-    # Run the application
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    # Run the application with increased timeouts for ML predictions
+    uvicorn.run(
+        "main:app", 
+        host="0.0.0.0", 
+        port=port, 
+        reload=True,
+        timeout_keep_alive=120,  # Keep connections alive for 2 minutes
+        timeout_graceful_shutdown=30  # Graceful shutdown timeout
+    )
