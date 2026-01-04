@@ -29,7 +29,11 @@ import {
 import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
 const DemandOptimizationPage = () => {
-  const { currentUser, theme } = useContext(AppContext)!;
+  const appContext = useContext(AppContext);
+  if (!appContext) {
+    return <div>Loading...</div>; // Safety check
+  }
+  const { currentUser, theme } = appContext;
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -141,19 +145,18 @@ const DemandOptimizationPage = () => {
     setMergedFormData(merged);
   };
 
-  // Merge common config with demand-specific data
-  useEffect(() => {
+  // Initialize mergedFormData with defaults immediately or from config
+  const getDefaultMergedData = useMemo(() => {
     if (commonConfig) {
-      const merged = {
+      return {
         ...commonConfig,
         ...demandSpecificData,
         objective_type: "cost", // Demand optimization only supports cost
         uploadedFile: uploadedFile || null,
       };
-      setMergedFormData(merged);
     } else {
       // If no common config, use defaults (for backward compatibility)
-      const defaultMerged = {
+      return {
         weather: "Sunny",
         objective_type: "cost",
         num_days: 1,
@@ -175,9 +178,13 @@ const DemandOptimizationPage = () => {
         electrolyzer_om_cost: 0.5,
         ...demandSpecificData,
       };
-      setMergedFormData(defaultMerged);
     }
   }, [commonConfig, demandSpecificData, uploadedFile]);
+
+  // Merge common config with demand-specific data
+  useEffect(() => {
+    setMergedFormData(getDefaultMergedData);
+  }, [getDefaultMergedData]);
 
   useEffect(() => {
     const savedResponse = localStorage.getItem("demandOptimizationResponse");

@@ -17,7 +17,11 @@ import {
 import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
 const SourceOptimizationPage = () => {
-  const { currentUser, theme } = useContext(AppContext)!;
+  const appContext = useContext(AppContext);
+  if (!appContext) {
+    return <div>Loading...</div>; // Safety check
+  }
+  const { currentUser, theme } = appContext;
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -126,18 +130,17 @@ const SourceOptimizationPage = () => {
     setMergedFormData(merged);
   };
 
-  // Merge common config with source-specific data
-  useEffect(() => {
+  // Initialize mergedFormData with defaults immediately or from config
+  const getDefaultMergedData = useMemo(() => {
     if (commonConfig) {
-      const merged = {
+      return {
         ...commonConfig,
         ...sourceSpecificData,
         uploadedFile: uploadedFile || null,
       };
-      setMergedFormData(merged);
     } else {
       // If no common config, use defaults (for backward compatibility)
-      const defaultMerged = {
+      return {
         weather: "Sunny",
         objective_type: "cost",
         num_days: 2,
@@ -160,9 +163,13 @@ const SourceOptimizationPage = () => {
         electrolyzer_om_cost: 0.5,
         ...sourceSpecificData,
       };
-      setMergedFormData(defaultMerged);
     }
   }, [commonConfig, sourceSpecificData, uploadedFile]);
+
+  // Merge common config with source-specific data
+  useEffect(() => {
+    setMergedFormData(getDefaultMergedData);
+  }, [getDefaultMergedData]);
 
   useEffect(() => {
     const savedResponse = localStorage.getItem("sourceOptimizationResponse");
@@ -409,7 +416,7 @@ const SourceOptimizationPage = () => {
         value: summary.Costs?.TOTAL_COST_INR != null ? `₹${formatNumber(summary.Costs.TOTAL_COST_INR, 0)}` : "-",
         subtext: costPerKwh ? `₹${formatNumber(costPerKwh, 2)} per kWh` : "Includes grid, diesel & storage costs",
         accent: "from-emerald-500 via-emerald-500 to-emerald-600",
-        icon: DollarSign,
+        icon: Coins,
       },
       {
         title: "Solar Utilization",

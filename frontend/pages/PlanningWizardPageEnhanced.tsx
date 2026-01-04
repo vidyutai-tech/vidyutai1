@@ -21,6 +21,7 @@ const PlanningWizardContent: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [showPreviousPlans, setShowPreviousPlans] = useState(false);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null); // Track current plan being edited
 
   // Step 0 State (Use Case Selection)
   const [selectedUseCase, setSelectedUseCase] = useState<'residential' | 'commercial' | 'industrial'>('residential');
@@ -272,6 +273,7 @@ const PlanningWizardContent: React.FC = () => {
           dc_converter_capacity_kw: parseFloat(tech['DC-DC Converter Rating (kW)'] || '0'),
           grid_connection_kw: peak_power_kw,
           peak_power_kw: peak_power_kw,
+          totalDailyConsumptionKWh: totalDailyConsumptionKWh, // Store consumption for display
           recommendations: [
             `Install ${tech['Solar Panel Power Rating (kW)']} kW solar PV system`,
             `Install ${tech['Battery Energy (kWh)']} kWh battery storage (${tech['Battery Capacity (kAh)']} kAh at ${tech['Battery Nominal Voltage (V)']}V)`,
@@ -352,10 +354,14 @@ const PlanningWizardContent: React.FC = () => {
       technicalSizing,
       economicAnalysis,
       emissionsAnalysis,
-      createdAt: new Date().toISOString(),
+      createdAt: currentPlanId ? savedPlans.find(p => p.id === currentPlanId)?.createdAt || new Date().toISOString() : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(`plan_${Date.now()}`, JSON.stringify(planData));
+    // Use existing plan ID if editing, otherwise create new one
+    const planId = currentPlanId || `plan_${Date.now()}`;
+    localStorage.setItem(planId, JSON.stringify(planData));
+    setCurrentPlanId(planId); // Track this as current plan
     
     // Refresh saved plans list and show "My Saved Plans" view
     loadSavedPlans();
@@ -373,6 +379,16 @@ const PlanningWizardContent: React.FC = () => {
   };
 
   const handleLoadPlan = (plan: any) => {
+    // Clear existing state first to avoid accumulation
+    loadProfileContext.clearAppliances();
+    setPlanName('');
+    setTechnicalSizing(null);
+    setEconomicAnalysis(null);
+    setEmissionsAnalysis(null);
+    
+    // Set current plan ID to track this plan
+    setCurrentPlanId(plan.id);
+    
     // Load plan data into wizard
     setPlanName(plan.planName);
     setSelectedUseCase(plan.useCase);
@@ -381,12 +397,24 @@ const PlanningWizardContent: React.FC = () => {
     // Support both old format (single) and new format (array)
     setPrimaryGoals(Array.isArray(plan.primaryGoals) ? plan.primaryGoals : (plan.primaryGoal ? [plan.primaryGoal] : []));
     
-    // Load appliances into context
-    plan.appliances?.forEach((app: any) => {
-      loadProfileContext.addAppliance(app);
-    });
+    // Load appliances into context (after clearing)
+    if (plan.appliances && Array.isArray(plan.appliances)) {
+      plan.appliances.forEach((app: any) => {
+        loadProfileContext.addAppliance(app);
+      });
+    }
     
-    setTechnicalSizing(plan.technicalSizing);
+    // Restore technical sizing, ensuring consumption value is preserved
+    if (plan.technicalSizing) {
+      setTechnicalSizing({
+        ...plan.technicalSizing,
+        // Always use saved consumption value, not recalculated one
+        totalDailyConsumptionKWh: plan.totalDailyConsumptionKWh ?? plan.technicalSizing.totalDailyConsumptionKWh
+      });
+    } else {
+      setTechnicalSizing(null);
+    }
+    
     setEconomicAnalysis(plan.economicAnalysis);
     setEmissionsAnalysis(plan.emissionsAnalysis);
     
@@ -429,11 +457,14 @@ const PlanningWizardContent: React.FC = () => {
               onClick={() => {
                 setShowPreviousPlans(false);
                 setStep(0);
+                setCurrentPlanId(null); // Reset current plan ID for new plan
                 loadProfileContext.clearAppliances();
                 setPlanName('');
                 setTechnicalSizing(null);
                 setEconomicAnalysis(null);
                 setEmissionsAnalysis(null);
+                setPreferredSources(['solar', 'battery', 'grid']);
+                setPrimaryGoals([]);
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center space-x-2"
             >
@@ -534,13 +565,14 @@ const PlanningWizardContent: React.FC = () => {
           <div className="flex space-x-3">
             <button
               onClick={() => {
+                setCurrentPlanId(null); // Reset when viewing all plans
                 loadSavedPlans();
                 setShowPreviousPlans(true);
               }}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 flex items-center space-x-2"
             >
               <History className="w-5 h-5" />
-              <span>View Saved Plans</span>
+              <span>View Saved Plans ({savedPlans.length})</span>
             </button>
             <button
               onClick={() => navigate('/main-options')}
@@ -890,7 +922,11 @@ const PlanningWizardContent: React.FC = () => {
                   System Recommendation
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Based on your {totalDailyConsumptionKWh.toFixed(2)} kWh/day consumption
+                  Based on your {
+                    // Always prefer saved consumption from technicalSizing if available
+                    // This ensures consistency when viewing saved plans
+                    (technicalSizing?.totalDailyConsumptionKWh ?? totalDailyConsumptionKWh).toFixed(2)
+                  } kWh/day consumption
                 </p>
 
                 {!technicalSizing && (
