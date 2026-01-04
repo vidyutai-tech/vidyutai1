@@ -200,10 +200,7 @@ const PlanningWizardContent: React.FC = () => {
       }
 
       // Step 2: Call AI service for Flask-style response
-      // Determine AI service URL - use environment variable or detect production
-      const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-      const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || 
-        (isLocalhost ? 'http://localhost:8000' : 'https://vidyutai-ai-service.onrender.com');
+      const AI_SERVICE_URL = import.meta.env.AI_SERVICE_URL || 'http://localhost:8000';
       const aiServiceRequest = {
         load_profile_id: currentLoadProfileId,
         total_daily_energy_kwh: totalDailyConsumptionKWh,

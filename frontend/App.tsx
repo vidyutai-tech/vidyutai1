@@ -144,14 +144,7 @@ const App: React.FC = () => {
       // For production: use environment variable or derive from API base URL
       let socketUrl: string;
       if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-        const isLocalhost = window.location.hostname === 'localhost';
-        if (isLocalhost) {
-          socketUrl = 'http://localhost:5001';
-        } else {
-          // In production, use VITE_SOCKET_URL or derive from API base URL
-          socketUrl = import.meta.env.VITE_SOCKET_URL || 
-                     (import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || 'https://vidyutai-backend.onrender.com');
-        }
+        socketUrl = 'http://localhost:5001';
       } else {
         // In production, use VITE_SOCKET_URL or derive from API base URL
         socketUrl = import.meta.env.VITE_SOCKET_URL || 
