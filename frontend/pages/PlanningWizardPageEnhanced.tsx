@@ -199,22 +199,23 @@ const PlanningWizardContent: React.FC = () => {
         }
       }
 
-      // Step 2: Call AI service for Flask-style response
-      const AI_SERVICE_URL = import.meta.env.AI_SERVICE_URL || 'http://localhost:8000';
+      // Step 2: Call backend proxy which forwards to AI service for Flask-style response
+      // Use backend proxy (same pattern as other endpoints) instead of direct AI service call
       const aiServiceRequest = {
         load_profile_id: currentLoadProfileId,
         total_daily_energy_kwh: totalDailyConsumptionKWh,
         preferred_sources: preferredSources.length > 0 ? preferredSources : ['solar', 'battery'],
-        primary_goal: primaryGoals.length > 0 ? primaryGoals[0] : 'savings',
+        primary_goals: primaryGoals.length > 0 ? primaryGoals : ['savings'],
+        primary_goal: primaryGoals.length > 0 ? primaryGoals[0] : 'savings', // Backward compatibility
         allow_diesel: allowDiesel,
       };
 
-      console.log('📤 Calling AI service for Flask-style response:', {
-        url: `${AI_SERVICE_URL}/api/v1/planning/recommend`,
+      console.log('📤 Calling backend proxy for planning recommendation:', {
+        url: `${API_BASE_URL}/wizard/planning/step3`,
         body: aiServiceRequest
       });
 
-      const aiResponse = await fetch(`${AI_SERVICE_URL}/api/v1/planning/recommend`, {
+      const aiResponse = await fetch(`${API_BASE_URL}/wizard/planning/step3`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,21 +224,29 @@ const PlanningWizardContent: React.FC = () => {
         body: JSON.stringify(aiServiceRequest)
       });
 
-      let flaskResult;
+      let backendResponse;
       try {
-        flaskResult = await aiResponse.json();
+        backendResponse = await aiResponse.json();
       } catch (parseError) {
-        console.error('❌ Failed to parse AI service response as JSON:', parseError);
-        throw new Error(`AI service returned invalid response (${aiResponse.status})`);
+        console.error('❌ Failed to parse backend response as JSON:', parseError);
+        throw new Error(`Backend returned invalid response (${aiResponse.status})`);
       }
 
       if (!aiResponse.ok) {
-        const errorMsg = flaskResult.detail || flaskResult.error || `AI service error (${aiResponse.status})`;
-        console.error('❌ AI service error:', errorMsg);
+        const errorMsg = backendResponse.error || backendResponse.detail || `Backend error (${aiResponse.status})`;
+        console.error('❌ Backend error:', errorMsg);
         throw new Error(errorMsg);
       }
       
-      console.log('✅ Flask-style response received from AI service');
+      // Backend returns { success: true, flask_response: {...}, ... }
+      // Extract the Flask-style response from the backend response
+      const flaskResult = backendResponse.flask_response || backendResponse;
+      
+      if (!flaskResult || !flaskResult['Technical Analysis']) {
+        console.warn('⚠️ No Flask response in backend response, using full response');
+      }
+      
+      console.log('✅ Flask-style response received from backend');
       
       // Store Flask response for display
       setFlaskResponse(flaskResult);
