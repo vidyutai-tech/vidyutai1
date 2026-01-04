@@ -58,25 +58,34 @@ const BatteryRULPage: React.FC = () => {
     return cyclesPerDay * days;
   };
 
-  // Generate cycles vs time data
+  // Generate cycles vs time data - create clean yearly data points with smooth curve
   const cyclesVsTimeData = useMemo(() => {
-    if (!batteryData || !batteryData.predictions) return [];
+    if (batteryCapacity <= 0 || dailyUsage <= 0) return [];
     
-    return batteryData.predictions.slice(0, batteryCycles).map((pred: any) => {
-      const days = pred.age_days || 0;
-      const cycles = calculateCycles(days);
-      const years = days / 365;
+    // Calculate cycles per day
+    const depthOfDischarge = 0.8;
+    const usableCapacity = batteryCapacity * depthOfDischarge;
+    const cyclesPerDay = Math.min(dailyUsage / usableCapacity, 2);
+    
+    // Generate data points for up to 5 years, with quarterly granularity for smooth curve
+    const dataPoints = [];
+    const maxYears = 5;
+    const pointsPerYear = 4; // Quarterly data points for smooth line
+    
+    for (let i = 0; i <= maxYears * pointsPerYear; i++) {
+      const year = i / pointsPerYear;
+      const days = year * 365;
+      const cycles = cyclesPerDay * days;
       
-      return {
-        time_days: days,
-        time_years: years,
-        cycles: cycles,
-        rul_years: hoursToYears(pred.rul_hours),
-        rul_hours: pred.rul_hours,
-        cycle_count: pred.cycle_count,
-      };
-    });
-  }, [batteryData, batteryCycles, batteryCapacity, dailyUsage]);
+      dataPoints.push({
+        time_days: Math.round(days),
+        time_years: Math.round(year * 100) / 100, // Round to 2 decimals for year
+        cycles: Math.round(cycles * 100) / 100, // Round to 2 decimals
+      });
+    }
+    
+    return dataPoints;
+  }, [batteryCapacity, dailyUsage]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -310,14 +319,27 @@ const BatteryRULPage: React.FC = () => {
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis 
                           dataKey="time_years" 
+                          type="number"
                           label={{ value: 'Time (years)', position: 'insideBottom', offset: -5 }}
                           tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => Number(value).toFixed(1)}
+                          tickFormatter={(value) => {
+                            const year = Number(value);
+                            // Only show labels for whole years (within 0.25 tolerance)
+                            const roundedYear = Math.round(year);
+                            if (Math.abs(year - roundedYear) < 0.25) {
+                              return roundedYear === 0 ? '0' : `Year ${roundedYear}`;
+                            }
+                            return '';
+                          }}
+                          domain={[0, 5]}
+                          allowDecimals={false}
                         />
                         <YAxis 
                           label={{ value: 'Battery Cycles', angle: -90, position: 'insideLeft', offset: 0 }}
                           tick={{ fontSize: 12 }}
                           tickFormatter={(value) => Math.round(Number(value)).toString()}
+                          domain={[0, 'auto']}
+                          allowDecimals={false}
                         />
                         <Tooltip 
                           content={({ active, payload, label }: any) => {

@@ -9,7 +9,7 @@ const PlanningAndOptimizationPage: React.FC = () => {
   const options = [
     {
       id: 'planning',
-      title: 'Planning Wizard',
+      title: 'Energy Advisory Assistance',
       description: 'Create a new energy system plan with load profiling and recommendations',
       icon: BarChart3,
       path: '/planning-wizard',
@@ -17,7 +17,7 @@ const PlanningAndOptimizationPage: React.FC = () => {
     },
     {
       id: 'optimization',
-      title: 'Optimization Setup',
+      title: 'Optimization Configuration',
       description: 'Optimize your existing energy system for cost, CO2, or both',
       icon: TrendingUp,
       path: '/optimization-setup',
@@ -83,8 +83,8 @@ const PlanningAndOptimizationPage: React.FC = () => {
             💡 Quick Tips
           </h3>
           <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-            <li>• <strong>Planning Wizard:</strong> Use this for new installations or major system redesigns</li>
-            <li>• <strong>Optimization Setup:</strong> Use this to optimize existing systems with your load profile data</li>
+            <li>• <strong>Energy Advisory Assistance:</strong> Use this for new installations or major system redesigns</li>
+            <li>• <strong>Optimization Configuration:</strong> Use this to optimize existing systems with your load profile data</li>
             <li>• <strong>Demand Optimization:</strong> Focus on load shifting and demand management strategies</li>
             <li>• <strong>Source Optimization:</strong> Optimize the mix of energy sources (solar, battery, grid, diesel)</li>
           </ul>

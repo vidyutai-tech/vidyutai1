@@ -572,7 +572,7 @@ const App: React.FC = () => {
             <Route path="/main-options" element={<MainOptionsPage />} />
             <Route path="/planning-wizard" element={<PlanningWizardPageEnhanced />} />
             <Route path="/planning-wizard-old" element={<PlanningWizardPage />} />
-            <Route path="/optimization-flow" element={<OptimizationFlowPage />} />
+            <Route path="/optimization-flow" element={<Navigate to="/optimization-setup" replace />} />
             <Route path="/optimization-setup" element={<OptimizationSetupPage />} />
             <Route path="/demand-optimization" element={<DemandOptimizationPage />} />
             <Route path="/source-optimization" element={<SourceOptimizationPage />} />

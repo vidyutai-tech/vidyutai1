@@ -16,7 +16,7 @@ import {
 } from "recharts";
 import {
   BatteryCharging,
-  DollarSign,
+  Coins,
   Fuel,
   Gauge,
   Leaf,
@@ -33,7 +33,7 @@ const DemandOptimizationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get common config from location state (from Optimization Setup) or localStorage
+  // Get common config from location state (from Optimization Configuration) or localStorage
   const locationConfig = (location.state as any)?.commonConfig;
   const locationFile = (location.state as any)?.uploadedFile;
   
@@ -217,7 +217,7 @@ const DemandOptimizationPage = () => {
 
   const handleSubmit = async () => {
     if (!mergedFormData) {
-      setError("Please configure optimization parameters first in Optimization Setup");
+      setError("Please configure optimization parameters first in Optimization Configuration");
       setOpen(true);
       return;
     }
@@ -449,7 +449,7 @@ const DemandOptimizationPage = () => {
         value: summary.Costs?.TOTAL_COST_INR != null ? `₹${formatNumber(summary.Costs.TOTAL_COST_INR, 0)}` : "-",
         subtext: costPerKwh ? `₹${formatNumber(costPerKwh, 2)} per kWh` : "Includes grid, diesel & storage costs",
         accent: "from-emerald-500 via-emerald-500 to-emerald-600",
-        icon: DollarSign,
+        icon: Coins,
       },
       {
         title: "Load Served",
@@ -629,7 +629,7 @@ const DemandOptimizationPage = () => {
           {/* Display Common Configuration (Read-only) */}
           {mergedFormData && (
             <div className={sectionPanelClass}>
-              <h3 className="text-lg font-semibold mb-4">Common Configuration (from Optimization Setup)</h3>
+              <h3 className="text-lg font-semibold mb-4">Common Configuration (from Optimization Configuration)</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-base-content/60">Weather:</span>
@@ -670,7 +670,7 @@ const DemandOptimizationPage = () => {
                     Currently no data uploaded. If you want to upload,{' '}
                     <button
                       onClick={() => {
-                        // Scroll to inline setup if it exists, or navigate to optimization setup
+                        // Scroll to inline setup if it exists, or navigate to optimization configuration
                         const inlineSetup = document.querySelector('[data-inline-setup]');
                         if (inlineSetup) {
                           inlineSetup.scrollIntoView({ behavior: 'smooth', block: 'start' });

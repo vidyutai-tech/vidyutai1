@@ -71,7 +71,7 @@ const OptimizationSetupPage: React.FC = () => {
         setLoadProfiles(profiles);
         setPlanningRecommendations(recommendations);
         
-        // If coming from planning wizard, pre-fill data
+        // If coming from energy advisory assistance, pre-fill data
         if (planningRecommendation) {
           if (planningRecommendation.load_profile_id) {
             setSelectedLoadProfile(planningRecommendation.load_profile_id);
@@ -171,7 +171,7 @@ const OptimizationSetupPage: React.FC = () => {
             Back to Main Options
           </button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Optimization Setup
+            Optimization Configuration
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Configure common parameters for optimization. Choose Demand or Source Optimization to proceed.
@@ -190,7 +190,7 @@ const OptimizationSetupPage: React.FC = () => {
               <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-2 mt-0.5" />
               <div>
                 <p className="text-green-800 dark:text-green-300 font-semibold">
-                  Data Pre-filled from Planning Wizard
+                  Data Pre-filled from Energy Advisory Assistance
                 </p>
                 <p className="text-green-700 dark:text-green-400 text-sm mt-1">
                   Your planning recommendation data has been automatically loaded. You can modify any fields as needed.

@@ -6,7 +6,7 @@ import { Snackbar, Alert } from "@mui/material";
 import SourceOptimizationCharts from "../components/shared/SourceOptimizationCharts";
 import {
   BatteryCharging,
-  DollarSign,
+  Coins,
   Fuel,
   Gauge,
   Leaf,
@@ -21,7 +21,7 @@ const SourceOptimizationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get common config from location state (from Optimization Setup) or localStorage
+  // Get common config from location state (from Optimization Configuration) or localStorage
   const locationConfig = (location.state as any)?.commonConfig;
   const locationFile = (location.state as any)?.uploadedFile;
   
@@ -195,7 +195,7 @@ const SourceOptimizationPage = () => {
 
   const handleSubmit = async () => {
     if (!mergedFormData) {
-      setError("Please configure optimization parameters first in Optimization Setup");
+      setError("Please configure optimization parameters first in Optimization Configuration");
       setOpen(true);
       return;
     }
@@ -394,7 +394,7 @@ const SourceOptimizationPage = () => {
           value: displayProfile,
           subtext: "Run optimization to calculate savings & dispatch.",
           accent: "from-amber-500 to-orange-500",
-          icon: DollarSign,
+          icon: Coins,
         },
       ];
     }
@@ -501,7 +501,7 @@ const SourceOptimizationPage = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
-                    <span><strong>Note:</strong> Common parameters (load profiles, system capacities, tariffs) are inherited from Optimization Setup</span>
+                    <span><strong>Note:</strong> Common parameters (load profiles, system capacities, tariffs) are inherited from Optimization Configuration</span>
                   </li>
                 </ul>
               </div>
@@ -609,7 +609,7 @@ const SourceOptimizationPage = () => {
           {/* Display Common Configuration (Read-only) */}
           {mergedFormData && (
             <div className={sectionPanelClass}>
-              <h3 className="text-lg font-semibold mb-4">Common Configuration (from Optimization Setup)</h3>
+              <h3 className="text-lg font-semibold mb-4">Common Configuration (from Optimization Configuration)</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-base-content/60">Weather:</span>
@@ -650,7 +650,7 @@ const SourceOptimizationPage = () => {
                     Currently no data uploaded. If you want to upload,{' '}
                     <button
                       onClick={() => {
-                        // Scroll to inline setup if it exists, or navigate to optimization setup
+                        // Scroll to inline setup if it exists, or navigate to optimization configuration
                         const inlineSetup = document.querySelector('[data-inline-setup]');
                         if (inlineSetup) {
                           inlineSetup.scrollIntoView({ behavior: 'smooth', block: 'start' });

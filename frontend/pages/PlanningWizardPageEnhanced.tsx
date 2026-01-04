@@ -199,45 +199,64 @@ const PlanningWizardContent: React.FC = () => {
         }
       }
 
-      // Step 2: Call AI service for Flask-style response
-      const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
-      const aiServiceRequest = {
+      // Step 2: Call backend proxy route (which forwards to AI service)
+      // This avoids CORS issues and works in production without hardcoded localhost URLs
+      const requestBody = {
         load_profile_id: currentLoadProfileId,
         total_daily_energy_kwh: totalDailyConsumptionKWh,
         preferred_sources: preferredSources.length > 0 ? preferredSources : ['solar', 'battery'],
         primary_goal: primaryGoals.length > 0 ? primaryGoals[0] : 'savings',
+        primary_goals: primaryGoals.length > 0 ? primaryGoals : ['savings'],
         allow_diesel: allowDiesel,
       };
 
-      console.log('📤 Calling AI service for Flask-style response:', {
-        url: `${AI_SERVICE_URL}/api/v1/planning/recommend`,
-        body: aiServiceRequest
+      console.log('📤 Calling backend proxy for planning recommendation:', {
+        url: `${API_BASE_URL}/wizard/planning/step3`,
+        body: requestBody
       });
 
-      const aiResponse = await fetch(`${AI_SERVICE_URL}/api/v1/planning/recommend`, {
+      const aiResponse = await fetch(`${API_BASE_URL}/wizard/planning/step3`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(aiServiceRequest)
+        body: JSON.stringify(requestBody)
       });
 
-      let flaskResult;
+      let backendResult;
       try {
-        flaskResult = await aiResponse.json();
+        backendResult = await aiResponse.json();
       } catch (parseError) {
-        console.error('❌ Failed to parse AI service response as JSON:', parseError);
-        throw new Error(`AI service returned invalid response (${aiResponse.status})`);
+        console.error('❌ Failed to parse backend response as JSON:', parseError);
+        throw new Error(`Backend returned invalid response (${aiResponse.status})`);
       }
 
       if (!aiResponse.ok) {
-        const errorMsg = flaskResult.detail || flaskResult.error || `AI service error (${aiResponse.status})`;
-        console.error('❌ AI service error:', errorMsg);
+        const errorMsg = backendResult.error || backendResult.message || `Backend error (${aiResponse.status})`;
+        console.error('❌ Backend error:', errorMsg);
         throw new Error(errorMsg);
       }
       
-      console.log('✅ Flask-style response received from AI service');
+      // Extract Flask-style response from backend result
+      // The backend passes Flask response in flask_response field
+      let flaskResult;
+      if (backendResult.flask_response) {
+        // Backend passed Flask response directly
+        flaskResult = backendResult.flask_response;
+      } else if (backendResult['Technical Analysis']) {
+        // Direct Flask response (fallback - if backend doesn't wrap it)
+        flaskResult = backendResult;
+      } else if (backendResult.data?.['Technical Analysis']) {
+        // Nested in data
+        flaskResult = backendResult.data;
+      } else {
+        // If no Flask response, try to use backend structure as-is
+        console.warn('⚠️ No Flask-style response found, using backend structure');
+        flaskResult = backendResult.data || backendResult;
+      }
+      
+      console.log('✅ Planning recommendation received from backend');
       
       // Store Flask response for display
       setFlaskResponse(flaskResult);
@@ -518,7 +537,7 @@ const PlanningWizardContent: React.FC = () => {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Planning Wizard</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Energy Advisory Assistance</h1>
             <p className="text-gray-600 dark:text-gray-400">Design your optimal energy management system</p>
           </div>
           <div className="flex space-x-3">

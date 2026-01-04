@@ -25,7 +25,7 @@ const MainOptionsPage: React.FC = () => {
   const options = [
     {
       id: 'planning',
-      title: 'Planning Wizard',
+      title: 'Energy Advisory Assistance',
       description: 'Create a new energy system plan with site type selection, load profiling, energy sources selection, and AI-powered recommendations',
       icon: BarChart3,
       path: '/planning-wizard',
@@ -34,12 +34,12 @@ const MainOptionsPage: React.FC = () => {
     },
     {
       id: 'optimization',
-      title: 'Optimization Flow',
-      description: 'Optimize your existing energy system for cost, CO2 emissions, or both. Setup optimization parameters and run analysis',
+      title: 'Energy Optimization',
+      description: 'Optimize your existing energy system for cost, CO2 emissions, or both. Configure optimization parameters and run analysis',
       icon: TrendingUp,
       path: '/optimization-flow',
       color: 'from-green-500 to-green-600',
-      steps: 'O1 → O2 → Advanced'
+      steps: 'Configuration → Analysis'
     },
     {
       id: 'ai-insights',
@@ -172,11 +172,11 @@ const MainOptionsPage: React.FC = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
               <div>
-                <p className="font-semibold mb-1">1. Planning Wizard</p>
+                <p className="font-semibold mb-1">1. Energy Advisory Assistance</p>
                 <p className="text-sm">Design your energy system from scratch with step-by-step guidance and AI recommendations.</p>
               </div>
               <div>
-                <p className="font-semibold mb-1">2. Optimization Flow</p>
+                <p className="font-semibold mb-1">2. Energy Optimization</p>
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
               </div>
               <div>

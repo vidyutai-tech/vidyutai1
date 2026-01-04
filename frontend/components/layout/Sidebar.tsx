@@ -7,20 +7,19 @@ interface SidebarProps {
   setSidebarOpen: (isOpen: boolean) => void;
 }
 
-// Organized by 4 main pipelines
+// Organized by main pipelines
 const planningNavItems = [
-  { name: 'Planning Wizard', path: '/planning-wizard', icon: Bolt },
+  { name: 'Energy Advisory Assistance', path: '/planning-wizard', icon: Bolt },
 ];
 
 const optimizationNavItems = [
-  { name: 'Optimization Flow', path: '/optimization-flow', icon: TrendingUp },
-  { name: 'Optimization Setup', path: '/optimization-setup', icon: Settings },
+  { name: 'Optimization Configuration', path: '/optimization-setup', icon: Settings },
   { name: 'Demand Optimization', path: '/demand-optimization', icon: Users },
   { name: 'Source Optimization', path: '/source-optimization', icon: Zap },
 ];
 
+// AI/ML Insights items - moved to dashboard section as they're navigation utilities
 const aiMlNavItems = [
-  { name: 'AI/ML Insights', path: '/ai-ml-insights', icon: Bot },
   { name: 'Energy Forecasting', path: '/energy-forecasting', icon: TrendingUp },
   { name: 'Battery RUL Prediction', path: '/battery-rul', icon: Battery },
   { name: 'Solar Degradation Prediction', path: '/solar-degradation', icon: Zap },
@@ -129,11 +128,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
               </NavLink>
             </div>
             
-            <NavSection title="1. Planning Wizard" items={planningNavItems} isActive={isPlanningActive} />
-            <NavSection title="2. Optimization Flow" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. AI/ML Insights" items={aiMlNavItems} isActive={isAIMLActive} />
-            <NavSection title="4. Unified Dashboard" items={dashboardNavItems} isActive={isDashboardActive} />
-            <NavSection title="5. Impact & Actions" items={impactActionsNavItems} isActive={isImpactActionsActive} />
+            <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
+            <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
+            <NavSection title="3. Unified Dashboard" items={dashboardNavItems} isActive={isDashboardActive} />
+            <NavSection title="4. Impact & Actions" items={impactActionsNavItems} isActive={isImpactActionsActive} />
+            
+            {/* AI/ML Predictions - navigation utilities (not a main pipeline) */}
+            <div className="px-4 mt-6">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">AI/ML Predictions</h3>
+            </div>
+            <nav className="mt-2">
+              <ul>
+                {aiMlNavItems.map((item) => (
+                  <li key={item.name}>
+                    <NavItem item={item} />
+                  </li>
+                ))}
+              </ul>
+            </nav>
             
             <div className="px-4 mt-6">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Management</h3>
