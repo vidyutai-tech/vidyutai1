@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import ApplianceSelector from '../components/shared/ApplianceSelector';
 import { LoadProfileProvider, LoadProfileContext } from '../contexts/LoadProfileContext';
 import { getUseCaseTemplate, UseCaseTemplate } from '../utils/useCaseTemplates';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const PlanningWizardContent: React.FC = () => {
   const navigate = useNavigate();
@@ -1019,17 +1020,64 @@ const PlanningWizardContent: React.FC = () => {
                     {/* Plots */}
                     {flaskResponse['Plots'] && (
                       <Card title="Analysis Plots">
-                        <div className="p-6 space-y-6">
-                          {Object.entries(flaskResponse['Plots']).map(([key, value]: [string, any]) => (
-                            <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                              <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">{key}</h4>
-                              <img 
-                                src={`data:image/png;base64,${value}`} 
-                                alt={key}
-                                className="w-full h-auto rounded"
-                              />
-                            </div>
-                          ))}
+                        <div className="p-6 space-y-8">
+                          {Object.entries(flaskResponse['Plots']).map(([key, plotData]: [string, any]) => {
+                            // Check if it's new JSON format or old base64 format
+                            if (plotData && typeof plotData === 'object' && plotData.type === 'bar' && plotData.data) {
+                              // New JSON format - render with Recharts
+                              return (
+                                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{plotData.title}</h4>
+                                  <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                      <BarChart data={plotData.data}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                        <XAxis 
+                                          dataKey="name" 
+                                          tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.xLabel, position: 'insideBottom', offset: -5 }}
+                                        />
+                                        <YAxis 
+                                          tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.yLabel, angle: -90, position: 'insideLeft' }}
+                                        />
+                                        <Tooltip 
+                                          contentStyle={{ 
+                                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '6px'
+                                          }}
+                                          formatter={(value: any) => {
+                                            if (key.includes('Capital Cost')) return `₹${value} Cr`;
+                                            if (key.includes('Payback')) return `${value} years`;
+                                            if (key.includes('Carbon')) return `${value} Kiloton`;
+                                            return `₹${value}/kWh`;
+                                          }}
+                                        />
+                                        <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]}>
+                                          {plotData.data.map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#60a5fa'} />
+                                          ))}
+                                        </Bar>
+                                      </BarChart>
+                                    </ResponsiveContainer>
+                                  </div>
+                                </div>
+                              );
+                            } else {
+                              // Old base64 format - render as image (backward compatibility)
+                              return (
+                                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">{key}</h4>
+                                  <img 
+                                    src={`data:image/png;base64,${plotData}`} 
+                                    alt={key}
+                                    className="w-full h-auto rounded"
+                                  />
+                                </div>
+                              );
+                            }
+                          })}
                         </div>
                       </Card>
                     )}

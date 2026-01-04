@@ -4,12 +4,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
-import matplotlib.pyplot as plt
+# Matplotlib removed - using JSON plot data instead to reduce memory usage
 import numpy as np
-import io
-import base64
 
 from app.api.deps import get_current_user, get_current_user_optional
 from app.models import pydantic_models as models
@@ -480,12 +476,7 @@ def calculate_emissions_analysis(
     )
 
 
-def plot_to_base64(fig):
-    """Convert matplotlib figure to base64 string."""
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png', dpi=600, bbox_inches='tight')
-    buf.seek(0)
-    return base64.b64encode(buf.getvalue()).decode('utf-8')
+# plot_to_base64 function removed - using JSON plot data instead to reduce memory usage
 
 
 @router.post("/planning/recommend")
@@ -538,144 +529,89 @@ async def get_planning_recommendation(
             total_daily_energy_kwh=Total_energy_consumption
         )
         
-        # Generate plots matching Flask code
-        # Capital Cost Comparison Plot
+        # Generate plot data as JSON (instead of matplotlib plots to save memory)
+        # Capital Cost Comparison Plot Data
         capital_cost_dual_mode_cr = economic_analysis.capital_cost_dual_mode_rs / 1e7
         capital_cost_on_grid_cr = economic_analysis.capital_cost_on_grid_rs / 1e7
+        capital_cost_plot_data = {
+            "type": "bar",
+            "title": "Capital Cost Comparison of Dual Mode and On-Grid Systems",
+            "xLabel": "System Type",
+            "yLabel": "Capital Cost (INR Cr)",
+            "data": [
+                {"name": "Dual Mode System", "value": round(capital_cost_dual_mode_cr, 2)},
+                {"name": "On-Grid System", "value": round(capital_cost_on_grid_cr, 2)}
+            ]
+        }
         
-        plt.rcParams['font.family'] = 'Times New Roman'
-        plt.rcParams['font.size'] = 10
-        fig1, ax1 = plt.subplots(figsize=(8, 6))
-        systems = ['Dual Mode System', 'On-Grid System']
-        capital_costs = [capital_cost_dual_mode_cr, capital_cost_on_grid_cr]
-        bars = ax1.bar(systems, capital_costs, color=['lightblue', 'lightblue'])
-        max_capital = max(capital_costs)
-        for bar in bars:
-            height = bar.get_height()
-            ax1.text(bar.get_x() + bar.get_width() / 2, height + max_capital * 0.05, 
-                    f'{height:.2f} Cr', ha='center', va='bottom', fontsize=10)
-        ax1.set_ylabel('Capital Cost (INR Cr)', fontsize=11)
-        ax1.set_title('Capital Cost Comparison of Dual Mode and On-Grid Systems', fontsize=12, pad=10)
-        ax1.set_ylim(0, max_capital * 1.25)
-        ax1.grid(axis='y', alpha=0.3, linestyle='--')
-        plt.tight_layout()
-        capital_cost_plot = plot_to_base64(fig1)
-        plt.close(fig1)
-        
-        # Daytime Outage Cost Plot (Dual Mode)
-        fig2, ax = plt.subplots(figsize=(8, 6))
+        # Daytime Outage Cost Plot Data (Dual Mode)
         durations = [0, 1, 2, 3]
-        costs = [
-            economic_analysis.cost_energy_dual_mode_rs_per_kwh,
-            economic_analysis.cost_energy_dual_mode_1h_outage_rs_per_kwh,
-            economic_analysis.cost_energy_dual_mode_2h_outage_rs_per_kwh,
-            economic_analysis.cost_energy_dual_mode_3h_outage_rs_per_kwh
-        ]
-        bars = ax.bar(durations, costs, color='lightblue', label='Dual mode system')
-        max_cost = max(costs)
-        for i, bar in enumerate(bars):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height + max_cost * 0.03, 
-                   f'{height:.2f}', ha='center', va='bottom', fontsize=10)
-        ax.set_xlabel('Duration of the Daytime Outage (hours)', fontsize=11)
-        ax.set_ylabel('Cost of Energy (Rs/kWh)', fontsize=11)
-        ax.set_title('Cost of Energy Generation for Different Daytime Outage Scenarios', fontsize=12, pad=10)
-        ax.set_ylim(0, max_cost * 1.15)
-        ax.legend(fontsize=10)
-        ax.grid(axis='y', alpha=0.3, linestyle='--')
-        plt.tight_layout()
-        daytime_outage_plot = plot_to_base64(fig2)
-        plt.close(fig2)
+        daytime_outage_plot_data = {
+            "type": "bar",
+            "title": "Cost of Energy Generation for Different Daytime Outage Scenarios (Dual Mode)",
+            "xLabel": "Duration of the Daytime Outage (hours)",
+            "yLabel": "Cost of Energy (Rs/kWh)",
+            "data": [
+                {"name": "0 hours", "value": round(economic_analysis.cost_energy_dual_mode_rs_per_kwh, 2)},
+                {"name": "1 hour", "value": round(economic_analysis.cost_energy_dual_mode_1h_outage_rs_per_kwh, 2)},
+                {"name": "2 hours", "value": round(economic_analysis.cost_energy_dual_mode_2h_outage_rs_per_kwh, 2)},
+                {"name": "3 hours", "value": round(economic_analysis.cost_energy_dual_mode_3h_outage_rs_per_kwh, 2)}
+            ]
+        }
         
-        # Nighttime Outage Cost Plot (Dual Mode)
-        fig3, ax = plt.subplots(figsize=(8, 6))
-        costs_night = [
-            economic_analysis.cost_energy_dual_mode_rs_per_kwh,
-            economic_analysis.cost_energy_dual_mode_night_1h_outage_rs_per_kwh,
-            economic_analysis.cost_energy_dual_mode_night_2h_outage_rs_per_kwh,
-            economic_analysis.cost_energy_dual_mode_night_3h_outage_rs_per_kwh
-        ]
-        bars = ax.bar(durations, costs_night, color='lightblue', label='Dual mode system')
-        max_cost_night = max(costs_night)
-        for i, bar in enumerate(bars):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height + max_cost_night * 0.05, 
-                   f'{height:.2f}', ha='center', va='bottom', fontsize=10)
-        ax.set_xlabel('Duration of the Nighttime Outage (hours)', fontsize=11)
-        ax.set_ylabel('Cost of Energy (Rs/kWh)', fontsize=11)
-        ax.set_title('Cost of Energy Generation for Different Nighttime Outage Scenarios', fontsize=12, pad=10)
-        ax.set_ylim(0, max_cost_night * 1.2)
-        ax.legend(fontsize=10)
-        ax.grid(axis='y', alpha=0.3, linestyle='--')
-        plt.tight_layout()
-        nighttime_outage_plot = plot_to_base64(fig3)
-        plt.close(fig3)
+        # Nighttime Outage Cost Plot Data (Dual Mode)
+        nighttime_outage_plot_data = {
+            "type": "bar",
+            "title": "Cost of Energy Generation for Different Nighttime Outage Scenarios (Dual Mode)",
+            "xLabel": "Duration of the Nighttime Outage (hours)",
+            "yLabel": "Cost of Energy (Rs/kWh)",
+            "data": [
+                {"name": "0 hours", "value": round(economic_analysis.cost_energy_dual_mode_rs_per_kwh, 2)},
+                {"name": "1 hour", "value": round(economic_analysis.cost_energy_dual_mode_night_1h_outage_rs_per_kwh, 2)},
+                {"name": "2 hours", "value": round(economic_analysis.cost_energy_dual_mode_night_2h_outage_rs_per_kwh, 2)},
+                {"name": "3 hours", "value": round(economic_analysis.cost_energy_dual_mode_night_3h_outage_rs_per_kwh, 2)}
+            ]
+        }
         
-        # On-Grid Daytime Outage Cost Plot
-        fig4, ax = plt.subplots(figsize=(8, 6))
-        costs_on_grid = [
-            economic_analysis.cost_energy_on_grid_rs_per_kwh,
-            economic_analysis.cost_energy_on_grid_1h_outage_rs_per_kwh,
-            economic_analysis.cost_energy_on_grid_2h_outage_rs_per_kwh,
-            economic_analysis.cost_energy_on_grid_3h_outage_rs_per_kwh
-        ]
-        bars = ax.bar(durations, costs_on_grid, color='lightblue', label='On-grid system')
-        max_cost_on_grid = max(costs_on_grid)
-        y_max = max(max_cost_on_grid * 1.2, 6)  # Ensure at least 6, but scale if needed
-        for i, bar in enumerate(bars):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height + y_max * 0.04, 
-                   f'{height:.2f}', ha='center', va='bottom', fontsize=10)
-        ax.set_xlabel('Duration of the Daytime Outage (hours)', fontsize=11)
-        ax.set_ylabel('Cost of Energy (Rs/kWh)', fontsize=11)
-        ax.set_title('Cost of Energy Generation for Different Daytime Outage Scenarios', fontsize=12, pad=10)
-        ax.set_ylim(0, y_max)
-        ax.legend(fontsize=10)
-        ax.grid(axis='y', alpha=0.3, linestyle='--')
-        plt.tight_layout()
-        on_grid_daytime_outage_plot = plot_to_base64(fig4)
-        plt.close(fig4)
+        # On-Grid Daytime Outage Cost Plot Data
+        on_grid_daytime_outage_plot_data = {
+            "type": "bar",
+            "title": "Cost of Energy Generation for Different Daytime Outage Scenarios (On-Grid)",
+            "xLabel": "Duration of the Daytime Outage (hours)",
+            "yLabel": "Cost of Energy (Rs/kWh)",
+            "data": [
+                {"name": "0 hours", "value": round(economic_analysis.cost_energy_on_grid_rs_per_kwh, 2)},
+                {"name": "1 hour", "value": round(economic_analysis.cost_energy_on_grid_1h_outage_rs_per_kwh, 2)},
+                {"name": "2 hours", "value": round(economic_analysis.cost_energy_on_grid_2h_outage_rs_per_kwh, 2)},
+                {"name": "3 hours", "value": round(economic_analysis.cost_energy_on_grid_3h_outage_rs_per_kwh, 2)}
+            ]
+        }
         
-        # Simple Payback Period Plot
-        fig5, ax = plt.subplots(figsize=(8, 6))
-        systems_payback = ['On-Grid System', 'Dual Mode System']
-        payback_periods = [
-            economic_analysis.simple_payback_on_grid_years,
-            economic_analysis.simple_payback_dual_mode_years
-        ]
-        bars = ax.bar(systems_payback, payback_periods, color=['lightblue', 'lightblue'])
-        max_payback = max(payback_periods)
-        for bar in bars:
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height + max_payback * 0.05, 
-                   f'{height:.2f} years', ha='center', va='bottom', fontsize=10)
-        ax.set_ylabel('Simple Payback Period (years)', fontsize=11)
-        ax.set_title('Simple Payback Period Comparison of Dual Mode and On-Grid Systems', fontsize=12, pad=10)
-        ax.set_ylim(0, max_payback * 1.25)
-        ax.grid(axis='y', alpha=0.3, linestyle='--')
-        plt.tight_layout()
-        simple_payback_plot = plot_to_base64(fig5)
-        plt.close(fig5)
+        # Simple Payback Period Plot Data
+        simple_payback_plot_data = {
+            "type": "bar",
+            "title": "Simple Payback Period Comparison of Dual Mode and On-Grid Systems",
+            "xLabel": "System Type",
+            "yLabel": "Simple Payback Period (years)",
+            "data": [
+                {"name": "On-Grid System", "value": round(economic_analysis.simple_payback_on_grid_years, 2)},
+                {"name": "Dual Mode System", "value": round(economic_analysis.simple_payback_dual_mode_years, 2)}
+            ]
+        }
         
-        # Carbon Emission Plot
-        fig6, ax2 = plt.subplots(figsize=(8, 6))
+        # Carbon Emission Plot Data
         carbon_emission_dual_mode_Ton = emissions_analysis.carbon_emission_dual_mode_ton / 1000
         carbon_emission_on_grid_Ton = emissions_analysis.carbon_emission_on_grid_ton / 1000
-        systems_carbon = ['On-Grid System', 'Dual Mode System']
-        carbon_emmission = [carbon_emission_on_grid_Ton, carbon_emission_dual_mode_Ton]
-        bars = ax2.bar(systems_carbon, carbon_emmission, color=['lightblue', 'lightblue'])
-        max_carbon = max(carbon_emmission)
-        for bar in bars:
-            height = bar.get_height()
-            ax2.text(bar.get_x() + bar.get_width() / 2, height + max_carbon * 0.05, 
-                    f'{height:.2f} Kiloton', ha='center', va='bottom', fontsize=10)
-        ax2.set_ylabel('Carbon Emission (Kiloton)', fontsize=11)
-        ax2.set_title('Carbon Emission Comparison of Dual Mode and On-Grid Systems', fontsize=12, pad=10)
-        ax2.set_ylim(0, max_carbon * 1.25)
-        ax2.grid(axis='y', alpha=0.3, linestyle='--')
-        plt.tight_layout()
-        carbon_emission_plot = plot_to_base64(fig6)
-        plt.close(fig6)
+        carbon_emission_plot_data = {
+            "type": "bar",
+            "title": "Carbon Emission Comparison of Dual Mode and On-Grid Systems",
+            "xLabel": "System Type",
+            "yLabel": "Carbon Emission (Kiloton)",
+            "data": [
+                {"name": "On-Grid System", "value": round(carbon_emission_on_grid_Ton, 2)},
+                {"name": "Dual Mode System", "value": round(carbon_emission_dual_mode_Ton, 2)}
+            ]
+        }
         
         # Build Flask-style response
         response = {
@@ -730,12 +666,12 @@ async def get_planning_recommendation(
                 "On-Grid System (Ton)": f"{emissions_analysis.carbon_emission_on_grid_ton:.2f}"
             },
             "Plots": {
-                "Capital Cost Comparison": capital_cost_plot,
-                "Daytime Outage Cost": daytime_outage_plot,
-                "Nighttime Outage Cost": nighttime_outage_plot,
-                "On-Grid Daytime Outage Cost": on_grid_daytime_outage_plot,
-                "Simple Payback Period Comparison": simple_payback_plot,
-                "Carbon Emission Comparison": carbon_emission_plot
+                "Capital Cost Comparison": capital_cost_plot_data,
+                "Daytime Outage Cost": daytime_outage_plot_data,
+                "Nighttime Outage Cost": nighttime_outage_plot_data,
+                "On-Grid Daytime Outage Cost": on_grid_daytime_outage_plot_data,
+                "Simple Payback Period Comparison": simple_payback_plot_data,
+                "Carbon Emission Comparison": carbon_emission_plot_data
             }
         }
         
