@@ -52,9 +52,9 @@ const AIExplanationsPage: React.FC = () => {
   // Use the same API base URL logic as other pages
   // For localhost, use absolute URL to backend (port 5001)
   // For production, use environment variable or relative path
-  const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:5001/api/v1'  // Direct connection to backend
-    : (import.meta.env.VITE_API_BASE_URL || '/api/v1');
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+    (isLocalhost ? 'http://localhost:5001/api/v1' : 'https://vidyutai-backend.onrender.com/api/v1');
 
   useEffect(() => {
     // Only load if we have a valid API URL

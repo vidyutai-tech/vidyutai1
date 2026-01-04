@@ -57,7 +57,9 @@ const MLAlertCard: React.FC<MLAlertCardProps> = ({ alert, onAcknowledge }) => {
   const loadMLAnalysis = async () => {
     setIsLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api/v1';
+      const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+        (isLocalhost ? 'http://localhost:5001/api/v1' : 'https://vidyutai-backend.onrender.com/api/v1');
       const response = await fetch(`${API_BASE_URL}/ml-alerts/full-analysis`, {
         method: 'POST',
         headers: {

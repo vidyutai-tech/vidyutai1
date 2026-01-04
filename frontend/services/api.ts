@@ -8,12 +8,20 @@ declare global {
   }
 }
 
-// Get API base URL - use full URL for localhost, relative for production
+// Get API base URL - use full URL for localhost, Render URL for production
 const getApiBaseUrl = (): string => {
+  // Check environment variable first (highest priority)
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  
+  // Detect localhost vs production
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:5001/api/v1';
   }
-  return import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  
+  // Production: use Render.com backend service
+  return 'https://vidyutai-backend.onrender.com/api/v1';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -452,9 +460,14 @@ export const getAIServiceURL = (): string => {
   if ((import.meta as any).env?.VITE_AI_BASE_URL) {
     return (import.meta as any).env.VITE_AI_BASE_URL;
   }
+  // Check environment variable first
+  if (import.meta.env.VITE_AI_SERVICE_URL) {
+    return import.meta.env.VITE_AI_SERVICE_URL;
+  }
+  
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    // Production: use subdomain
-    return 'https://api-python-be.vidyutai.in';
+    // Production: use Render.com service
+    return 'https://vidyutai-ai-service.onrender.com';
   }
   return 'http://localhost:8000';
 };

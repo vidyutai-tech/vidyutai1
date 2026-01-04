@@ -71,9 +71,9 @@ const DemandOptimizationPage = () => {
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use backend proxy instead of direct AI service call to avoid CORS issues
-  const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:5001/api/v1'
-    : import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+    (isLocalhost ? 'http://localhost:5001/api/v1' : 'https://vidyutai-backend.onrender.com/api/v1');
   const OPTIMIZE_URL = `${API_BASE_URL}/demand-optimize`;
 
   const controlWrapperClass = "form-control space-y-2";
