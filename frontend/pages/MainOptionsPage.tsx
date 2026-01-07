@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { ArrowRight, BarChart3, TrendingUp, Brain, LayoutDashboard, UserCircle, LogOut } from 'lucide-react';
+import { ArrowRight, BarChart3, TrendingUp, UserCircle, LogOut } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { AppContext } from '../contexts/AppContext';
 
@@ -40,24 +40,6 @@ const MainOptionsPage: React.FC = () => {
       path: '/optimization-flow',
       color: 'from-green-500 to-green-600',
       steps: 'Configuration → Analysis'
-    },
-    {
-      id: 'ai-insights',
-      title: 'AI/ML Insights',
-      description: 'Get AI-powered predictions, recommendations, renewable optimization, and natural language explanations',
-      icon: Brain,
-      path: '/ai-ml-insights',
-      color: 'from-purple-500 to-purple-600',
-      steps: 'Predictions & Recommendations'
-    },
-    {
-      id: 'dashboard',
-      title: 'Unified Dashboard (EDA)',
-      description: 'Exploratory Data Analysis dashboard with real-time monitoring, visualizations, and comprehensive energy metrics',
-      icon: LayoutDashboard,
-      path: '/unified-dashboard',
-      color: 'from-orange-500 to-orange-600',
-      steps: '8 Sub-Modules'
     }
   ];
 
@@ -178,14 +160,6 @@ const MainOptionsPage: React.FC = () => {
               <div>
                 <p className="font-semibold mb-1">2. Energy Optimization</p>
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-1">3. AI/ML Insights</p>
-                <p className="text-sm">Leverage machine learning for predictions, anomaly detection, and intelligent insights.</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-1">4. Unified Dashboard</p>
-                <p className="text-sm">Monitor your energy system in real-time with comprehensive EDA and visualizations.</p>
               </div>
             </div>
           </div>

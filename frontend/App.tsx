@@ -12,17 +12,8 @@ import ImpactPage from './pages/ImpactPage';
 import AlertsPage from './pages/AlertsPage';
 import MaintenancePage from './pages/MaintenancePage';
 import SimulatorPage from './pages/SimulatorPage';
-import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import SiteSelectPage from './pages/SiteSelectPage';
-import PredictionsPage from './pages/PredictionsPage';
-import BatteryRULPage from './pages/BatteryRULPage';
-import SolarDegradationPage from './pages/SolarDegradationPage';
-import EnergyLossPage from './pages/EnergyLossPage';
-import RootCauseAnalysisPage from './pages/RootCauseAnalysisPage';
-import ManageSitesPage from './pages/ManageSitesPage';
-import ManageAssetsPage from './pages/ManageAssetsPage';
-import DigitalTwinPage from './pages/DigitalTwinPage';
 import DemandOptimizationPage from './pages/DemandOptimizationPage';
 import SourceOptimizationPage from './pages/SourceOptimizationPage';
 import PlanningWizardPage from './pages/PlanningWizardPage';
@@ -576,28 +567,10 @@ const App: React.FC = () => {
             <Route path="/optimization-setup" element={<OptimizationSetupPage />} />
             <Route path="/demand-optimization" element={<DemandOptimizationPage />} />
             <Route path="/source-optimization" element={<SourceOptimizationPage />} />
-            <Route path="/ai-ml-insights" element={<AIMLInsightsPage />} />
-            <Route path="/energy-forecasting" element={<EnergyForecastingPage />} />
             <Route path="/ai-recommendations" element={<AIRecommendationsPage />} />
-            <Route path="/ai-explanations" element={<AIExplanationsPage />} />
-            <Route path="/unified-dashboard" element={<UnifiedDashboardPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/site-detail" element={<SiteDetailPage />} />
-                  <Route path="/impact" element={<ImpactPage />} />
-                  <Route path="/digital-twin" element={<DigitalTwinPage />} />
+            <Route path="/impact" element={<ImpactPage />} />
             <Route path="/planning-optimization" element={<PlanningAndOptimizationPage />} />
-                  <Route path="/alerts" element={<AlertsPage />} />
-                  <Route path="/maintenance" element={<MaintenancePage />} />
-                  <Route path="/simulator" element={<SimulatorPage />} />
-                  <Route path="/predictions" element={<PredictionsPage />} />
-                  <Route path="/battery-rul" element={<BatteryRULPage />} />
-                  <Route path="/solar-degradation" element={<SolarDegradationPage />} />
-                  <Route path="/energy-loss" element={<EnergyLossPage />} />
-                  <Route path="/root-cause-analysis" element={<RootCauseAnalysisPage />} />
-                  <Route path="/manage-sites" element={<ManageSitesPage />} />
-                  <Route path="/manage-assets" element={<ManageAssetsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
         </LayoutWrapper>
       </HashRouter>

@@ -185,15 +185,17 @@ def calculate_technical_sizing(
     if diesel_capacity_kw:
         recommendations.append(f"Install {diesel_capacity_kw:.2f} kW diesel generator as backup")
     
+    # Return unrounded values - rounding will be done at display time to preserve precision
+    # This ensures economic calculations use full precision values
     return TechnicalSizing(
-        solar_capacity_kw=round(pv_peak_power, 2),
-        battery_capacity_kwh=round(battery_energy, 2),
+        solar_capacity_kw=pv_peak_power,
+        battery_capacity_kwh=battery_energy,
         battery_nominal_voltage_v=battery_nominal_voltage,
-        battery_capacity_kah=round(battery_capacity, 2),
-        inverter_capacity_kw=round(inverter_rating, 2),
-        dc_converter_capacity_kw=round(dcdc_sizing, 2),
-        grid_connection_kw=round(grid_connection_kw, 2),
-        diesel_capacity_kw=round(diesel_capacity_kw, 2) if diesel_capacity_kw else None,
+        battery_capacity_kah=battery_capacity,
+        inverter_capacity_kw=inverter_rating,
+        dc_converter_capacity_kw=dcdc_sizing,
+        grid_connection_kw=grid_connection_kw,
+        diesel_capacity_kw=diesel_capacity_kw,
         recommendations=recommendations
     )
 
@@ -292,13 +294,13 @@ def calculate_economic_analysis(
     
     # Cost of Energy generation
     # On-grid system
-    # Total Energy generation (note: Flask code uses n_panel = 1 in calculations)
-    T_on = 365 * pv_peak_power * daily_solar_insolation * 1 * n_inverter
+    # Total Energy generation (matching Flask: uses n_panel explicitly)
+    T_on = 365 * pv_peak_power * daily_solar_insolation * n_panel * n_inverter
     cost_energy_on_grid = annual_cost_on_grid / T_on
     
     # Dual mode system
-    # Total Energy generation
-    T_dual = 365 * pv_peak_power * daily_solar_insolation * 1 * n_inverter * n_dcdc
+    # Total Energy generation (matching Flask: uses n_panel explicitly)
+    T_dual = 365 * pv_peak_power * daily_solar_insolation * n_panel * n_inverter * n_dcdc
     cost_energy_dual_mode = annual_cost_dual_mode / T_dual
     
     # Annual revenue of the system considering the energy generation at no grid outage scenario
@@ -306,21 +308,21 @@ def calculate_economic_analysis(
     annual_revenue_dual_mode = T_dual * 8  # Annual revenue at 8 Rs/kWh
     
     # Considering the outage scenario
-    # ON grid system - Day grid outage
-    T_on_onehour = 365 * pv_peak_power * one_hour_outage_solar_insolation * 1 * n_inverter
-    T_on_twohour = 365 * pv_peak_power * two_hour_outage_solar_insolation * 1 * n_inverter
-    T_on_threehour = 365 * pv_peak_power * three_hour_outage_solar_insolation * 1 * n_inverter
+    # ON grid system - Day grid outage (matching Flask: uses n_panel explicitly)
+    T_on_onehour = 365 * pv_peak_power * one_hour_outage_solar_insolation * n_panel * n_inverter
+    T_on_twohour = 365 * pv_peak_power * two_hour_outage_solar_insolation * n_panel * n_inverter
+    T_on_threehour = 365 * pv_peak_power * three_hour_outage_solar_insolation * n_panel * n_inverter
     
     cost_energy_on_grid_onehour = annual_cost_on_grid / T_on_onehour
     cost_energy_on_grid_twohour = annual_cost_on_grid / T_on_twohour
     cost_energy_on_grid_threehour = annual_cost_on_grid / T_on_threehour
     
-    # Night time grid outage - same for all durations
-    T_on_night = 365 * pv_peak_power * daily_solar_insolation * 1 * n_inverter
+    # Night time grid outage - same for all durations (matching Flask: uses n_panel explicitly)
+    T_on_night = 365 * pv_peak_power * daily_solar_insolation * n_panel * n_inverter
     cost_energy_on_grid_night = annual_cost_on_grid / T_on_night
     
     # Dual mode System - Day time grid outage
-    # Note: Flask code formulas have inconsistencies, using the pattern from the code
+    # Matching Flask formulas exactly (note: Flask uses n_panel in different places for twohour/threehour)
     T_dual_zero = 365 * ((daily_solar_insolation * local_load) + 
                          (pv_peak_power - (local_load / (n_dcdc * n_inverter))) * 
                          daily_solar_insolation * n_dcdc * n_inverter)
@@ -329,12 +331,14 @@ def calculate_economic_analysis(
                             (pv_peak_power - (local_load / (n_dcdc * n_inverter))) * 
                             one_hour_outage_solar_insolation * n_inverter * n_dcdc)
     
-    T_dual_twohour = 365 * ((daily_solar_insolation * local_load * 1) + 
-                            (pv_peak_power * 1 - (local_load / (n_dcdc * n_inverter * 1))) * 
+    # Flask formula for twohour: uses n_panel in first term and in second term
+    T_dual_twohour = 365 * ((daily_solar_insolation * local_load * n_panel) + 
+                            (pv_peak_power * n_panel - (local_load / (n_dcdc * n_inverter * n_panel))) * 
                             two_hour_outage_solar_insolation * n_inverter * n_dcdc)
     
-    T_dual_threehour = 365 * ((daily_solar_insolation * local_load * 1) + 
-                              (pv_peak_power * 1 - (local_load / (n_dcdc * n_inverter * 1))) * 
+    # Flask formula for threehour: uses n_panel in first term and in second term
+    T_dual_threehour = 365 * ((daily_solar_insolation * local_load * n_panel) + 
+                              (pv_peak_power * n_panel - (local_load / (n_dcdc * n_inverter * n_panel))) * 
                               three_hour_outage_solar_insolation * n_inverter * n_dcdc)
     
     # Annual secondary benefits of the system (savings from avoiding diesel generator)
@@ -347,18 +351,18 @@ def calculate_economic_analysis(
     cost_energy_dual_mode_twohour = (annual_cost_dual_mode - AS_two_hour) / T_dual_twohour
     cost_energy_dual_mode_threehour = (annual_cost_dual_mode - AS_three_hour) / T_dual_threehour
     
-    # Dual mode system - Night time grid outage
-    T_dual_night_onehour = 365 * (local_load * (daily_solar_insolation * 1 + 1) + 
+    # Dual mode system - Night time grid outage (matching Flask formulas exactly)
+    T_dual_night_onehour = 365 * (local_load * (daily_solar_insolation * n_panel + 1) + 
                                   daily_solar_insolation * n_dcdc * n_inverter * 
-                                  (pv_peak_power * 1 - (local_load / (n_dcdc * n_inverter * 1))))
+                                  (pv_peak_power * n_panel - (local_load / (n_dcdc * n_inverter * n_panel))))
     
-    T_dual_night_twohour = 365 * (local_load * 1 * (daily_solar_insolation + 2) + 
+    T_dual_night_twohour = 365 * (local_load * n_panel * (daily_solar_insolation + 2) + 
                                   daily_solar_insolation * n_dcdc * n_inverter * 
-                                  (pv_peak_power * 1 - (local_load / (n_dcdc * n_inverter * 1))))
+                                  (pv_peak_power * n_panel - (local_load / (n_dcdc * n_inverter * n_panel))))
     
-    T_dual_night_threehour = 365 * (local_load * 1 * (daily_solar_insolation + 3) + 
+    T_dual_night_threehour = 365 * (local_load * n_panel * (daily_solar_insolation + 3) + 
                                     daily_solar_insolation * n_dcdc * n_inverter * 
-                                    (pv_peak_power * 1 - (local_load / (n_dcdc * n_inverter * 1))))
+                                    (pv_peak_power * n_panel - (local_load / (n_dcdc * n_inverter * n_panel))))
     
     # The cost of charging the battery for the night time outage
     Annual_battery_cost_onehour = local_load * 365 * 1 * 8  # 8 rupees per kWh from grid
@@ -388,42 +392,42 @@ def calculate_economic_analysis(
     monthly_savings = annual_savings / 12
     
     return EconomicAnalysis(
-        solar_cost_rs=round(pv_cost, 2),
-        battery_cost_rs=round(battery_cost, 2),
-        inverter_cost_rs=round(inverter_cost, 2),
-        dc_converter_cost_rs=round(dcdc_cost, 2),
-        installation_cost_dual_mode_rs=round(Installation_cost_dual_mode, 2),
-        installation_cost_on_grid_rs=round(Installation_cost_on_grid, 2),
-        annual_om_cost_dual_mode_rs=round(annual_om_cost_dual_mode, 2),
-        annual_om_cost_on_grid_rs=round(annual_om_cost_on_grid, 2),
-        capital_cost_dual_mode_rs=round(capital_cost_dual_mode, 2),
-        capital_cost_on_grid_rs=round(capital_cost_on_grid, 2),
-        annual_cost_dual_mode_rs=round(annual_cost_dual_mode, 2),
-        annual_cost_on_grid_rs=round(annual_cost_on_grid, 2),
-        annual_energy_generation_dual_mode_kwh=round(T_dual, 2),
-        annual_energy_generation_on_grid_kwh=round(T_on, 2),
-        annual_revenue_dual_mode_rs=round(annual_revenue_dual_mode, 2),
-        annual_revenue_on_grid_rs=round(annual_revenue_on_grid, 2),
-        cost_energy_dual_mode_rs_per_kwh=round(cost_energy_dual_mode, 2),
-        cost_energy_on_grid_rs_per_kwh=round(cost_energy_on_grid, 2),
-        cost_energy_dual_mode_1h_outage_rs_per_kwh=round(cost_energy_dual_mode_onehour, 2),
-        cost_energy_dual_mode_2h_outage_rs_per_kwh=round(cost_energy_dual_mode_twohour, 2),
-        cost_energy_dual_mode_3h_outage_rs_per_kwh=round(cost_energy_dual_mode_threehour, 2),
-        cost_energy_on_grid_1h_outage_rs_per_kwh=round(cost_energy_on_grid_onehour, 2),
-        cost_energy_on_grid_2h_outage_rs_per_kwh=round(cost_energy_on_grid_twohour, 2),
-        cost_energy_on_grid_3h_outage_rs_per_kwh=round(cost_energy_on_grid_threehour, 2),
-        cost_energy_dual_mode_night_1h_outage_rs_per_kwh=round(cost_energy_dual_mode_night_onehour, 2),
-        cost_energy_dual_mode_night_2h_outage_rs_per_kwh=round(cost_energy_dual_mode_night_twohour, 2),
-        cost_energy_dual_mode_night_3h_outage_rs_per_kwh=round(cost_energy_dual_mode_night_threehour, 2),
-        cost_energy_on_grid_night_outage_rs_per_kwh=round(cost_energy_on_grid_night, 2),
-        simple_payback_dual_mode_years=round(Simple_payback_dual_mode, 2),
-        simple_payback_on_grid_years=round(Simple_payback_on_grid, 2),
-        total_capex=round(total_capex, 2),
-        annual_opex=round(annual_opex, 2),
-        payback_period_years=round(payback_period_years, 2),
-        npv_10_years=round(npv, 2),
-        roi_percentage=round(roi_percentage, 2),
-        monthly_savings=round(monthly_savings, 2)
+        solar_cost_rs=pv_cost,
+        battery_cost_rs=battery_cost,
+        inverter_cost_rs=inverter_cost,
+        dc_converter_cost_rs=dcdc_cost,
+        installation_cost_dual_mode_rs=Installation_cost_dual_mode,
+        installation_cost_on_grid_rs=Installation_cost_on_grid,
+        annual_om_cost_dual_mode_rs=annual_om_cost_dual_mode,
+        annual_om_cost_on_grid_rs=annual_om_cost_on_grid,
+        capital_cost_dual_mode_rs=capital_cost_dual_mode,
+        capital_cost_on_grid_rs=capital_cost_on_grid,
+        annual_cost_dual_mode_rs=annual_cost_dual_mode,
+        annual_cost_on_grid_rs=annual_cost_on_grid,
+        annual_energy_generation_dual_mode_kwh=T_dual,
+        annual_energy_generation_on_grid_kwh=T_on,
+        annual_revenue_dual_mode_rs=annual_revenue_dual_mode,
+        annual_revenue_on_grid_rs=annual_revenue_on_grid,
+        cost_energy_dual_mode_rs_per_kwh=cost_energy_dual_mode,
+        cost_energy_on_grid_rs_per_kwh=cost_energy_on_grid,
+        cost_energy_dual_mode_1h_outage_rs_per_kwh=cost_energy_dual_mode_onehour,
+        cost_energy_dual_mode_2h_outage_rs_per_kwh=cost_energy_dual_mode_twohour,
+        cost_energy_dual_mode_3h_outage_rs_per_kwh=cost_energy_dual_mode_threehour,
+        cost_energy_on_grid_1h_outage_rs_per_kwh=cost_energy_on_grid_onehour,
+        cost_energy_on_grid_2h_outage_rs_per_kwh=cost_energy_on_grid_twohour,
+        cost_energy_on_grid_3h_outage_rs_per_kwh=cost_energy_on_grid_threehour,
+        cost_energy_dual_mode_night_1h_outage_rs_per_kwh=cost_energy_dual_mode_night_onehour,
+        cost_energy_dual_mode_night_2h_outage_rs_per_kwh=cost_energy_dual_mode_night_twohour,
+        cost_energy_dual_mode_night_3h_outage_rs_per_kwh=cost_energy_dual_mode_night_threehour,
+        cost_energy_on_grid_night_outage_rs_per_kwh=cost_energy_on_grid_night,
+        simple_payback_dual_mode_years=Simple_payback_dual_mode,
+        simple_payback_on_grid_years=Simple_payback_on_grid,
+        total_capex=total_capex,
+        annual_opex=annual_opex,
+        payback_period_years=payback_period_years,
+        npv_10_years=npv,
+        roi_percentage=roi_percentage,
+        monthly_savings=monthly_savings
     )
 
 
@@ -468,11 +472,11 @@ def calculate_emissions_analysis(
     lifetime_co2_reduction_tonnes = (annual_co2_reduction_kg * 25) / 1000
     
     return EmissionsAnalysis(
-        carbon_emission_dual_mode_ton=round(Carbon_emmission_dual_mode, 2),
-        carbon_emission_on_grid_ton=round(Carbon_emmission_on_grid, 2),
-        annual_co2_reduction_kg=round(annual_co2_reduction_kg, 2),
-        carbon_offset_percentage=round(carbon_offset_percentage, 2),
-        lifetime_co2_reduction_tonnes=round(lifetime_co2_reduction_tonnes, 2)
+        carbon_emission_dual_mode_ton=Carbon_emmission_dual_mode,
+        carbon_emission_on_grid_ton=Carbon_emmission_on_grid,
+        annual_co2_reduction_kg=annual_co2_reduction_kg,
+        carbon_offset_percentage=carbon_offset_percentage,
+        lifetime_co2_reduction_tonnes=lifetime_co2_reduction_tonnes
     )
 
 
@@ -531,16 +535,17 @@ async def get_planning_recommendation(
         
         # Generate plot data as JSON (instead of matplotlib plots to save memory)
         # Capital Cost Comparison Plot Data
-        capital_cost_dual_mode_cr = economic_analysis.capital_cost_dual_mode_rs / 1e7
-        capital_cost_on_grid_cr = economic_analysis.capital_cost_on_grid_rs / 1e7
+        # Use flexible unit: convert to thousands (₹ thousands) for better readability
+        capital_cost_dual_mode_k = economic_analysis.capital_cost_dual_mode_rs / 1000
+        capital_cost_on_grid_k = economic_analysis.capital_cost_on_grid_rs / 1000
         capital_cost_plot_data = {
             "type": "bar",
             "title": "Capital Cost Comparison of Dual Mode and On-Grid Systems",
             "xLabel": "System Type",
-            "yLabel": "Capital Cost (INR Cr)",
+            "yLabel": "Capital Cost (₹ Thousands)",
             "data": [
-                {"name": "Dual Mode System", "value": round(capital_cost_dual_mode_cr, 2)},
-                {"name": "On-Grid System", "value": round(capital_cost_on_grid_cr, 2)}
+                {"name": "Dual Mode System", "value": capital_cost_dual_mode_k},
+                {"name": "On-Grid System", "value": capital_cost_on_grid_k}
             ]
         }
         
@@ -552,10 +557,10 @@ async def get_planning_recommendation(
             "xLabel": "Duration of the Daytime Outage (hours)",
             "yLabel": "Cost of Energy (Rs/kWh)",
             "data": [
-                {"name": "0 hours", "value": round(economic_analysis.cost_energy_dual_mode_rs_per_kwh, 2)},
-                {"name": "1 hour", "value": round(economic_analysis.cost_energy_dual_mode_1h_outage_rs_per_kwh, 2)},
-                {"name": "2 hours", "value": round(economic_analysis.cost_energy_dual_mode_2h_outage_rs_per_kwh, 2)},
-                {"name": "3 hours", "value": round(economic_analysis.cost_energy_dual_mode_3h_outage_rs_per_kwh, 2)}
+                {"name": "0 hours", "value": economic_analysis.cost_energy_dual_mode_rs_per_kwh},
+                {"name": "1 hour", "value": economic_analysis.cost_energy_dual_mode_1h_outage_rs_per_kwh},
+                {"name": "2 hours", "value": economic_analysis.cost_energy_dual_mode_2h_outage_rs_per_kwh},
+                {"name": "3 hours", "value": economic_analysis.cost_energy_dual_mode_3h_outage_rs_per_kwh}
             ]
         }
         
@@ -566,10 +571,10 @@ async def get_planning_recommendation(
             "xLabel": "Duration of the Nighttime Outage (hours)",
             "yLabel": "Cost of Energy (Rs/kWh)",
             "data": [
-                {"name": "0 hours", "value": round(economic_analysis.cost_energy_dual_mode_rs_per_kwh, 2)},
-                {"name": "1 hour", "value": round(economic_analysis.cost_energy_dual_mode_night_1h_outage_rs_per_kwh, 2)},
-                {"name": "2 hours", "value": round(economic_analysis.cost_energy_dual_mode_night_2h_outage_rs_per_kwh, 2)},
-                {"name": "3 hours", "value": round(economic_analysis.cost_energy_dual_mode_night_3h_outage_rs_per_kwh, 2)}
+                {"name": "0 hours", "value": economic_analysis.cost_energy_dual_mode_rs_per_kwh},
+                {"name": "1 hour", "value": economic_analysis.cost_energy_dual_mode_night_1h_outage_rs_per_kwh},
+                {"name": "2 hours", "value": economic_analysis.cost_energy_dual_mode_night_2h_outage_rs_per_kwh},
+                {"name": "3 hours", "value": economic_analysis.cost_energy_dual_mode_night_3h_outage_rs_per_kwh}
             ]
         }
         
@@ -580,10 +585,10 @@ async def get_planning_recommendation(
             "xLabel": "Duration of the Daytime Outage (hours)",
             "yLabel": "Cost of Energy (Rs/kWh)",
             "data": [
-                {"name": "0 hours", "value": round(economic_analysis.cost_energy_on_grid_rs_per_kwh, 2)},
-                {"name": "1 hour", "value": round(economic_analysis.cost_energy_on_grid_1h_outage_rs_per_kwh, 2)},
-                {"name": "2 hours", "value": round(economic_analysis.cost_energy_on_grid_2h_outage_rs_per_kwh, 2)},
-                {"name": "3 hours", "value": round(economic_analysis.cost_energy_on_grid_3h_outage_rs_per_kwh, 2)}
+                {"name": "0 hours", "value": economic_analysis.cost_energy_on_grid_rs_per_kwh},
+                {"name": "1 hour", "value": economic_analysis.cost_energy_on_grid_1h_outage_rs_per_kwh},
+                {"name": "2 hours", "value": economic_analysis.cost_energy_on_grid_2h_outage_rs_per_kwh},
+                {"name": "3 hours", "value": economic_analysis.cost_energy_on_grid_3h_outage_rs_per_kwh}
             ]
         }
         
@@ -594,8 +599,8 @@ async def get_planning_recommendation(
             "xLabel": "System Type",
             "yLabel": "Simple Payback Period (years)",
             "data": [
-                {"name": "On-Grid System", "value": round(economic_analysis.simple_payback_on_grid_years, 2)},
-                {"name": "Dual Mode System", "value": round(economic_analysis.simple_payback_dual_mode_years, 2)}
+                {"name": "On-Grid System", "value": economic_analysis.simple_payback_on_grid_years},
+                {"name": "Dual Mode System", "value": economic_analysis.simple_payback_dual_mode_years}
             ]
         }
         
@@ -608,8 +613,8 @@ async def get_planning_recommendation(
             "xLabel": "System Type",
             "yLabel": "Carbon Emission (Kiloton)",
             "data": [
-                {"name": "On-Grid System", "value": round(carbon_emission_on_grid_Ton, 2)},
-                {"name": "Dual Mode System", "value": round(carbon_emission_dual_mode_Ton, 2)}
+                {"name": "On-Grid System", "value": carbon_emission_on_grid_Ton},
+                {"name": "Dual Mode System", "value": carbon_emission_dual_mode_Ton}
             ]
         }
         

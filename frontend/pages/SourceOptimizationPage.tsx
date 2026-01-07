@@ -13,6 +13,7 @@ import {
   Sun,
   Zap,
   ArrowLeft,
+  ArrowUp,
 } from "lucide-react";
 import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
@@ -147,7 +148,7 @@ const SourceOptimizationPage = () => {
         time_resolution_minutes: 30,
         grid_connection: 2000,
         solar_connection: 2000,
-        battery_capacity: 4000000,
+        battery_capacity: 40,
         battery_voltage: 100,
         diesel_capacity: 2200,
         fuel_price: 95,
@@ -433,16 +434,23 @@ const SourceOptimizationPage = () => {
         icon: Gauge,
       },
       {
-        title: "Battery Cycling",
+        title: "Grid Exports",
+        value: formatKWh(summary.Grid?.Export_kWh, 0),
+        subtext: summary.Grid?.Export_kWh != null && summary.Grid.Export_kWh > 0 ? "Energy exported to grid" : "No exports",
+        accent: "from-green-500 to-emerald-500",
+        icon: ArrowUp,
+      },
+      {
+        title: "Battery Cycling (Charging & Discharging)",
         value: `${formatKWh(summary.Battery?.Charged_kWh, 0)} / ${formatKWh(summary.Battery?.Discharged_kWh, 0)}`,
         subtext: `${formatNumber(summary.Battery?.Capacity_kWh, 0)} kWh • ${formatNumber(summary.Battery?.Voltage_V, 0)} V`,
         accent: "from-violet-500 to-purple-500",
         icon: BatteryCharging,
       },
       {
-        title: "CO2 Emissions",
-        value: totalCO2t != null ? `${formatNumber(totalCO2t, 2)} tCO2` : "-",
-        subtext: co2Intensity != null ? `${formatNumber(co2Intensity, 2)} kg CO2/kWh` : "Emission intensity",
+        title: "CO₂ Emissions",
+        value: totalCO2t != null ? `${formatNumber(totalCO2t, 2)} tCO₂` : "-",
+        subtext: co2Intensity != null ? `${formatNumber(co2Intensity, 2)} kg CO₂/kWh` : "Emission intensity",
         accent: "from-teal-500 to-emerald-500",
         icon: Leaf,
       },
@@ -539,10 +547,10 @@ const SourceOptimizationPage = () => {
                   className={selectClass}
                 >
                   <option value="cost">Minimize Cost</option>
-                  <option value="co2">Minimize CO2 Emissions</option>
+                  <option value="co2">Minimize CO₂ Emissions</option>
                 </select>
                 <label className="label">
-                  <span className="label-text-alt">Choose whether to optimize for cost or CO2 emissions</span>
+                  <span className="label-text-alt">Choose whether to optimize for cost or CO₂ emissions</span>
                 </label>
               </div>
             </div>
@@ -644,7 +652,7 @@ const SourceOptimizationPage = () => {
                 </div>
                 <div>
                   <span className="text-base-content/60">Battery:</span>
-                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity / 1000).toFixed(0)} kWh</span>
+                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity)*(mergedFormData.battery_voltage).toFixed(0)} kWh</span>
                 </div>
                 <div>
                   <span className="text-base-content/60">Diesel:</span>

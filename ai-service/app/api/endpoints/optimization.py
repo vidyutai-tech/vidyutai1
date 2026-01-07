@@ -44,10 +44,10 @@ def run_optimization(params, load_profile_24h, price_profile_24h, solar_profile_
         if time_resolution_minutes not in [15, 30, 60]:
             time_resolution_minutes = 30  # Default to 30 minutes
         
-        grid_connection = max(100, float(params["grid_connection"]))  # kW, minimum 100kW
+        grid_connection = max(0, float(params["grid_connection"]))  # kW
         solar_connection = max(0, float(params["solar_connection"]))  # kW
-        battery_capacity_wh = max(1000, float(params["battery_capacity"]))  # Wh, minimum 1kWh
-        battery_voltage = max(12, float(params["battery_voltage"]))  # V, minimum 12V
+        battery_capacity_ah = max(0, float(params["battery_capacity"]))  # kAh
+        battery_voltage = max(0, float(params["battery_voltage"]))  # V
         diesel_capacity = max(0, float(params["diesel_capacity"]))  # kW
         fuel_price = max(0, float(params["fuel_price"]))  # INR/l
         pv_energy_cost = max(0, float(params["pv_energy_cost"]))  # INR/kWh
@@ -63,7 +63,7 @@ def run_optimization(params, load_profile_24h, price_profile_24h, solar_profile_
         h2_tank_capacity = max(0, float(params.get("h2_tank_capacity", 100.0)))  # kg
         fuel_cell_efficiency_percent = max(0, min(1, float(params.get("fuel_cell_efficiency_percent", 0.60))))  # 0-1
         fuel_cell_om_cost = max(0, float(params.get("fuel_cell_om_cost", 1.5)))  # INR/kWh
-        electrolyzer_om_cost = max(0, float(params.get("electrolyzer_om_cost", 0.5)))  # INR/kWh
+        electrolyzer_om_cost = max(0, float(params.get("electrolyzer_om_cost", 0.5)))  # INR/kWh  # INR/kWh
         
         # Validate load and price profiles
         if len(load_profile_24h) < 24:
@@ -75,7 +75,7 @@ def run_optimization(params, load_profile_24h, price_profile_24h, solar_profile_
         raise ValueError(f"Invalid input parameters: {str(e)}")
 
     # Battery capacity: API receives Wh, convert to Ah for   compatibility
-    battery_capacity_ah = battery_capacity_wh / battery_voltage  # Ah
+    # battery_capacity_ah = battery_capacity_wh / 1000  # Ah
 
     # Weather → solar scaling (matching  )
     wl = str(weather).lower()
@@ -136,7 +136,7 @@ def run_optimization(params, load_profile_24h, price_profile_24h, solar_profile_
     # System capacities / derived values (matching   exactly)
     grid_max_power = grid_connection
     solar_capacity = solar_connection
-    battery_storage_energy = battery_capacity_wh / 1000.0  # Convert Wh to kWh
+    battery_storage_energy = (battery_capacity_ah * battery_voltage)  # kWh
     battery_power = battery_storage_energy * 0.5  # kW, 0.5C rate as in  
     bess_charge_capacity = battery_power
     bess_discharge_capacity = battery_power
@@ -601,7 +601,7 @@ async def optimize(
     time_resolution_minutes: int = Form(30),
     grid_connection: float = Form(2000),
     solar_connection: float = Form(2000),
-    battery_capacity: float = Form(4000000),  # Wh
+    battery_capacity: float = Form(40),  # kAh
     battery_voltage: float = Form(100),
     diesel_capacity: float = Form(2200),
     fuel_price: float = Form(95),

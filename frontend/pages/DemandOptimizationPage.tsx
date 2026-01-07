@@ -25,6 +25,7 @@ import {
   Users,
   AlertCircle,
   ArrowLeft,
+  ArrowUp,
 } from "lucide-react";
 import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
@@ -164,7 +165,7 @@ const DemandOptimizationPage = () => {
         profile_type: "Auto detect",
         grid_connection: 2500,
         solar_connection: 2000,
-        battery_capacity: 4000000,
+        battery_capacity: 40,
         battery_voltage: 100,
         diesel_capacity: 2200,
         electrolyzer_capacity: 1000.0,
@@ -480,16 +481,23 @@ const DemandOptimizationPage = () => {
         icon: Gauge,
       },
       {
-        title: "Battery Cycling",
+        title: "Grid Exports",
+        value: formatKWh(summary.Grid?.Export_kWh, 0),
+        subtext: summary.Grid?.Export_kWh != null && summary.Grid.Export_kWh > 0 ? "Energy exported to grid" : "No exports",
+        accent: "from-green-500 to-emerald-500",
+        icon: ArrowUp,
+      },
+      {
+        title: "Battery Cycling (Charging & Discharging)",
         value: `${formatKWh(summary.Battery?.Charged_kWh, 0)} / ${formatKWh(summary.Battery?.Discharged_kWh, 0)}`,
         subtext: `${formatNumber(summary.Battery?.Capacity_kWh, 0)} kWh • ${formatNumber(summary.Battery?.Voltage_V, 0)} V`,
         accent: "from-violet-500 to-purple-500",
         icon: BatteryCharging,
       },
       {
-        title: "CO2 Emissions",
+        title: "CO₂ Emissions",
         value: totalCO2kg != null ? `${formatNumber(totalCO2kg, 2)} kg` : "-",
-        subtext: co2Intensity != null ? `${formatNumber(co2Intensity, 4)} kg CO2/kWh` : "Emission intensity",
+        subtext: co2Intensity != null ? `${formatNumber(co2Intensity, 4)} kg CO₂/kWh` : "Emission intensity",
         accent: "from-teal-500 to-emerald-500",
         icon: Leaf,
       },
@@ -664,7 +672,7 @@ const DemandOptimizationPage = () => {
                 </div>
                 <div>
                   <span className="text-base-content/60">Battery:</span>
-                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity / 1000).toFixed(0)} kWh</span>
+                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity)*(mergedFormData.battery_voltage).toFixed(0)} kWh</span>
                 </div>
                 <div>
                   <span className="text-base-content/60">Diesel:</span>

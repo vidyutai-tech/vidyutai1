@@ -1,5 +1,5 @@
 import React, { useState, useContext, useMemo } from 'react';
-import { Plus, Trash2, Zap, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Zap } from 'lucide-react';
 import Card from '../ui/Card';
 import { LoadProfileContext } from '../../contexts/LoadProfileContext';
 import { getAppliancesForUseCase, Appliance, ApplianceUsage } from '../../utils/applianceDatabase';
@@ -8,7 +8,7 @@ const ApplianceSelector: React.FC = () => {
   const context = useContext(LoadProfileContext);
   if (!context) throw new Error('ApplianceSelector must be used within LoadProfileProvider');
   
-  const { appliances, addAppliance, updateAppliance, removeAppliance, useCase, totalDailyConsumptionKWh, peakLoad } = context;
+  const { appliances, addAppliance, updateAppliance, removeAppliance, useCase, totalDailyConsumptionKWh } = context;
   
   const [selectionMode, setSelectionMode] = useState<'dropdown' | 'manual'>('dropdown');
   const [selectedApplianceName, setSelectedApplianceName] = useState('');
@@ -113,7 +113,7 @@ const ApplianceSelector: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <div className="p-4">
             <div className="flex items-center space-x-2 mb-2">
@@ -124,18 +124,6 @@ const ApplianceSelector: React.FC = () => {
               {totalDailyConsumptionKWh.toFixed(2)}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">kWh per day</p>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <AlertCircle className="w-5 h-5 text-orange-600" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">Peak Load</p>
-            </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {peakLoad.toFixed(2)}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">kW (priority-based)</p>
           </div>
         </Card>
         <Card>
@@ -385,13 +373,6 @@ const ApplianceSelector: React.FC = () => {
                     <td colSpan={5} className="p-3 text-right">TOTAL DAILY CONSUMPTION:</td>
                     <td className="p-3 text-right text-lg text-blue-600 dark:text-blue-400">
                       {totalDailyConsumptionKWh.toFixed(2)} kWh
-                    </td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td colSpan={5} className="p-3 text-right">PEAK LOAD (priority-based):</td>
-                    <td className="p-3 text-right text-lg text-orange-600 dark:text-orange-400">
-                      {peakLoad.toFixed(2)} kW
                     </td>
                     <td></td>
                   </tr>

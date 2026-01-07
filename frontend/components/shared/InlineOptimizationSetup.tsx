@@ -54,7 +54,7 @@ const InlineOptimizationSetup: React.FC<InlineOptimizationSetupProps> = ({
     profile_type: 'Auto detect',
     grid_connection: 2500,
     solar_connection: 2000,
-    battery_capacity: 4000000,
+    battery_capacity: 40,
     battery_voltage: 100,
     diesel_capacity: 2200,
     storage_type: 'battery',
@@ -301,11 +301,11 @@ const InlineOptimizationSetup: React.FC<InlineOptimizationSetupProps> = ({
                   <input
                     type="number"
                     name="battery_capacity"
-                    value={formData.battery_capacity / 1000}
+                    value={formData.battery_capacity}
                     onChange={(e) => {
                       const newData = {
                         ...formData,
-                        battery_capacity: (parseFloat(e.target.value) || 0) * 1000
+                        battery_capacity: (parseFloat(e.target.value) || 0)
                       };
                       setFormData(newData);
                       localStorage.setItem('optimizationConfig', JSON.stringify(newData));

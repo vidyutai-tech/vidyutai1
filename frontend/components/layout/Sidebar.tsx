@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, Bot, SlidersHorizontal, Settings, X, Bolt, Share2, Building, HardDrive, TrendingUp, Zap, Users, Lightbulb, MessageSquare, Battery, Search } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, Lightbulb, MessageSquare, Battery, Search } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,8 +14,6 @@ const planningNavItems = [
 
 const optimizationNavItems = [
   { name: 'Optimization Configuration', path: '/optimization-setup', icon: Settings },
-  { name: 'Demand Optimization', path: '/demand-optimization', icon: Users },
-  { name: 'Source Optimization', path: '/source-optimization', icon: Zap },
 ];
 
 // AI/ML Insights items - moved to dashboard section as they're navigation utilities
@@ -32,7 +30,6 @@ const dashboardNavItems = [
   { name: 'Unified Dashboard', path: '/unified-dashboard', icon: LayoutDashboard },
   { name: 'Operations Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Site Detail', path: '/site-detail', icon: AreaChart },
-  { name: 'Digital Twin', path: '/digital-twin', icon: Share2 },
   { name: 'Simulator', path: '/simulator', icon: SlidersHorizontal },
   { name: 'Alerts', path: '/alerts', icon: AlertTriangle },
   { name: 'Maintenance', path: '/maintenance', icon: Wrench },
@@ -55,9 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
 
   // Determine which pipeline section is active
   const isPlanningActive = currentPath.includes('/planning-wizard');
-  const isOptimizationActive = currentPath.includes('/optimization') || currentPath.includes('/demand-optimization') || currentPath.includes('/source-optimization');
-  const isAIMLActive = currentPath.includes('/ai-ml') || currentPath.includes('/predictions') || currentPath.includes('/ai-explanations') || currentPath.includes('/energy-forecasting') || currentPath.includes('/battery-rul') || currentPath.includes('/solar-degradation') || currentPath.includes('/energy-loss') || currentPath.includes('/root-cause-analysis');
-  const isDashboardActive = currentPath.includes('/unified-dashboard') || currentPath.includes('/dashboard') || currentPath.includes('/site-detail') || currentPath.includes('/digital-twin') || currentPath.includes('/simulator') || currentPath.includes('/alerts') || currentPath.includes('/maintenance');
+  const isOptimizationActive = currentPath.includes('/optimization-setup');
   const isImpactActionsActive = currentPath.includes('/ai-recommendations') || currentPath.includes('/impact');
 
   const NavItem: React.FC<{ item: { name: string; path: string; icon: any } }> = ({ item }) => (
@@ -130,35 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
             
             <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
             <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. Unified Dashboard" items={dashboardNavItems} isActive={isDashboardActive} />
-            <NavSection title="4. Impact & Actions" items={impactActionsNavItems} isActive={isImpactActionsActive} />
-            
-            {/* AI/ML Predictions - navigation utilities (not a main pipeline) */}
-            <div className="px-4 mt-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">AI/ML Predictions</h3>
-            </div>
-            <nav className="mt-2">
-              <ul>
-                {aiMlNavItems.map((item) => (
-                  <li key={item.name}>
-                    <NavItem item={item} />
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            
-            <div className="px-4 mt-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Management</h3>
-            </div>
-            <nav className="mt-2">
-              <ul>
-                {managementNavItems.map((item) => (
-                  <li key={item.name}>
-                    <NavItem item={item} />
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <NavSection title="3. Impact & Actions" items={impactActionsNavItems} isActive={isImpactActionsActive} />
           </nav>
         </div>
       </aside>

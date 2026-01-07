@@ -45,10 +45,10 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
         if time_resolution_minutes not in [15, 30, 60]:
             time_resolution_minutes = 30  # Default to 30 minutes
         
-        grid_connection = max(100, float(params["grid_connection"]))  # kW, minimum 100kW
+        grid_connection = max(0, float(params["grid_connection"]))  # kW
         solar_connection = max(0, float(params["solar_connection"]))  # kW
-        battery_capacity_wh = max(1000, float(params["battery_capacity"]))  # Wh, minimum 1kWh
-        battery_voltage = max(12, float(params["battery_voltage"]))  # V, minimum 12V
+        battery_capacity_ah = max(0, float(params["battery_capacity"]))  # kAh
+        battery_voltage = max(0, float(params["battery_voltage"]))  # V
         diesel_capacity = max(0, float(params["diesel_capacity"]))  # kW
         fuel_price = max(0, float(params["fuel_price"]))  # INR/l
         pv_energy_cost = max(0, float(params["pv_energy_cost"]))  # INR/kWh
@@ -92,8 +92,8 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
     except (ValueError, TypeError, KeyError) as e:
         raise ValueError(f"Invalid input parameters: {str(e)}")
 
-    # Battery capacity: API receives Wh, convert to Ah
-    battery_capacity_ah = battery_capacity_wh / battery_voltage  # Ah
+    # Battery capacity: API receives Wh, convert to Ah for MILP solver compatibility
+    battery_capacity_ah = battery_capacity_ah  # kAh
 
     # Hydrogen system constants
     H2_LHV = 33.3  # kWh/kg
@@ -149,10 +149,10 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
     else:
         solar_profile = upsample_profile(solar_profile_base, steps_per_hour, num_days)
 
-    # System capacities
+    # System capacities - aligned with optimization.py
     grid_max_power = grid_connection
     solar_capacity = solar_connection
-    battery_storage_energy = battery_capacity_wh / 1000.0  # Convert Wh to kWh
+    battery_storage_energy = battery_capacity_ah * battery_voltage# Convert Wh to kWh
     battery_power = battery_storage_energy * 0.5  # kW, 0.5C rate
     bess_charge_capacity = battery_power
     bess_discharge_capacity = battery_power
@@ -643,7 +643,7 @@ async def optimize_demand(
     time_resolution_minutes: int = Form(60),
     grid_connection: float = Form(2500),
     solar_connection: float = Form(2000),
-    battery_capacity: float = Form(4000000),  # Wh
+    battery_capacity: float = Form(40),  # kAh
     battery_voltage: float = Form(100),
     diesel_capacity: float = Form(2200),
     fuel_price: float = Form(90),

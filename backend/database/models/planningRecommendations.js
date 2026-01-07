@@ -107,6 +107,8 @@ class PlanningRecommendationModel {
       
       // Support both primary_goals (array) and primary_goal (single) for backward compatibility
       const primaryGoals = recommendation.primary_goals || (recommendation.primary_goal ? [recommendation.primary_goal] : []);
+      // Store only first goal in primary_goal column (VARCHAR(50) limit), full array is in JSON fields
+      const firstGoal = primaryGoals.length > 0 ? primaryGoals[0] : 'savings';
       
       const result = await dbAdapter.run(`
       INSERT INTO planning_recommendations (
@@ -121,7 +123,7 @@ class PlanningRecommendationModel {
       recommendation.site_id || null,
       recommendation.load_profile_id,
       JSON.stringify(recommendation.preferred_sources),
-      JSON.stringify(primaryGoals), // Store as JSON array
+      firstGoal, // Store only first goal (fits VARCHAR(50) limit)
       recommendation.allow_diesel ? 1 : 0,
       JSON.stringify(recommendation.technical_sizing),
       JSON.stringify(recommendation.economic_analysis),
@@ -161,7 +163,9 @@ class PlanningRecommendationModel {
       fields.push('primary_goal = ?');
       // Support both primary_goals (array) and primary_goal (single) for backward compatibility
       const goals = updates.primary_goals || (updates.primary_goal ? [updates.primary_goal] : []);
-      values.push(JSON.stringify(goals));
+      // Store only first goal (fits VARCHAR(50) limit)
+      const firstGoal = goals.length > 0 ? goals[0] : 'savings';
+      values.push(firstGoal);
     }
     if (updates.allow_diesel !== undefined) {
       fields.push('allow_diesel = ?');

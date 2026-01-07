@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
 const UserProfileModel = require('../database/models/userProfiles');
 const LoadProfileModel = require('../database/models/loadProfiles');
 const PlanningRecommendationModel = require('../database/models/planningRecommendations');
@@ -383,30 +384,22 @@ router.post('/planning/step3', async (req, res) => {
     const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     
     try {
-      const planningResponse = await fetch(`${AI_SERVICE_URL}/api/v1/planning/recommend`, {
-        method: 'POST',
+      const planningResponse = await axios.post(`${AI_SERVICE_URL}/api/v1/planning/recommend`, {
+        load_profile_id,
+        total_daily_energy_kwh: totalDailyEnergy,
+        preferred_sources,
+        primary_goal: goals[0], // AI service currently expects single goal, send first one
+        primary_goals: goals, // Also send array for future compatibility
+        allow_diesel
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': req.headers.authorization || ''
         },
-        body: JSON.stringify({
-          load_profile_id,
-          total_daily_energy_kwh: totalDailyEnergy,
-          preferred_sources,
-          primary_goal: goals[0], // AI service currently expects single goal, send first one
-          primary_goals: goals, // Also send array for future compatibility
-          allow_diesel
-        }),
         timeout: 30000 // 30 second timeout
       });
 
-      if (!planningResponse.ok) {
-        const errorText = await planningResponse.text();
-        console.error('AI Service error response:', errorText);
-        throw new Error(`Planning service error: ${planningResponse.status} ${errorText}`);
-      }
-
-      const planningData = await planningResponse.json();
+      const planningData = planningResponse.data;
 
       // Handle Flask-style response structure
       // Transform Flask response to match database schema
