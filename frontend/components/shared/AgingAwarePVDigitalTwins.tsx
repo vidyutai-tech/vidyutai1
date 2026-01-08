@@ -47,20 +47,59 @@ const AgingAwarePVDigitalTwins: React.FC = () => {
         throw new Error('Panel age cannot exceed 30 years (end of life)');
       }
 
-      const res = await fetch(`${API_BASE_URL}/solar-panel-degradation`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          installed_power: installedPowerFloat,
-          panel_age: panelAgeNumber,
-        }),
-      });
+      // Retry logic for 429 errors
+      let res;
+      let lastError;
+      const maxRetries = 3;
+      
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          res = await fetch(`${API_BASE_URL}/case-studies/solar-panel-degradation`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              installed_power: installedPowerFloat,
+              panel_age: panelAgeNumber,
+            }),
+          });
+
+          // If successful or non-429 error, break out of retry loop
+          if (res.ok || res.status !== 429) {
+            break;
+          }
+
+          // If 429 and not last attempt, wait and retry
+          if (res.status === 429 && attempt < maxRetries - 1) {
+            const delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s, 4s
+            console.log(`Rate limited (429), retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+        } catch (err) {
+          lastError = err;
+          if (attempt === maxRetries - 1) {
+            throw err;
+          }
+          // Wait before retry
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+
+      if (!res) {
+        throw lastError || new Error('Failed to get response from server');
+      }
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: 'Unknown error occurred' }));
-        throw new Error(errorData.detail || `Server error: ${res.status}`);
+        const errorData = await res.json().catch(() => ({ 
+          error: 'Unknown error occurred',
+          message: res.status === 429 
+            ? 'Rate limit exceeded. Please try again in a few moments.'
+            : `Server error: ${res.status}`
+        }));
+        throw new Error(errorData.message || errorData.detail || errorData.error || `Server error: ${res.status}`);
       }
 
       const data = await res.json();
