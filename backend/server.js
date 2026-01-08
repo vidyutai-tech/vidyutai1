@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
 const socketIo = require('socket.io');
+const axios = require('axios');
 require('dotenv').config();
 const { ensureInitialized } = require('./database/db');
 
@@ -23,6 +24,7 @@ const planningRoutes = require('./routes/planning');
 const optimizationRoutes = require('./routes/optimization');
 const xaiRoutes = require('./routes/xai');
 const gdprRoutes = require('./routes/gdpr');
+const caseStudiesRoutes = require('./routes/case-studies');
 
 // Initialize Express app
 const app = express();
@@ -137,6 +139,32 @@ app.use('/api/v1/planning', planningRoutes);
 app.use('/api/v1', optimizationRoutes);
 app.use('/api/v1/xai', xaiRoutes); // XAI routes - proxy to Python AI service
 app.use('/api/v1/gdpr', gdprRoutes); // GDPR compliance routes
+app.use('/api/v1/case-studies', caseStudiesRoutes); // Case studies routes
+
+// Legacy route for backward compatibility (maintains old endpoint path)
+// This allows the frontend to continue using /api/v1/solar-panel-degradation
+// It proxies to the same AI service endpoint as the case-studies route
+app.post('/api/v1/solar-panel-degradation', async (req, res) => {
+  const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+  try {
+    const response = await axios.post(`${AI_SERVICE_URL}/api/v1/solar-panel-degradation`, req.body, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': req.headers.authorization || ''
+      },
+      timeout: 60000
+    });
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error in solar panel degradation:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to calculate solar panel degradation',
+      message: error.message,
+      details: error.response?.data || null
+    });
+  }
+});
 
 // Simulator endpoint (also available as /api/v1/simulate for convenience)
 app.post('/api/v1/simulate', async (req, res) => {

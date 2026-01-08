@@ -43,7 +43,7 @@ Same dashboard → New + → Web Service
 Settings:
 Name: vidyutai-ai-service
 Build: cd ai-service && pip install -r requirements.txt
-Start: cd ai-service && uvicorn main:app --host 0.0.0.0 --port $PORT
+Start: cd ai-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
 Plan: Free
 
 Env Vars:

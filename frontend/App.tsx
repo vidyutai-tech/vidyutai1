@@ -8,7 +8,6 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import SiteDetailPage from './pages/SiteDetailPage';
-import ImpactPage from './pages/ImpactPage';
 import AlertsPage from './pages/AlertsPage';
 import MaintenancePage from './pages/MaintenancePage';
 import SimulatorPage from './pages/SimulatorPage';
@@ -35,8 +34,6 @@ import { fetchHealthStatus, fetchSites, User, getUserProfile } from './services/
 import { io, Socket } from 'socket.io-client';
 
 const App: React.FC = () => {
-  const [showLanding, setShowLanding] = useState<boolean>(!localStorage.getItem('jwt') && !localStorage.getItem('hasSeenLanding'));
-  const [showSignup, setShowSignup] = useState<boolean>(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('jwt'));
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -420,8 +417,10 @@ const App: React.FC = () => {
     setCurrentUser(user);
     localStorage.setItem('jwt', token);
     localStorage.setItem('user', JSON.stringify(user));
-    setShowLanding(false);
-    setShowSignup(false);
+    // Mark that user has seen landing page
+    localStorage.setItem('hasSeenLanding', 'true');
+    // Navigate to main options after login
+    window.location.hash = '#/main-options';
     console.log('User logged in successfully:', user.email);
   };
 
@@ -438,7 +437,8 @@ const App: React.FC = () => {
       socket.close();
       setSocket(null);
     }
-    setShowLanding(true);
+    // Navigate to landing page after logout
+    window.location.hash = '#/';
   };
 
   const selectSite = (site: Site | null) => {
@@ -455,30 +455,26 @@ const App: React.FC = () => {
   };
 
   const handleGetStarted = () => {
-    setShowLanding(false);
-    setShowSignup(false);
-    if (!isAuthenticated) {
-      // Show login page
-    }
+    // Navigate to login page - this will be handled by routing
+    window.location.hash = '#/login';
   };
 
   const handleBackToLanding = () => {
-    setShowLanding(true);
-    setShowSignup(false);
+    window.location.hash = '#/';
     setShowSignupSuccess(false);
   };
 
   const handleShowSignup = () => {
-    setShowSignup(true);
+    window.location.hash = '#/signup';
   };
 
   const handleSignupSuccess = () => {
     setShowSignupSuccess(true);
-    setShowSignup(false);
+    window.location.hash = '#/login';
   };
 
   const handleBackToLogin = () => {
-    setShowSignup(false);
+    window.location.hash = '#/login';
     setShowSignupSuccess(false);
   };
 
@@ -530,49 +526,154 @@ const App: React.FC = () => {
     );
   };
 
-  const renderContent = () => {
-    if (showLanding) {
-      return <LandingPage onGetStarted={handleGetStarted} />;
-    }
-    if (showSignup) {
-      return (
-        <SignupPage
-          onSignupSuccess={handleSignupSuccess}
-          onBackToLogin={handleBackToLogin}
-          onBack={handleBackToLanding}
-        />
-      );
-    }
+  // Protected Route Component
+  const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!isAuthenticated) {
-      return (
-        <LoginPage
-          onLogin={login}
-          onBack={handleBackToLanding}
-          onSignupClick={handleShowSignup}
-          showSignupSuccess={showSignupSuccess}
-        />
-      );
+      return <Navigate to="/login" replace />;
     }
-    
-    // Main application with routing
+    return <>{children}</>;
+  };
+
+  const renderContent = () => {
     return (
       <HashRouter>
-        <LayoutWrapper>
-                <Routes>
-            <Route path="/" element={<Navigate to="/main-options" />} />
-            <Route path="/main-options" element={<MainOptionsPage />} />
-            <Route path="/planning-wizard" element={<PlanningWizardPageEnhanced />} />
-            <Route path="/planning-wizard-old" element={<PlanningWizardPage />} />
-            <Route path="/optimization-flow" element={<Navigate to="/optimization-setup" replace />} />
-            <Route path="/optimization-setup" element={<OptimizationSetupPage />} />
-            <Route path="/demand-optimization" element={<DemandOptimizationPage />} />
-            <Route path="/source-optimization" element={<SourceOptimizationPage />} />
-            <Route path="/ai-recommendations" element={<AIRecommendationsPage />} />
-            <Route path="/impact" element={<ImpactPage />} />
-            <Route path="/planning-optimization" element={<PlanningAndOptimizationPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                </Routes>
-        </LayoutWrapper>
+        <Routes>
+          {/* Public routes - accessible without authentication */}
+          <Route path="/" element={<LandingPage onGetStarted={handleGetStarted} />} />
+          <Route 
+            path="/login" 
+            element={
+              <LoginPage
+                onLogin={login}
+                onBack={handleBackToLanding}
+                onSignupClick={handleShowSignup}
+                showSignupSuccess={showSignupSuccess}
+              />
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <SignupPage
+                onSignupSuccess={handleSignupSuccess}
+                onBackToLogin={handleBackToLogin}
+                onBack={handleBackToLanding}
+              />
+            } 
+          />
+          
+          {/* Protected routes - require authentication */}
+          <Route
+            path="/main-options"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <MainOptionsPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning-wizard"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <PlanningWizardPageEnhanced />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning-wizard-old"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <PlanningWizardPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/optimization-flow"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/optimization-setup" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/optimization-setup"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <OptimizationSetupPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/demand-optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <DemandOptimizationPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source-optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <SourceOptimizationPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-recommendations"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <AIRecommendationsPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning-optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <PlanningAndOptimizationPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <ProfilePage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Default redirect for authenticated users */}
+          <Route 
+            path="*" 
+            element={
+              isAuthenticated ? (
+                <Navigate to="/main-options" replace />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
+        </Routes>
       </HashRouter>
     );
   };

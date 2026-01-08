@@ -6,7 +6,8 @@ import { generateImpactPDF } from '../utils/pdfGenerator';
 import { AppContext } from '../contexts/AppContext';
 
 const ImpactPage: React.FC = () => {
-  const { selectedSite } = useContext(AppContext)!;
+  const appContext = useContext(AppContext);
+  const selectedSite = appContext?.selectedSite || null;
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [includeHydrogen, setIncludeHydrogen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);

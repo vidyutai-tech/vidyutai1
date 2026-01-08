@@ -35,7 +35,7 @@ services:
     region: oregon
     plan: free
     buildCommand: cd ai-service && python -m pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: cd ai-service && uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: cd ai-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PORT
         value: 10000  # Render free tier uses port from PORT env var or 10000

@@ -79,7 +79,7 @@ Follow these steps **in order**. Copy and paste where needed.
    Root Directory: (leave empty)
    Runtime: Python 3
    Build Command: cd ai-service && pip install -r requirements.txt
-   Start Command: cd ai-service && uvicorn main:app --host 0.0.0.0 --port $PORT
+   Start Command: cd ai-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
    Plan: Free
    ```
 

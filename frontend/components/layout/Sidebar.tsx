@@ -37,7 +37,6 @@ const dashboardNavItems = [
 
 const impactActionsNavItems = [
   { name: 'Actionable Insights', path: '/ai-recommendations', icon: Lightbulb },
-  { name: 'Impact Analysis', path: '/impact', icon: TrendingUp },
 ];
 
 const managementNavItems = [
@@ -53,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
   // Determine which pipeline section is active
   const isPlanningActive = currentPath.includes('/planning-wizard');
   const isOptimizationActive = currentPath.includes('/optimization-setup');
-  const isImpactActionsActive = currentPath.includes('/ai-recommendations') || currentPath.includes('/impact');
+  const isImpactActionsActive = currentPath.includes('/ai-recommendations');
 
   const NavItem: React.FC<{ item: { name: string; path: string; icon: any } }> = ({ item }) => (
     <NavLink
@@ -125,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
             
             <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
             <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. Impact & Actions" items={impactActionsNavItems} isActive={isImpactActionsActive} />
+            <NavSection title="3. Actionable Insights" items={impactActionsNavItems} isActive={isImpactActionsActive} />
           </nav>
         </div>
       </aside>

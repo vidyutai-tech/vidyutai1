@@ -112,8 +112,8 @@ LOG_LEVEL=INFO
 ### 4. Start the Server
 
 ```bash
-cd app
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+cd ai-service
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Expected Output:**

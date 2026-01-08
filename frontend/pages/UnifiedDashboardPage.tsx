@@ -36,14 +36,6 @@ const UnifiedDashboardPage: React.FC = () => {
       title: 'Analysis & Modeling',
       items: [
         {
-          id: 'impact',
-          title: 'Impact Analysis',
-          description: 'Savings, battery life, renewable utilization, carbon avoided. Compare Optimized vs Conventional EMS',
-          icon: TrendingUp,
-          path: '/impact',
-          color: 'from-purple-500 to-purple-600'
-        },
-        {
           id: 'simulator',
           title: 'Simulator',
           description: 'Input PV curtailment, battery target SoC, grid price adjustments. Output predicted outcome (24h)',
@@ -200,10 +192,6 @@ const UnifiedDashboardPage: React.FC = () => {
             <div>
               <p className="font-semibold mb-1">5.2 Site Detail</p>
               <p>Health index (battery, inverter, motor), Telemetry, Anomalies, Power distribution, Motor vibration FFT Spectrogram</p>
-            </div>
-            <div>
-              <p className="font-semibold mb-1">5.3 Impact Analysis</p>
-              <p>Savings, Battery life, Renewable utilization, Carbon avoided. Compare Optimized vs Conventional EMS. Daily/Weekly/Monthly toggles</p>
             </div>
             <div>
               <p className="font-semibold mb-1">5.4 Advanced Modeling</p>
