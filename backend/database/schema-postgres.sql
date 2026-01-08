@@ -236,9 +236,28 @@ CREATE TABLE IF NOT EXISTS optimization_configs (
     FOREIGN KEY (planning_recommendation_id) REFERENCES planning_recommendations(id) ON DELETE SET NULL
 );
 
+-- Optimization Results table (stores results from source and demand optimization)
+CREATE TABLE IF NOT EXISTS optimization_results (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    site_id VARCHAR(255),
+    optimization_type VARCHAR(50) NOT NULL CHECK(optimization_type IN ('source', 'demand')),
+    input_parameters TEXT NOT NULL, -- JSON string: all form inputs (grid_connection, solar_capacity, battery specs, etc.)
+    summary TEXT NOT NULL, -- JSON string: costs, emissions, load, battery, solar, hydrogen breakdowns
+    chart_data TEXT NOT NULL, -- JSON string: time_series data and metadata for plotting
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL
+);
+
 -- Create indexes for faster queries
 CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_load_profiles_user_id ON load_profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_planning_recommendations_user_id ON planning_recommendations(user_id);
 CREATE INDEX IF NOT EXISTS idx_optimization_configs_user_id ON optimization_configs(user_id);
+CREATE INDEX IF NOT EXISTS idx_optimization_results_user_id ON optimization_results(user_id);
+CREATE INDEX IF NOT EXISTS idx_optimization_results_site_id ON optimization_results(site_id);
+CREATE INDEX IF NOT EXISTS idx_optimization_results_type ON optimization_results(optimization_type);
+CREATE INDEX IF NOT EXISTS idx_optimization_results_created ON optimization_results(created_at DESC);
 

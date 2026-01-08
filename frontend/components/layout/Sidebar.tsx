@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, Lightbulb, MessageSquare, Battery, Search } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, MessageSquare, Battery, Search } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -35,9 +35,8 @@ const dashboardNavItems = [
   { name: 'Maintenance', path: '/maintenance', icon: Wrench },
 ];
 
-const impactActionsNavItems = [
-  { name: 'Actionable Insights', path: '/ai-recommendations', icon: Lightbulb },
-];
+// Actionable Insights section removed
+const impactActionsNavItems: typeof planningNavItems = [];
 
 const managementNavItems = [
   { name: 'Sites', path: '/manage-sites', icon: Building },
@@ -52,7 +51,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
   // Determine which pipeline section is active
   const isPlanningActive = currentPath.includes('/planning-wizard');
   const isOptimizationActive = currentPath.includes('/optimization-setup');
-  const isImpactActionsActive = currentPath.includes('/ai-recommendations');
 
   const NavItem: React.FC<{ item: { name: string; path: string; icon: any } }> = ({ item }) => (
     <NavLink
@@ -124,7 +122,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
             
             <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
             <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. Actionable Insights" items={impactActionsNavItems} isActive={isImpactActionsActive} />
           </nav>
         </div>
       </aside>

@@ -23,7 +23,6 @@ import MainOptionsPage from './pages/MainOptionsPage';
 import OptimizationFlowPage from './pages/OptimizationFlowPage';
 import AIMLInsightsPage from './pages/AIMLInsightsPage';
 import UnifiedDashboardPage from './pages/UnifiedDashboardPage';
-import AIRecommendationsPage from './pages/AIRecommendationsPage';
 import AIExplanationsPage from './pages/AIExplanationsPage';
 import EnergyForecastingPage from './pages/EnergyForecastingPage';
 import { AppContext } from './contexts/AppContext';
@@ -627,16 +626,6 @@ const App: React.FC = () => {
               <ProtectedRoute>
                 <LayoutWrapper>
                   <SourceOptimizationPage />
-                </LayoutWrapper>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/ai-recommendations"
-            element={
-              <ProtectedRoute>
-                <LayoutWrapper>
-                  <AIRecommendationsPage />
                 </LayoutWrapper>
               </ProtectedRoute>
             }
