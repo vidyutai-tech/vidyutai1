@@ -198,23 +198,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {activeTab === 'home' && (
           <>
-            {/* Hero Section */}
-            <div className="text-center mb-12">
-              <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-                Energy Management System
-              </h1>
-              <div className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto space-y-2">
-                <p>
-                  Intelligent power flow optimization for renewable energy systems.
-                </p>
-                <p>
-                  Real-time monitoring.
-                </p>
-                <p>
-                  AI-powered decision making for maximum efficiency.
-                </p>
-              </div>
-            </div>
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
+            Energy Management System
+          </h1>
+          <div className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto space-y-2">
+            <p>
+              Intelligent power flow optimization for renewable energy systems.
+            </p>
+            <p>
+              Real-time monitoring.
+            </p>
+            <p>
+              AI-powered decision making for maximum efficiency.
+            </p>
+          </div>
+        </div>
           </>
         )}
         
@@ -290,40 +290,40 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
         {activeTab === 'home' && (
           <>
-            {/* Mode Selector */}
-            <div className="flex justify-center mb-8">
-              <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-1">
-                <button
-                  onClick={() => setMode('grid')}
-                  className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    mode === 'grid'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  Grid Connected Mode
-                </button>
-                <button
-                  onClick={() => setMode('island')}
-                  className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    mode === 'island'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  Island Mode
-                </button>
-              </div>
-            </div>
+        {/* Mode Selector */}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-1">
+            <button
+              onClick={() => setMode('grid')}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${
+                mode === 'grid'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Grid Connected Mode
+            </button>
+            <button
+              onClick={() => setMode('island')}
+              className={`px-6 py-2 rounded-md font-medium transition-all ${
+                mode === 'island'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Island Mode
+            </button>
+          </div>
+        </div>
 
-            {/* Power Flow Visualization */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-12">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                {mode === 'grid' ? 'Grid Connected Mode EMS' : 'Island Mode EMS'}
-              </h2>
-              
-              <div className="flex justify-center items-start min-h-[500px]">
-                <div className="relative w-full max-w-4xl">
+        {/* Power Flow Visualization */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+            {mode === 'grid' ? 'Grid Connected Mode EMS' : 'Island Mode EMS'}
+          </h2>
+          
+          <div className="flex justify-center items-start min-h-[500px]">
+            <div className="relative w-full max-w-4xl">
                   {mode === 'grid' ? (
                     /* Video for Grid Connected Mode */
                     <div className="relative bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-hidden">
@@ -350,112 +350,112 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                         playsInline
                         className="w-full h-auto rounded-lg shadow-lg"
                         style={{ maxHeight: '600px' }}
-                      >
+                  >
                         Your browser does not support the video tag.
                       </video>
                     </div>
                   )}
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-12">
+          <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
+            This visualization demonstrates the flow of power in an Energy Management System (EMS). 
+            All the components in the EMS are connected to the EMS device, which decides the power flow 
+            from each component depending on availability and the cost associated with it. If the cost 
+            associated with the power is high, then the power flow will be from other available sources 
+            with low cost. The charge and discharge of the battery is also shown in the animation. 
+            The battery is charged when the cost of the power is low and discharged when the cost of 
+            the power is high. We can also see power flows from Renewable and Diesel to the grid, 
+            which indicates that the power is being sold to the grid and making a profit.
+          </p>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Key Features */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Key Features</h3>
+            <ul className="space-y-4">
+              <li className="flex items-start">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Smart Power Routing</h4>
+                  <p className="text-gray-600 dark:text-gray-400">Optimizes power flow based on availability and cost</p>
                 </div>
-              </div>
-            </div>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Dynamic Storage Management</h4>
+                  <p className="text-gray-600 dark:text-gray-400">Charges during low-cost periods, discharges when costs are high</p>
+                </div>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Renewable Integration</h4>
+                  <p className="text-gray-600 dark:text-gray-400">Prioritizes clean energy sources for sustainability</p>
+                </div>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Cost Optimization</h4>
+                  <p className="text-gray-600 dark:text-gray-400">Minimizes energy costs through intelligent decision-making</p>
+                </div>
+              </li>
+            </ul>
+          </div>
 
-            {/* Description */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-12">
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                This visualization demonstrates the flow of power in an Energy Management System (EMS). 
-                All the components in the EMS are connected to the EMS device, which decides the power flow 
-                from each component depending on availability and the cost associated with it. If the cost 
-                associated with the power is high, then the power flow will be from other available sources 
-                with low cost. The charge and discharge of the battery is also shown in the animation. 
-                The battery is charged when the cost of the power is low and discharged when the cost of 
-                the power is high. We can also see power flows from Renewable and Diesel to the grid, 
-                which indicates that the power is being sold to the grid and making a profit.
-              </p>
-            </div>
+          {/* Power Flow Dynamics */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Power Flow Dynamics</h3>
+            <ul className="space-y-3">
+              <li className="flex items-center text-gray-700 dark:text-gray-300">
+                <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
+                <span><strong>EMS to Grid:</strong> Excess power sold for profit</span>
+              </li>
+              <li className="flex items-center text-gray-700 dark:text-gray-300">
+                <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
+                <span><strong>Renewables to EMS:</strong> Clean energy prioritized</span>
+              </li>
+              <li className="flex items-center text-gray-700 dark:text-gray-300">
+                <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
+                <span><strong>Battery to EMS:</strong> Discharge during peak demand</span>
+              </li>
+              <li className="flex items-center text-gray-700 dark:text-gray-300">
+                <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
+                <span><strong>Diesel to EMS:</strong> Backup power during emergencies</span>
+              </li>
+              <li className="flex items-center text-gray-700 dark:text-gray-300">
+                <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
+                <span><strong>EMS to Load:</strong> Efficient power distribution to devices</span>
+              </li>
+              <li className="flex items-center text-gray-700 dark:text-gray-300">
+                <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
+                <span><strong>EMS to Storage:</strong> Energy stored for future use</span>
+              </li>
+            </ul>
+          </div>
+        </div>
 
-            {/* Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {/* Key Features */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Key Features</h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Smart Power Routing</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Optimizes power flow based on availability and cost</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Dynamic Storage Management</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Charges during low-cost periods, discharges when costs are high</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Renewable Integration</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Prioritizes clean energy sources for sustainability</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Cost Optimization</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Minimizes energy costs through intelligent decision-making</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Power Flow Dynamics */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Power Flow Dynamics</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
-                    <span><strong>EMS to Grid:</strong> Excess power sold for profit</span>
-                  </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
-                    <span><strong>Renewables to EMS:</strong> Clean energy prioritized</span>
-                  </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
-                    <span><strong>Battery to EMS:</strong> Discharge during peak demand</span>
-                  </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
-                    <span><strong>Diesel to EMS:</strong> Backup power during emergencies</span>
-                  </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
-                    <span><strong>EMS to Load:</strong> Efficient power distribution to devices</span>
-                  </li>
-                  <li className="flex items-center text-gray-700 dark:text-gray-300">
-                    <ArrowRight className="w-5 h-5 text-blue-500 mr-3" />
-                    <span><strong>EMS to Storage:</strong> Energy stored for future use</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-2xl p-12 text-center text-white">
-              <h2 className="text-3xl font-bold mb-4">Ready to Optimize Your Energy?</h2>
-              <p className="text-lg mb-8 opacity-90">
-                Access real-time monitoring, AI-powered insights, and advanced energy management features.
-              </p>
-              <button
-                onClick={onGetStarted}
-                className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-              >
-                <span>Access Dashboard</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
+        {/* Call to Action */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-2xl p-12 text-center text-white">
+          <h2 className="text-3xl font-bold mb-4">Ready to Optimize Your Energy?</h2>
+          <p className="text-lg mb-8 opacity-90">
+            Access real-time monitoring, AI-powered insights, and advanced energy management features.
+          </p>
+          <button
+            onClick={onGetStarted}
+            className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+          >
+            <span>Access Dashboard</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
           </>
         )}
         

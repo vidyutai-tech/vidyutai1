@@ -23,8 +23,8 @@ if __name__ == "__main__":
     # Run the application using app.main:app
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
-        port=port,
+        host="0.0.0.0", 
+        port=port, 
         reload=True,
         timeout_keep_alive=120,
         timeout_graceful_shutdown=30

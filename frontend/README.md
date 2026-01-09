@@ -107,13 +107,10 @@ VITE_SOCKET_URL=http://localhost:5001
 VITE_AI_BASE_URL=http://localhost:8000
 ```
 
-**For Production Deployment (Vercel):**
+**For Production Deployment (Render/Netlify):**
 - Set `VITE_API_BASE_URL` to your backend URL: `https://your-backend.onrender.com/api/v1`
 - Set `VITE_SOCKET_URL` to your backend URL: `https://your-backend.onrender.com`
-- Set `VITE_AI_BASE_URL` to your AI service URL (if separate): `https://your-ai-service.onrender.com`
-- Set `GEMINI_API_KEY` for AI features (optional)
 - The app will automatically detect production and use these environment variables
-- See `VERCEL_DEPLOYMENT.md` in the root directory for detailed deployment instructions
 
 ### 3. Run Development Server
 

@@ -534,7 +534,7 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    return (
+      return (
       <HashRouter>
         <Routes>
           {/* Public routes - accessible without authentication */}
@@ -542,12 +542,12 @@ const App: React.FC = () => {
           <Route 
             path="/login" 
             element={
-              <LoginPage
-                onLogin={login}
-                onBack={handleBackToLanding}
-                onSignupClick={handleShowSignup}
-                showSignupSuccess={showSignupSuccess}
-              />
+        <LoginPage
+          onLogin={login}
+          onBack={handleBackToLanding}
+          onSignupClick={handleShowSignup}
+          showSignupSuccess={showSignupSuccess}
+        />
             } 
           />
           <Route 
@@ -644,7 +644,7 @@ const App: React.FC = () => {
             path="/profile"
             element={
               <ProtectedRoute>
-                <LayoutWrapper>
+        <LayoutWrapper>
                   <ProfilePage />
                 </LayoutWrapper>
               </ProtectedRoute>
@@ -662,7 +662,7 @@ const App: React.FC = () => {
               )
             } 
           />
-        </Routes>
+                </Routes>
       </HashRouter>
     );
   };

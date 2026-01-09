@@ -1,19 +1,33 @@
-# Ignore files that shouldn't be deployed to Vercel
-node_modules/
-backend/
-ai-service/
-*.db
-*.sqlite
-*.log
-.env.local
-.env.*.local
-.DS_Store
-*.md
-!README.md
-docs/
+# Vercel deployment - Exclude unnecessary files
+
+# Virtual environments
+ai-service/venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Notebooks and training scripts
 notebooks/
-data/
-infrastructure/
-*.txt
-!package.json
-!package-lock.json
+ai-service/data_analysis_and_ml_training.py
+ai-service/generate_dataset.py
+ai-service/train_prediction_models.py
+ai-service/data/generate_synthetic_prediction_data.py
+ai-service/data/*_training_data.csv
+
+# Data files not needed in production
+data/*.csv
+data/*.xlsx
+data/*.pdf
+
+# Infrastructure files
+docker-compose*.yml
+Dockerfile*
+mosquitto.conf
+
+# Exclude api/node_modules - use root node_modules instead
+api/node_modules/
