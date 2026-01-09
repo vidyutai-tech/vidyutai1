@@ -514,7 +514,7 @@ const ImpactPage: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="component" label={{ value: 'Component', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor' }} />
               <YAxis 
-                label={{ value: `Emissions (kg CO₂${timeUnit})`, angle: -90, offset: 0 }}
+                label={{ value: `Emissions (kg CO₂${timeUnit})`, angle: -90, offset: 0, dx: -20 }}
                 tick={{ fill: 'currentColor' }}
                 tickFormatter={(value) => Math.round(Number(value)).toString()}
               />
