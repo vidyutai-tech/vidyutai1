@@ -393,29 +393,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
           </>
         )}
         
-        {activeTab === 'impact' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Impact Metrics</h2>
-            <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-              Track the real-world impact of energy optimization on cost savings, carbon reduction, and system efficiency.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Cost Savings</h3>
-                <p className="text-gray-600 dark:text-gray-400">Reduce energy costs through intelligent optimization</p>
-              </div>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Carbon Reduction</h3>
-                <p className="text-gray-600 dark:text-gray-400">Minimize environmental impact with renewable energy</p>
-              </div>
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Efficiency Gains</h3>
-                <p className="text-gray-600 dark:text-gray-400">Maximize system performance and reliability</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
       </main>
 
       {/* Footer */}

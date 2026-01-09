@@ -91,12 +91,13 @@ const ImpactPage: React.FC = () => {
   // Savings Percentages
   const costSavingsVsRuleBased = ((totalCostRuleBased - totalCostOptimized) / totalCostRuleBased * 100);
   const additionalSavingsWithHydrogen = ((totalCostOptimized - totalCostHydrogen) / totalCostOptimized * 100);
+  // Savings from Rule-Based to With Hydrogen (comparing per kWh costs)
+  const savingsWithHydrogenVsRuleBased = ((costPerKwhRuleBased - costPerKwhHydrogen) / costPerKwhRuleBased * 100);
   const emissionReduction = ((totalEmissionsRuleBased - totalEmissionsOptimized) / totalEmissionsRuleBased * 100);
 
   // Calculate current metrics
   const currentCost = includeHydrogen ? totalCostHydrogen : totalCostOptimized;
   const currentCostPerKwh = includeHydrogen ? costPerKwhHydrogen : costPerKwhOptimized;
-  const totalSavings = totalCostRuleBased - currentCost;
 
   const formatNumber = (value: number): string => {
     return value.toLocaleString('en-IN', { maximumFractionDigits: 2 });
@@ -120,6 +121,45 @@ const ImpactPage: React.FC = () => {
       );
     }
     return null;
+  };
+
+  // Custom Legend component to ensure order: Rule-Based (red), Optimized (blue), With Hydrogen (green)
+  // For emissions: Rule-Based (red), CO₂ Optimized (green)
+  const CustomLegend = ({ payload }: any) => {
+    if (!payload) return null;
+    
+    // Define the desired order and colors
+    const orderMap: { [key: string]: number } = {
+      'Rule-Based': 0,
+      'Optimized': 1,
+      'CO₂ Optimized': 1, // Same order as Optimized for emissions chart
+      'With Hydrogen': 2,
+    };
+    
+    // Sort payload by the defined order
+    const sortedPayload = [...payload].sort((a, b) => {
+      const orderA = orderMap[a.value] ?? 999;
+      const orderB = orderMap[b.value] ?? 999;
+      return orderA - orderB;
+    });
+    
+    return (
+      <div className="flex justify-center items-center gap-6 pt-5">
+        {sortedPayload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div
+              style={{
+                width: '14px',
+                height: '14px',
+                backgroundColor: entry.color,
+                borderRadius: '2px',
+              }}
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-300">{entry.value}</span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // Donut Chart for Savings
@@ -166,7 +206,7 @@ const ImpactPage: React.FC = () => {
               Comprehensive analysis of cost & carbon reduction through smart energy management
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Time Range:</span>
             <div className="flex space-x-2">
               {(['daily', 'weekly', 'monthly'] as const).map((range) => (
@@ -183,8 +223,47 @@ const ImpactPage: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
       </div>
+
+      {/* Key Insights */}
+      <Card>
+        <div className="p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Key Insights & Objectives
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col items-center text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-3">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white mb-2">Minimize Cost</h4>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Optimization algorithm prioritizes reducing operational expenses through intelligent resource allocation and demand-side management
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-3">
+                <Droplet className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white mb-2">Minimize Emissions</h4>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Decrease environmental impact by optimizing renewable energy sources and reducing reliance on fossil fuels
+              </p>
+            </div>
+            <div className="flex flex-col items-center text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mb-3">
+                <Power className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white mb-2">Improve Performance</h4>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Enhance grid stability and ensure continuous power supply, even during peak demand or system disturbances
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
 
       {/* System Configuration */}
       <Card>
@@ -212,8 +291,17 @@ const ImpactPage: React.FC = () => {
         </div>
       </Card>
 
+      {/* Impact of Source Optimization Title */}
+      <Card>
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+            Impact of Source Optimization
+          </h2>
+        </div>
+      </Card>
+
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
@@ -229,20 +317,20 @@ const ImpactPage: React.FC = () => {
           </div>
         </Card>
 
-        <Card>
+        {/* <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Total Savings</h3>
               <Download className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              ₹{(totalSavings / 1000).toFixed(2)}K
+              ₹{((totalCostRuleBased - currentCost) / 1000).toFixed(2)}K
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} operational savings
             </p>
           </div>
-        </Card>
+        </Card> */}
 
         <Card>
           <div className="p-6">
@@ -315,6 +403,7 @@ const ImpactPage: React.FC = () => {
               <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">With Hydrogen Fuel Cell</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhHydrogen}</p>
+                <p className="text-xs text-green-600 mt-1">-{savingsWithHydrogenVsRuleBased.toFixed(2)}%</p>
                 <p className="text-xs text-green-600 mt-1">Additional -{additionalSavingsWithHydrogen.toFixed(2)}%</p>
               </div>
             </div>
@@ -322,147 +411,7 @@ const ImpactPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Cost Reduction Analysis - Three Cases */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Cost Reduction: Demand-Side Response
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Optimizing energy consumption during high grid charges
-                </p>
-              </div>
-              <span className="text-xs px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full font-semibold">
-                {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} Analysis
-              </span>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={demandResponseCostData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
-                <YAxis 
-                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, position: 'insideLeft', offset: 0 }}
-                  tick={{ fill: 'currentColor' }}
-                  tickFormatter={(value) => Number(value).toFixed(2)}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
-                  {demandResponseCostData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="mt-4 flex justify-around text-center">
-              {demandResponseCostData.map((item, idx) => (
-                <div key={idx}>
-                  <p className="text-xs text-gray-500">{item.label}</p>
-                  {item.savings !== undefined && (
-                    <p className="text-lg font-bold text-green-600">-{item.savings}%</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Cost Reduction: Load Shifting
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Distributing energy usage to hours of low charges for savings
-                </p>
-              </div>
-              <span className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full font-semibold">
-                {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} Analysis
-              </span>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={loadShiftingCostData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
-                <YAxis 
-                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, position: 'insideLeft', offset: 15 }}
-                  tick={{ fill: 'currentColor' }}
-                  tickFormatter={(value) => Number(value).toFixed(2)}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
-                  {loadShiftingCostData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="mt-4 flex justify-around text-center">
-              {loadShiftingCostData.map((item, idx) => (
-                <div key={idx}>
-                  <p className="text-xs text-gray-500">{item.label}</p>
-                  {item.savings !== undefined && (
-                    <p className="text-lg font-bold text-green-600">-{item.savings}%</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Carbon Emission Reduction */}
-      <Card>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Carbon Emission Reduction
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Decreasing environmental footprint through efficient energy use
-              </p>
-            </div>
-            <span className="text-xs px-3 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 rounded-full font-semibold">
-              {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} Analysis
-            </span>
-          </div>
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={emissionComparisonData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
-              <YAxis 
-                label={{ value: `Emission (kg${timeUnit})`, angle: -90, position: 'insideLeft', offset: 0 }}
-                tick={{ fill: 'currentColor' }}
-                tickFormatter={(value) => Number(value).toFixed(2)}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
-              <Bar dataKey="emissions" name="Emissions" radius={[8, 8, 0, 0]}>
-                {emissionComparisonData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div className="mt-4 flex justify-around text-center">
-            {emissionComparisonData.map((item, idx) => (
-              <div key={idx}>
-                <p className="text-xs text-gray-500">{item.label}</p>
-                {item.savings !== undefined && (
-                  <p className="text-lg font-bold text-green-600">-{item.savings}%</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+     
 
       {/* Savings Donut Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -485,12 +434,12 @@ const ImpactPage: React.FC = () => {
           <Card>
             <div className="p-6 flex flex-col items-center">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
-                Additional Savings with Hydrogen Fuel Cell
+                Savings with Hydrogen Fuel Cell vs Rule-Based
               </h3>
               <div className="relative">
                 <DonutChart
-                  percentage={additionalSavingsWithHydrogen}
-                  label="Additional savings with hydrogen fuel cell integration"
+                  percentage={savingsWithHydrogenVsRuleBased}
+                  label="Cost reduction with hydrogen fuel cell integration compared to rule-based"
                   color="#14b8a6"
                 />
               </div>
@@ -513,10 +462,15 @@ const ImpactPage: React.FC = () => {
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={componentCostData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis type="number" tick={{ fill: 'currentColor' }} label={{ value: `Cost (INR${timeUnit})`, position: 'insideBottom', offset: -5 }} />
+              <XAxis 
+                type="number" 
+                tick={{ fill: 'currentColor' }} 
+                tickFormatter={(value) => Math.round(Number(value)).toString()}
+                label={{ value: `Cost (INR${timeUnit})`, position: 'insideBottom', offset: -5 }} 
+              />
               <YAxis type="category" dataKey="component" tick={{ fill: 'currentColor', fontSize: 11 }} width={100} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              <Legend content={<CustomLegend />} />
               <Bar dataKey="ruleBased" name="Rule-Based" fill="#ef4444" radius={[0, 4, 4, 0]} />
               <Bar dataKey="optimized" name="Optimized" fill="#3b82f6" radius={[0, 4, 4, 0]} />
               {includeHydrogen && <Bar dataKey="hydrogenOpt" name="With Hydrogen" fill="#14b8a6" radius={[0, 4, 4, 0]} />}
@@ -560,12 +514,12 @@ const ImpactPage: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="component" label={{ value: 'Component', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor' }} />
               <YAxis 
-                label={{ value: `Emissions (kg CO₂${timeUnit})`, angle: -90, position: 'insideLeft', offset: 0 }}
+                label={{ value: `Emissions (kg CO₂${timeUnit})`, angle: -90, offset: 0 }}
                 tick={{ fill: 'currentColor' }}
-                tickFormatter={(value) => Number(value).toFixed(2)}
+                tickFormatter={(value) => Math.round(Number(value)).toString()}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              <Legend content={<CustomLegend />} />
               <Bar dataKey="ruleBased" name="Rule-Based" fill="#dc2626" radius={[8, 8, 0, 0]} />
               <Bar dataKey="optimized" name="CO₂ Optimized" fill="#10b981" radius={[8, 8, 0, 0]} />
             </BarChart>
@@ -640,44 +594,167 @@ const ImpactPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Key Insights */}
+      {/* Impact of Demand Optimization Title */}
       <Card>
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Key Insights & Objectives
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col items-center text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-3">
-                <FileText className="w-6 h-6 text-white" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+            Impact of Demand Optimization
+          </h2>
+        </div>
+      </Card>
+
+       {/* Cost Reduction Analysis - Three Cases */}
+       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Cost Reduction: Demand-Side Response
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Optimizing energy consumption during high grid charges
+                </p>
               </div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-2">Minimize Cost</h4>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Optimization algorithm prioritizes reducing operational expenses through intelligent resource allocation and demand-side management
+              <span className="text-xs px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full font-semibold">
+                {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} Analysis
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={demandResponseCostData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
+                <YAxis 
+                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, offset: 0 }}
+                  tick={{ fill: 'currentColor' }}
+                  tickFormatter={(value) => Math.round(Number(value)).toString()}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
+                  {demandResponseCostData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-4 flex justify-around text-center">
+              {demandResponseCostData.map((item, idx) => (
+                <div key={idx}>
+                  <p className="text-xs text-gray-500">{item.label}</p>
+                  {item.savings !== undefined && (
+                    <p className="text-lg font-bold text-green-600">-{item.savings}%</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Cost Reduction: Load Shifting
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Distributing energy usage to hours of low charges for savings
+                </p>
+              </div>
+              <span className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full font-semibold">
+                {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} Analysis
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={loadShiftingCostData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
+                <YAxis 
+                  label={{ value: `Cost (Lakh ₹${timeUnit})`, angle: -90, offset: 15 }}
+                  tick={{ fill: 'currentColor' }}
+                  tickFormatter={(value) => Math.round(Number(value)).toString()}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
+                  {loadShiftingCostData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-4 flex justify-around text-center">
+              {loadShiftingCostData.map((item, idx) => (
+                <div key={idx}>
+                  <p className="text-xs text-gray-500">{item.label}</p>
+                  {item.savings !== undefined && (
+                    <p className="text-lg font-bold text-green-600">-{item.savings}%</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Carbon Emission Reduction */}
+      <Card>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                Carbon Emission Reduction
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Decreasing environmental footprint through efficient energy use
               </p>
             </div>
-            <div className="flex flex-col items-center text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-3">
-                <Droplet className="w-6 h-6 text-white" />
+            <span className="text-xs px-3 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 rounded-full font-semibold">
+              {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} Analysis
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={emissionComparisonData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="case" label={{ value: 'Case', position: 'insideBottom', offset: -5 }} tick={{ fill: 'currentColor', fontSize: 12 }} />
+              <YAxis
+                label={{
+                  value: `Emission (kg${timeUnit})`,
+                  angle: -90,
+                  offset: 25,
+                  dx: -10
+                }}
+                tick={{
+                  angle: -90,
+                  textAnchor: 'middle',
+                  fill: 'currentColor'
+                }}
+                tickMargin={10}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+              <Bar dataKey="emissions" name="Emissions" radius={[8, 8, 0, 0]}>
+                {emissionComparisonData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="mt-4 flex justify-around text-center">
+            {emissionComparisonData.map((item, idx) => (
+              <div key={idx}>
+                <p className="text-xs text-gray-500">{item.label}</p>
+                {item.savings !== undefined && (
+                  <p className="text-lg font-bold text-green-600">-{item.savings}%</p>
+                )}
               </div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-2">Minimize Emissions</h4>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Decrease environmental impact by optimizing renewable energy sources and reducing reliance on fossil fuels
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mb-3">
-                <Power className="w-6 h-6 text-white" />
-              </div>
-              <h4 className="font-bold text-gray-900 dark:text-white mb-2">Improve Performance</h4>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Enhance grid stability and ensure continuous power supply, even during peak demand or system disturbances
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </Card>
 
+      
       {/* Conclusion */}
       <Card>
         <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
