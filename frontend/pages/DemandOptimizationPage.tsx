@@ -256,7 +256,8 @@ const DemandOptimizationPage = () => {
           return prev;
         }
         // Increment progress with some randomness to make it feel natural
-        return prev + Math.random() * 15 + 5;
+        // Cap at 100 to prevent exceeding 100%
+        return Math.min(100, prev + Math.random() * 15 + 5);
       });
     }, 500);
 

@@ -74,53 +74,7 @@ const PowerFlowLine: React.FC<{
 const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const [activeTab, setActiveTab] = useState<'home' | 'impact' | 'case-studies'>('home');
   const [activeCaseStudy, setActiveCaseStudy] = useState<'aging-aware-pv' | 'community-microgrid' | 'peak-demand'>('aging-aware-pv');
-  const [mode, setMode] = useState<'grid' | 'island'>('grid');
-  const [flows, setFlows] = useState<PowerFlow[]>([]);
 
-  // Simulate power flows based on mode
-  useEffect(() => {
-    if (mode === 'grid') {
-      // Grid Connected Mode: Multiple active flows
-      setFlows([
-        { from: 'renewable', to: 'ems', active: true, value: 450 },
-        { from: 'battery', to: 'ems', active: true, value: 200 },
-        { from: 'diesel', to: 'ems', active: false }, // Usually inactive in grid mode
-        { from: 'grid', to: 'ems', active: true, value: 100 }, // Some grid import
-        { from: 'ems', to: 'load', active: true, value: 600 },
-        { from: 'ems', to: 'battery', active: true, value: 150 }, // Charging
-        { from: 'ems', to: 'grid', active: true, value: 100 }, // Export to grid
-        { from: 'renewable', to: 'grid', active: true, value: 50 }, // Direct export
-      ]);
-    } else {
-      // Island Mode: No grid connection
-      setFlows([
-        { from: 'renewable', to: 'ems', active: true, value: 450 },
-        { from: 'battery', to: 'ems', active: true, value: 200 },
-        { from: 'diesel', to: 'ems', active: true, value: 150 }, // Active in island mode
-        { from: 'ems', to: 'load', active: true, value: 600 },
-        { from: 'ems', to: 'battery', active: true, value: 200 }, // Charging
-        { from: 'grid', to: 'ems', active: false }, // Grid unavailable
-        { from: 'ems', to: 'grid', active: false }, // No export in island
-        { from: 'renewable', to: 'grid', active: false }, // No grid in island mode
-      ]);
-    }
-
-    // Animate power flows - toggle some flows periodically
-    const interval = setInterval(() => {
-      setFlows(prev => prev.map(flow => {
-        // Randomly toggle battery charge/discharge
-        if (flow.from === 'ems' && flow.to === 'battery') {
-          return { ...flow, active: Math.random() > 0.3 };
-        }
-        if (flow.from === 'battery' && flow.to === 'ems') {
-          return { ...flow, active: Math.random() > 0.3 };
-        }
-        return flow;
-      }));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [mode]);
 
   // Component positions (relative to SVG viewport)
   const componentPositions = {
@@ -290,71 +244,51 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
         {activeTab === 'home' && (
           <>
-        {/* Mode Selector */}
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-1">
-            <button
-              onClick={() => setMode('grid')}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                mode === 'grid'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Grid Connected Mode
-            </button>
-            <button
-              onClick={() => setMode('island')}
-              className={`px-6 py-2 rounded-md font-medium transition-all ${
-                mode === 'island'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Island Mode
-            </button>
-          </div>
-        </div>
-
-        {/* Power Flow Visualization */}
+        {/* Power Flow Visualization - Both Modes Side by Side */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            {mode === 'grid' ? 'Grid Connected Mode EMS' : 'Island Mode EMS'}
+            Energy Management System (EMS) Modes
           </h2>
           
-          <div className="flex justify-center items-start min-h-[500px]">
-            <div className="relative w-full max-w-4xl">
-                  {mode === 'grid' ? (
-                    /* Video for Grid Connected Mode */
-                    <div className="relative bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-hidden">
-                      <video
-                        src="/assets/2nd_tab_big.mp4"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full h-auto rounded-lg shadow-lg"
-                        style={{ maxHeight: '600px' }}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  ) : (
-                    /* Video for Island Mode */
-                    <div className="relative bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-hidden">
-                      <video
-                        src="/assets/Island_Mode_EMS_controled_power_flow_animation.mp4"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full h-auto rounded-lg shadow-lg"
-                        style={{ maxHeight: '600px' }}
-                  >
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Grid Connected Mode Video */}
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                Grid Connected Mode EMS
+              </h3>
+              <div className="relative bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-hidden">
+                <video
+                  src="/assets/2nd_tab_big.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-auto rounded-lg shadow-lg"
+                  style={{ maxHeight: '600px' }}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+
+            {/* Island Mode Video */}
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                Island Mode EMS
+              </h3>
+              <div className="relative bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-hidden">
+                <video
+                  src="/assets/Island_Mode_EMS_controled_power_flow_animation.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-auto rounded-lg shadow-lg"
+                  style={{ maxHeight: '600px' }}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
             </div>
           </div>
         </div>
