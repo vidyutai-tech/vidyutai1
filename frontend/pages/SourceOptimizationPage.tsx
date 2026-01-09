@@ -234,9 +234,7 @@ const SourceOptimizationPage = () => {
           return prev;
         }
         // Increment progress with some randomness to make it feel natural
-        // Cap at 100 to prevent going beyond 100%
-        const increment = Math.random() * 15 + 5;
-        return Math.min(90, prev + increment); // Cap at 90, then wait for actual completion
+        return prev + Math.random() * 15 + 5;
       });
     }, 500);
 

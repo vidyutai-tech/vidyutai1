@@ -101,9 +101,6 @@ app.use(helmet());
 // CORS configuration - allow frontend URL from environment
 const corsOptions = {
   origin: function (origin, callback) {
-    // In production, be more permissive to handle multiple Netlify deployments
-    const isProduction = process.env.NODE_ENV === 'production';
-    
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       process.env.CORS_ORIGIN,
@@ -112,32 +109,13 @@ const corsOptions = {
     ].filter(Boolean);
     
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      callback(null, true);
-      return;
-    }
-    
-    // In production, allow any Netlify domain if FRONTEND_URL contains netlify
-    if (isProduction && process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('netlify')) {
-      // Allow any netlify.app domain
-      if (origin.includes('.netlify.app') || origin.includes('netlify.app')) {
-        callback(null, true);
-        return;
-      }
-    }
-    
-    // Check against allowed origins
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // Log for debugging
-      console.log(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  credentials: true
 };
 app.use(cors(corsOptions));
 app.use(express.json());
