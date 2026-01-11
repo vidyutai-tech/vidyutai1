@@ -11,6 +11,19 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 // Configure multer for file uploads (memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Basic server-side guard to reject non-CSV/Excel uploads (e.g., HTML error pages)
+const isValidCsvOrExcel = (file) => {
+  if (!file) return true; // allow no file
+  const name = (file.originalname || '').toLowerCase();
+  const type = (file.mimetype || '').toLowerCase();
+  const looksLikeCsv = name.endsWith('.csv') || type.includes('csv');
+  const looksLikeExcel = name.endsWith('.xlsx') || name.endsWith('.xls') || type.includes('excel');
+  // Some servers send text/html when an auth error page is downloaded
+  const looksLikeHtml = type.includes('html') || name.endsWith('.html') || name.endsWith('.htm');
+  if (looksLikeHtml) return false;
+  return looksLikeCsv || looksLikeExcel;
+};
+
 // Helper function to forward multipart request to AI service
 const forwardToAIService = async (req, endpoint) => {
   const formData = new FormData();
@@ -222,6 +235,14 @@ router.delete('/results/:id', async (req, res) => {
 // Proxy route for source optimization
 router.post('/optimize', upload.single('file'), async (req, res) => {
   try {
+    if (!isValidCsvOrExcel(req.file)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid file type',
+        message: 'Please upload a valid CSV or Excel file (not HTML pages).'
+      });
+    }
+
     const data = await forwardToAIService(req, '/optimize');
     
     // Save results to database if user is authenticated
@@ -281,6 +302,15 @@ router.post('/optimize', upload.single('file'), async (req, res) => {
 // Use upload.any() to handle both file and non-file requests
 router.post('/demand-optimize', upload.any(), async (req, res) => {
   try {
+    if (req.files && req.files.length > 0 && !isValidCsvOrExcel(req.files[0])) {
+      return res.status(400).json({
+        status: 'error',
+        success: false,
+        error: 'Invalid file type',
+        message: 'Please upload a valid CSV or Excel file (not HTML pages).'
+      });
+    }
+
     console.log('📥 Demand optimization request received:', {
       method: req.method,
       path: req.path,

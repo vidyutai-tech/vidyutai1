@@ -117,6 +117,23 @@ const SourceOptimizationPage = () => {
     return formatted === "-" ? "-" : `${formatted} kWh`;
   };
 
+  // Basic file-type guard to avoid sending HTML/error downloads as CSV
+  const validateUploadedFile = (file: File) => {
+    const name = file.name.toLowerCase();
+    const type = (file.type || "").toLowerCase();
+    const isCsv = name.endsWith(".csv") || type.includes("csv");
+    const isExcel = name.endsWith(".xlsx") || name.endsWith(".xls") || type.includes("excel");
+    return isCsv || isExcel;
+  };
+
+  const getServerErrorMessage = (err: any) => {
+    const data = err?.response?.data;
+    if (data?.message) return data.message;
+    if (data?.details?.message) return data.details.message;
+    if (typeof data === "string") return data;
+    return err?.message || "An unexpected error occurred";
+  };
+
   // Handle config from inline setup
   const handleInlineConfigReady = (config: any) => {
     // Store config in localStorage (without file, as files can't be serialized)
@@ -194,6 +211,11 @@ const SourceOptimizationPage = () => {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && mergedFormData) {
+      if (!validateUploadedFile(file)) {
+        setError("Please upload a valid CSV or Excel file (not HTML/download pages).");
+        setOpen(true);
+        return;
+      }
       setMergedFormData(prev => ({
         ...prev,
         uploadedFile: file
@@ -310,7 +332,7 @@ const SourceOptimizationPage = () => {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError(err.message || "An unexpected error occurred");
+        setError(getServerErrorMessage(err));
       }
       setOpen(true);
     } finally {
