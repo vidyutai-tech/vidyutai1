@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, MessageSquare, Battery, Search } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, MessageSquare, Battery, Search, Activity } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,6 +16,10 @@ const optimizationNavItems = [
   { name: 'Optimization Configuration', path: '/optimization-setup', icon: Settings },
 ];
 
+const dashboardNavItems = [
+  { name: 'Operational Monitoring', path: '/operational-monitoring', icon: Activity },
+];
+
 // AI/ML Insights items - moved to dashboard section as they're navigation utilities
 const aiMlNavItems = [
   { name: 'Energy Forecasting', path: '/energy-forecasting', icon: TrendingUp },
@@ -24,15 +28,6 @@ const aiMlNavItems = [
   { name: 'Energy Loss Prediction', path: '/energy-loss', icon: AlertTriangle },
   { name: 'Root Cause Analysis', path: '/root-cause-analysis', icon: Search },
   { name: 'AI Interpretations', path: '/ai-explanations', icon: MessageSquare },
-];
-
-const dashboardNavItems = [
-  { name: 'Unified Dashboard', path: '/unified-dashboard', icon: LayoutDashboard },
-  { name: 'Operations Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Site Detail', path: '/site-detail', icon: AreaChart },
-  { name: 'Simulator', path: '/simulator', icon: SlidersHorizontal },
-  { name: 'Alerts', path: '/alerts', icon: AlertTriangle },
-  { name: 'Maintenance', path: '/maintenance', icon: Wrench },
 ];
 
 // Actionable Insights section removed
@@ -51,6 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
   // Determine which pipeline section is active
   const isPlanningActive = currentPath.includes('/planning-wizard');
   const isOptimizationActive = currentPath.includes('/optimization-setup');
+  const isDashboardActive = currentPath.includes('/operational-monitoring');
 
   const NavItem: React.FC<{ item: { name: string; path: string; icon: any } }> = ({ item }) => (
     <NavLink
@@ -122,6 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
             
             <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
             <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
+            <NavSection title="3. Dashboards" items={dashboardNavItems} isActive={isDashboardActive} />
           </nav>
         </div>
       </aside>
