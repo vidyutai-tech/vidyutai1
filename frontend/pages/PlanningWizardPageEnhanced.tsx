@@ -1407,11 +1407,17 @@ const PlanningWizardContent: React.FC = () => {
                                         <XAxis 
                                           dataKey="name" 
                                           tick={{ fill: 'currentColor' }}
-                                          label={{ value: plotData.xLabel, position: 'insideBottom', offset: -2 }}
+                                          label={{ value: plotData.xLabel, position: 'insideBottom', offset: -10 }}
                                         />
                                         <YAxis 
-                                          tick={{ fill: 'currentColor' }}
-                                          label={{ value: plotData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }}
+                                          // tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.yLabel, angle: -90, position: 'Left', offset: 25, dx: -10 }}
+                                          tick={{
+                                            angle: -90,
+                                            textAnchor: 'middle',
+                                            fill: 'currentColor'
+                                          }}
+                                          tickMargin={10}
                                         />
                                         <Tooltip 
                                           contentStyle={{ 
@@ -1471,7 +1477,7 @@ const PlanningWizardContent: React.FC = () => {
                                         />
                                         <YAxis 
                                           tick={{ fill: 'currentColor' }}
-                                          label={{ value: plotData.yLabel, angle: -90, position: 'insideLeft', offset: 10 }}
+                                          label={{ value: plotData.yLabel, angle: -90, position: 'Left', offset: 10 }}
                                         />
                                         <Tooltip 
                                           contentStyle={{ 

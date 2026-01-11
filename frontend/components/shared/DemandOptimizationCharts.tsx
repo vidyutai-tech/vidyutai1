@@ -102,7 +102,7 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
           Power Flow from All Components
         </h3>
         <ResponsiveContainer width="100%" height={350}>
-          <ComposedChart data={time_series} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <ComposedChart data={time_series} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis
               dataKey="time_hours"
@@ -114,8 +114,7 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
             <YAxis
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
-              label={{ value: 'Power (kW)', angle: -90
-                , position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip

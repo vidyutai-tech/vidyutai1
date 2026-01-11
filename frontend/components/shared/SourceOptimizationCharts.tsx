@@ -78,7 +78,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
           Optimal Power Dispatch Strategy ({metadata.num_days} Day{metadata.num_days > 1 ? 's' : ''}, {metadata.time_resolution_minutes}-min resolution)
         </h3>
         <ResponsiveContainer width="100%" height={400}>
-          <ComposedChart data={time_series} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <ComposedChart data={time_series} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis
               dataKey="time_hours"
@@ -90,7 +90,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
             <YAxis
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
-              label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'Power (kW)', angle: -90, position: 'Left', offset: 0, dx: -10, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
@@ -180,7 +180,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
               domain={[-5, 105]}
-              label={{ value: 'State of Charge (%)', angle: -90, position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'State of Charge (%)', angle: -90, position: 'Left', offset: 5, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
@@ -244,7 +244,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
               domain={[-5, 105]}
-              label={{ value: 'Hydrogen Stored (% of Capacity)', angle: -90, position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'Hydrogen Stored (% of Capacity)', angle: -90, position: 'Left', offset: 5, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
