@@ -185,7 +185,7 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
           Energy Cost of Grid and Other Components
         </h3>
         <ResponsiveContainer width="100%" height={350}>
-          <ComposedChart data={costData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <ComposedChart data={costData} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis
               dataKey="time_hours"
@@ -197,7 +197,7 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
             <YAxis
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
-              label={{ value: 'Cost (INR/kWh)', angle: -90, position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'Cost (INR/kWh)', angle: -90, position: 'Left', offset: 5, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
@@ -269,7 +269,7 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
               {loadTitle}
             </h3>
             <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={time_series} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <ComposedChart data={time_series} margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                 <XAxis
                   dataKey="time_hours"
