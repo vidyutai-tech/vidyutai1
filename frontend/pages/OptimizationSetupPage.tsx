@@ -659,16 +659,18 @@ const OptimizationSetupPage: React.FC = () => {
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <a
-                      href="/sample-source-optimization.csv"
-                      download="sample-source-optimization.csv"
+                      href="https://drive.google.com/uc?export=download&id=1n5gou1ddaSA6liX6JMtrzH92pbyqN_8-"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Source Optimization Sample
                     </a>
                     <a
-                      href="/sample-demand-optimization.csv"
-                      download="sample-demand-optimization.csv"
+                      href="https://drive.google.com/uc?export=download&id=1ZsnBth9n809w9KGFSMtqC2fl0xKRTaZd"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors text-sm font-medium"
                     >
                       <Download className="w-4 h-4 mr-2" />

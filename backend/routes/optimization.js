@@ -24,6 +24,15 @@ const isValidCsvOrExcel = (file) => {
   return looksLikeCsv || looksLikeExcel;
 };
 
+// Extra guard: detect HTML content masquerading as CSV/Excel (e.g., auth error pages)
+const isHtmlContent = (file) => {
+  if (!file || !file.buffer) return false;
+  const head = file.buffer.slice(0, 200).toString('utf8').toLowerCase();
+  return head.includes('<!doctype html') || head.includes('<html');
+};
+
+const htmlUploadMessage = 'It looks like the uploaded file is an HTML page (login/error) instead of a CSV/Excel data file. Please make sure you upload the actual CSV/Excel data file.';
+
 // Helper function to forward multipart request to AI service
 const forwardToAIService = async (req, endpoint) => {
   const formData = new FormData();
@@ -235,11 +244,11 @@ router.delete('/results/:id', async (req, res) => {
 // Proxy route for source optimization
 router.post('/optimize', upload.single('file'), async (req, res) => {
   try {
-    if (!isValidCsvOrExcel(req.file)) {
+    if (!isValidCsvOrExcel(req.file) || isHtmlContent(req.file)) {
       return res.status(400).json({
         success: false,
         error: 'Invalid file type',
-        message: 'Please upload a valid CSV or Excel file (not HTML pages).'
+        message: htmlUploadMessage
       });
     }
 
@@ -293,7 +302,8 @@ router.post('/optimize', upload.single('file'), async (req, res) => {
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to run source optimization',
-      message: error.message
+      message: error.response?.data?.message || error.message,
+      details: error.response?.data || undefined
     });
   }
 });
@@ -302,12 +312,12 @@ router.post('/optimize', upload.single('file'), async (req, res) => {
 // Use upload.any() to handle both file and non-file requests
 router.post('/demand-optimize', upload.any(), async (req, res) => {
   try {
-    if (req.files && req.files.length > 0 && !isValidCsvOrExcel(req.files[0])) {
+    if (req.files && req.files.length > 0 && (!isValidCsvOrExcel(req.files[0]) || isHtmlContent(req.files[0]))) {
       return res.status(400).json({
         status: 'error',
         success: false,
         error: 'Invalid file type',
-        message: 'Please upload a valid CSV or Excel file (not HTML pages).'
+        message: htmlUploadMessage
       });
     }
 
@@ -411,7 +421,7 @@ router.post('/demand-optimize', upload.any(), async (req, res) => {
       status: 'error',
       success: false,
       error: 'Failed to run demand optimization',
-      message: error.message,
+      message: error.response?.data?.message || error.message,
       details: error.response?.data || error.message
     });
   }
