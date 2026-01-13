@@ -26,6 +26,7 @@ import UnifiedDashboardPage from './pages/UnifiedDashboardPage';
 import AIExplanationsPage from './pages/AIExplanationsPage';
 import EnergyForecastingPage from './pages/EnergyForecastingPage';
 import OperationalMonitoringPage from './pages/OperationalMonitoringPage';
+import ResidentialEnergyMonitoringPage from './pages/ResidentialEnergyMonitoringPage';
 import { AppContext } from './contexts/AppContext';
 import { Telemetry, Alert, RLSuggestion, HealthStatus, Site, RLStrategy } from './types';
 import { useWebSocket } from './hooks/useWebSocket';
@@ -647,6 +648,16 @@ const App: React.FC = () => {
               <ProtectedRoute>
                 <LayoutWrapper>
                   <OperationalMonitoringPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/residential-monitoring"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <ResidentialEnergyMonitoringPage />
                 </LayoutWrapper>
               </ProtectedRoute>
             }

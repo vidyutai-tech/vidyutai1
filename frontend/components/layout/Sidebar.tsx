@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, MessageSquare, Battery, Search, Activity } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, MessageSquare, Battery, Search, Activity, Home } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -17,7 +17,8 @@ const optimizationNavItems = [
 ];
 
 const dashboardNavItems = [
-  { name: 'Operational Monitoring', path: '/operational-monitoring', icon: Activity },
+  { name: 'Solar Plant Energy Monitoring', path: '/operational-monitoring', icon: Activity },
+  { name: 'Residential Energy Monitoring', path: '/residential-monitoring', icon: Home },
 ];
 
 // AI/ML Insights items - moved to dashboard section as they're navigation utilities

@@ -1,0 +1,7202 @@
+[
+  {
+    "time": 45292,
+    "grid_power": 3500,
+    "charge_power": 1407.66253125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1605.61792,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1653.16835625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.125,
+    "grid_power": 3500,
+    "charge_power": 1670.00170125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1699.07896375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.20833333334,
+    "grid_power": 2162.231789078952,
+    "charge_power": 385.523159078952,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2162.231789078952,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.25,
+    "grid_power": 1737.81384875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1737.81384875,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.29166666666,
+    "grid_power": 1381.948505,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 245,
+    "load_demand": 0,
+    "grid_import": 1381.948505,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.33333333334,
+    "grid_power": 551.23197375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 919.1875,
+    "load_demand": 0,
+    "grid_import": 551.23197375,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.375,
+    "grid_power": -158.747245,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1603,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 158.747245
+  },
+  {
+    "time": 45292.41666666666,
+    "grid_power": -532.6875124999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2145.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 532.6875124999999
+  },
+  {
+    "time": 45292.45833333334,
+    "grid_power": -703.953295,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2476.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 703.953295
+  },
+  {
+    "time": 45292.5,
+    "grid_power": -646.5815575,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2561.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 646.5815575
+  },
+  {
+    "time": 45292.54166666666,
+    "grid_power": -428.979245,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2390.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 428.979245
+  },
+  {
+    "time": 45292.58333333334,
+    "grid_power": -76.68215125000015,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1978.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 76.68215125000015
+  },
+  {
+    "time": 45292.625,
+    "grid_power": 522.5228,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1365.875,
+    "load_demand": 0,
+    "grid_import": 522.5228,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.66666666666,
+    "grid_power": 1261.23148625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 643.125,
+    "load_demand": 0,
+    "grid_import": 1261.23148625,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.70833333334,
+    "grid_power": 570.55897375,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 109.375,
+    "load_demand": 0,
+    "grid_import": 570.55897375,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.75,
+    "grid_power": -3070.56335625,
+    "charge_power": 0,
+    "discharge_power": 5000,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3070.56335625
+  },
+  {
+    "time": 45292.79166666666,
+    "grid_power": -1856.20746875,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1856.20746875
+  },
+  {
+    "time": 45292.83333333334,
+    "grid_power": -665.8224825000001,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 665.8224825000001
+  },
+  {
+    "time": 45292.875,
+    "grid_power": 1849.68564375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1849.68564375,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.91666666666,
+    "grid_power": 2661.553328125,
+    "charge_power": 838.446671875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2661.553328125,
+    "grid_export": 0
+  },
+  {
+    "time": 45292.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1601.06696875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45293,
+    "grid_power": 3500,
+    "charge_power": 1503.14003125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1599.53175,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1642.2318575,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.125,
+    "grid_power": 3500,
+    "charge_power": 1686.15310625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1713.62115625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.20833333334,
+    "grid_power": 2635.389265625,
+    "charge_power": 863.911546875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2635.389265625,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.25,
+    "grid_power": 1739.42436125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1739.42436125,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.29166666666,
+    "grid_power": -2202.771155,
+    "charge_power": 0,
+    "discharge_power": 3539.21883,
+    "pv_used": 237.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2202.771155
+  },
+  {
+    "time": 45293.33333333334,
+    "grid_power": -1418.987921875,
+    "charge_power": 0,
+    "discharge_power": 1907.057390625,
+    "pv_used": 910,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1418.987921875
+  },
+  {
+    "time": 45293.375,
+    "grid_power": -1797.2504375,
+    "charge_power": 0,
+    "discharge_power": 1628.90775,
+    "pv_used": 1614.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1797.2504375
+  },
+  {
+    "time": 45293.41666666666,
+    "grid_power": -3451.104796000008,
+    "charge_power": 0,
+    "discharge_power": 2854.672657250007,
+    "pv_used": 2160.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3451.104796000008
+  },
+  {
+    "time": 45293.45833333334,
+    "grid_power": -696.14098125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2464.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 696.14098125
+  },
+  {
+    "time": 45293.5,
+    "grid_power": -665.50709375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2533.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 665.50709375
+  },
+  {
+    "time": 45293.54166666666,
+    "grid_power": -513.6528125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2415.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 513.6528125
+  },
+  {
+    "time": 45293.58333333334,
+    "grid_power": -131.3771075000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1986.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 131.3771075000001
+  },
+  {
+    "time": 45293.625,
+    "grid_power": 532.75076875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1358,
+    "load_demand": 0,
+    "grid_import": 532.75076875,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.66666666666,
+    "grid_power": 1295.39311125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 655.8125,
+    "load_demand": 0,
+    "grid_import": 1295.39311125,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.70833333334,
+    "grid_power": 1855.718005,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 115.9375,
+    "load_demand": 0,
+    "grid_import": 1855.718005,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.75,
+    "grid_power": 2013.159675,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2013.159675,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.79166666666,
+    "grid_power": 1941.9270625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1941.9270625,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.83333333334,
+    "grid_power": 1903.299625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1903.299625,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.875,
+    "grid_power": 1903.95586125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1903.95586125,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.91666666666,
+    "grid_power": 2671.779143125,
+    "charge_power": 828.220856875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2671.779143125,
+    "grid_export": 0
+  },
+  {
+    "time": 45293.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1512.7556375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45294,
+    "grid_power": 3500,
+    "charge_power": 1320.740795,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1513.49946375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1587.355995,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.125,
+    "grid_power": 3500,
+    "charge_power": 1619.76796375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1649.86491875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.20833333334,
+    "grid_power": 2662.137228125,
+    "charge_power": 833.0330543749999,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2662.137228125,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.25,
+    "grid_power": 1792.29164375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1792.29164375,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.29166666666,
+    "grid_power": 1445.0880625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 235.8125,
+    "load_demand": 0,
+    "grid_import": 1445.0880625,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.33333333334,
+    "grid_power": -2543.356796875,
+    "charge_power": 0,
+    "discharge_power": 3174.209578125,
+    "pv_used": 892.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2543.356796875
+  },
+  {
+    "time": 45294.375,
+    "grid_power": -1765.8788975,
+    "charge_power": 0,
+    "discharge_power": 1734.1211025,
+    "pv_used": 1568.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1765.8788975
+  },
+  {
+    "time": 45294.41666666666,
+    "grid_power": -2733.70212375,
+    "charge_power": 0,
+    "discharge_power": 2334.8740975,
+    "pv_used": 2104.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2733.70212375
+  },
+  {
+    "time": 45294.45833333334,
+    "grid_power": -600.6297137500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2417.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 600.6297137500001
+  },
+  {
+    "time": 45294.5,
+    "grid_power": -595.27383875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2496.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 595.27383875
+  },
+  {
+    "time": 45294.54166666666,
+    "grid_power": -412.70621375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2381.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 412.70621375
+  },
+  {
+    "time": 45294.58333333334,
+    "grid_power": -5.265106250000102,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2000.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 5.265106250000102
+  },
+  {
+    "time": 45294.625,
+    "grid_power": 627.8243925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1372,
+    "load_demand": 0,
+    "grid_import": 627.8243925,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.66666666666,
+    "grid_power": 1317.1685675,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 668.5,
+    "load_demand": 0,
+    "grid_import": 1317.1685675,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.70833333334,
+    "grid_power": 1825.9398625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 122.5,
+    "load_demand": 0,
+    "grid_import": 1825.9398625,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.75,
+    "grid_power": 2011.170875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2011.170875,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.79166666666,
+    "grid_power": 1996.7957675,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1996.7957675,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.83333333334,
+    "grid_power": 1935.584925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1935.584925,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.875,
+    "grid_power": 1928.84246875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1928.84246875,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.91666666666,
+    "grid_power": 2735.9331875,
+    "charge_power": 764.0668125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2735.9331875,
+    "grid_export": 0
+  },
+  {
+    "time": 45294.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1370.62734375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45295,
+    "grid_power": 3500,
+    "charge_power": 1358.0536875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1498.56942,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1530.04321375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.125,
+    "grid_power": 3500,
+    "charge_power": 1586.2482,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1630.03195125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.20833333334,
+    "grid_power": 2668.0987525,
+    "charge_power": 827.7559975,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2668.0987525,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.25,
+    "grid_power": 1803.04853625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1803.04853625,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.29166666666,
+    "grid_power": 281.459948125,
+    "charge_power": 0,
+    "discharge_power": 1152.378258125,
+    "pv_used": 235.8125,
+    "load_demand": 0,
+    "grid_import": 281.459948125,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.33333333334,
+    "grid_power": -3500,
+    "charge_power": 0,
+    "discharge_power": 4105.7936875,
+    "pv_used": 897.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3500
+  },
+  {
+    "time": 45295.375,
+    "grid_power": -82.52810750000006,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1588.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 82.52810750000006
+  },
+  {
+    "time": 45295.41666666666,
+    "grid_power": -2741.7653425,
+    "charge_power": 0,
+    "discharge_power": 2256.7297225,
+    "pv_used": 2138.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2741.7653425
+  },
+  {
+    "time": 45295.45833333334,
+    "grid_power": -596.93015125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2478.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 596.93015125
+  },
+  {
+    "time": 45295.5,
+    "grid_power": -604.68904375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2573.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 604.68904375
+  },
+  {
+    "time": 45295.54166666666,
+    "grid_power": -445.12515625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2414.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 445.12515625
+  },
+  {
+    "time": 45295.58333333334,
+    "grid_power": -83.6509375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2014.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 83.6509375
+  },
+  {
+    "time": 45295.625,
+    "grid_power": 488.0166875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1420.125,
+    "load_demand": 0,
+    "grid_import": 488.0166875,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.66666666666,
+    "grid_power": -1130.4146875,
+    "charge_power": 0,
+    "discharge_power": 2369.5853125,
+    "pv_used": 693,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1130.4146875
+  },
+  {
+    "time": 45295.70833333334,
+    "grid_power": 1824.5281425,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 126.875,
+    "load_demand": 0,
+    "grid_import": 1824.5281425,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.75,
+    "grid_power": 2006.84141125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2006.84141125,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.79166666666,
+    "grid_power": 1973.84541125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1973.84541125,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.83333333334,
+    "grid_power": 1917.397755,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1917.397755,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.875,
+    "grid_power": 1911.61091125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1911.61091125,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.91666666666,
+    "grid_power": 2689.293830625,
+    "charge_power": 810.706169375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2689.293830625,
+    "grid_export": 0
+  },
+  {
+    "time": 45295.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1463.6481375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45296,
+    "grid_power": 3500,
+    "charge_power": 1306.31346875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1481.1854375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1528.5012325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.125,
+    "grid_power": 3500,
+    "charge_power": 1563.95946375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1611.26435625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.20833333334,
+    "grid_power": 2679.113015625,
+    "charge_power": 818.401296875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2679.113015625,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.25,
+    "grid_power": 1828.41203125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1828.41203125,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.29166666666,
+    "grid_power": 310.33325875,
+    "charge_power": 0,
+    "discharge_power": 1167.86513375,
+    "pv_used": 234.5,
+    "load_demand": 0,
+    "grid_import": 310.33325875,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.33333333334,
+    "grid_power": -2383.2578425,
+    "charge_power": 0,
+    "discharge_power": 3025.91104875,
+    "pv_used": 900.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2383.2578425
+  },
+  {
+    "time": 45296.375,
+    "grid_power": -1786.4936875,
+    "charge_power": 0,
+    "discharge_power": 1713.5063125,
+    "pv_used": 1602.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1786.4936875
+  },
+  {
+    "time": 45296.41666666666,
+    "grid_power": -3500,
+    "charge_power": 0,
+    "discharge_power": 3070.1907675,
+    "pv_used": 2152.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3500
+  },
+  {
+    "time": 45296.45833333334,
+    "grid_power": -595.8212,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2492.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 595.8212
+  },
+  {
+    "time": 45296.5,
+    "grid_power": -644.411545,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2587.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 644.411545
+  },
+  {
+    "time": 45296.54166666666,
+    "grid_power": -420.09777625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2428.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 420.09777625
+  },
+  {
+    "time": 45296.58333333334,
+    "grid_power": -15.00560624999996,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2012.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 15.00560624999996
+  },
+  {
+    "time": 45296.625,
+    "grid_power": 544.14448625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1398.6875,
+    "load_demand": 0,
+    "grid_import": 544.14448625,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.66666666666,
+    "grid_power": 862.8533556453108,
+    "charge_power": 0,
+    "discharge_power": 431.2771493546892,
+    "pv_used": 682.5,
+    "load_demand": 0,
+    "grid_import": 862.8533556453108,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.70833333334,
+    "grid_power": 1880.871925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 120.3125,
+    "load_demand": 0,
+    "grid_import": 1880.871925,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.75,
+    "grid_power": 2103.277375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2103.277375,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.79166666666,
+    "grid_power": 1992.6960625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1992.6960625,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.83333333334,
+    "grid_power": 1871.6040625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1871.6040625,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.875,
+    "grid_power": 1948.75621875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1948.75621875,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.91666666666,
+    "grid_power": 2722.28175,
+    "charge_power": 777.71825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2722.28175,
+    "grid_export": 0
+  },
+  {
+    "time": 45296.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1399.24996875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45297,
+    "grid_power": 3500,
+    "charge_power": 1367.2628575,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1512.2901825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1542.25215125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.125,
+    "grid_power": 3500,
+    "charge_power": 1581.79116875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1614.56057625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.20833333334,
+    "grid_power": 2684.530924375,
+    "charge_power": 816.5492631249999,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2684.530924375,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.25,
+    "grid_power": 564.80839375,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 564.80839375,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.29166666666,
+    "grid_power": -3444.578625,
+    "charge_power": 0,
+    "discharge_power": 4786.232705,
+    "pv_used": 233.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3444.578625
+  },
+  {
+    "time": 45297.33333333334,
+    "grid_power": 504.48264375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 902.125,
+    "load_demand": 0,
+    "grid_import": 504.48264375,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.375,
+    "grid_power": -83.47338874999997,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1615.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 83.47338874999997
+  },
+  {
+    "time": 45297.41666666666,
+    "grid_power": -3500,
+    "charge_power": 0,
+    "discharge_power": 2885.1578625,
+    "pv_used": 2171.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3500
+  },
+  {
+    "time": 45297.45833333334,
+    "grid_power": -781.47720125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2515.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 781.47720125
+  },
+  {
+    "time": 45297.5,
+    "grid_power": -764.635495,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2610.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 764.635495
+  },
+  {
+    "time": 45297.54166666666,
+    "grid_power": -708.94137,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2449.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 708.94137
+  },
+  {
+    "time": 45297.58333333334,
+    "grid_power": -320.35665125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2048.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 320.35665125
+  },
+  {
+    "time": 45297.625,
+    "grid_power": 292.4213,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1441.125,
+    "load_demand": 0,
+    "grid_import": 292.4213,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.66666666666,
+    "grid_power": 1034.62425,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 695.1875,
+    "load_demand": 0,
+    "grid_import": 1034.62425,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.70833333334,
+    "grid_power": 1601.784625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 126.875,
+    "load_demand": 0,
+    "grid_import": 1601.784625,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.75,
+    "grid_power": 1721.84254875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1721.84254875,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.79166666666,
+    "grid_power": 1720.172755,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1720.172755,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.83333333334,
+    "grid_power": 464.27897375,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 464.27897375,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.875,
+    "grid_power": 1746.85484875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1746.85484875,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.91666666666,
+    "grid_power": 2674.930861875,
+    "charge_power": 825.069138125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2674.930861875,
+    "grid_export": 0
+  },
+  {
+    "time": 45297.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1466.4656375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45298,
+    "grid_power": 3500,
+    "charge_power": 1337.46976375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1513.46787,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1577.617325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.125,
+    "grid_power": 3500,
+    "charge_power": 1629.33557625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1645.336825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.20833333334,
+    "grid_power": 2665.197875,
+    "charge_power": 827.375625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2665.197875,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.25,
+    "grid_power": 1789.6183925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1789.6183925,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.29166666666,
+    "grid_power": 188.3826750000001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 225.3125,
+    "load_demand": 0,
+    "grid_import": 188.3826750000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.33333333334,
+    "grid_power": -1345.7969525,
+    "charge_power": 0,
+    "discharge_power": 2090.747845,
+    "pv_used": 749.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1345.7969525
+  },
+  {
+    "time": 45298.375,
+    "grid_power": -675.37709,
+    "charge_power": 0,
+    "discharge_power": 981.91872,
+    "pv_used": 1105.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 675.37709
+  },
+  {
+    "time": 45298.41666666666,
+    "grid_power": -285.30873125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1673.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 285.30873125
+  },
+  {
+    "time": 45298.45833333334,
+    "grid_power": -1047.556545,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2443.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1047.556545
+  },
+  {
+    "time": 45298.5,
+    "grid_power": -1189.46883875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2572.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1189.46883875
+  },
+  {
+    "time": 45298.54166666666,
+    "grid_power": -996.7119325000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2412.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 996.7119325000001
+  },
+  {
+    "time": 45298.58333333334,
+    "grid_power": -652.6660125000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2017.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 652.6660125000001
+  },
+  {
+    "time": 45298.625,
+    "grid_power": -135.62788875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1429.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 135.62788875
+  },
+  {
+    "time": 45298.66666666666,
+    "grid_power": 605.9542550000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 705.6875,
+    "load_demand": 0,
+    "grid_import": 605.9542550000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.70833333334,
+    "grid_power": 1224.6381125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 133.4375,
+    "load_demand": 0,
+    "grid_import": 1224.6381125,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.75,
+    "grid_power": -1023.629835,
+    "charge_power": 0,
+    "discharge_power": 2476.370165,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1023.629835
+  },
+  {
+    "time": 45298.79166666666,
+    "grid_power": 233.56558,
+    "charge_power": 0,
+    "discharge_power": 1242.1030325,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 233.56558,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.83333333334,
+    "grid_power": 357.01936125,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 357.01936125,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.875,
+    "grid_power": 1817.7028,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1817.7028,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.91666666666,
+    "grid_power": 2680.2349375,
+    "charge_power": 819.7650625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2680.2349375,
+    "grid_export": 0
+  },
+  {
+    "time": 45298.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1495.02315625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45299,
+    "grid_power": 3500,
+    "charge_power": 1407.99525,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1573.92909375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1591.42765625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.125,
+    "grid_power": 3500,
+    "charge_power": 1587.4924375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1622.2397325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.20833333334,
+    "grid_power": 2668.778805625,
+    "charge_power": 827.014786875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2668.778805625,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.25,
+    "grid_power": 1810.70611125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1810.70611125,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.29166666666,
+    "grid_power": 235.496255,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 234.5,
+    "load_demand": 0,
+    "grid_import": 235.496255,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.33333333334,
+    "grid_power": 682.07820625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 892.5,
+    "load_demand": 0,
+    "grid_import": 682.07820625,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.375,
+    "grid_power": -38.82917000000008,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1579.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 38.82917000000008
+  },
+  {
+    "time": 45299.41666666666,
+    "grid_power": -436.0877137500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2128.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 436.0877137500001
+  },
+  {
+    "time": 45299.45833333334,
+    "grid_power": -517.3914187500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2469.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 517.3914187500001
+  },
+  {
+    "time": 45299.5,
+    "grid_power": -421.93196875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2567.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 421.93196875
+  },
+  {
+    "time": 45299.54166666666,
+    "grid_power": -293.75909375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2415,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 293.75909375
+  },
+  {
+    "time": 45299.58333333334,
+    "grid_power": 68.76171875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2025.625,
+    "load_demand": 0,
+    "grid_import": 68.76171875,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.625,
+    "grid_power": 620.607955,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1441.5625,
+    "load_demand": 0,
+    "grid_import": 620.607955,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.66666666666,
+    "grid_power": 112.86391125,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 718.375,
+    "load_demand": 0,
+    "grid_import": 112.86391125,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.70833333334,
+    "grid_power": 696.0711925,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 140,
+    "load_demand": 0,
+    "grid_import": 696.0711925,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.75,
+    "grid_power": -2915.79545,
+    "charge_power": 0,
+    "discharge_power": 5000,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2915.79545
+  },
+  {
+    "time": 45299.79166666666,
+    "grid_power": -479.49263875,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 479.49263875
+  },
+  {
+    "time": 45299.83333333334,
+    "grid_power": 717.6638800000001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 717.6638800000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.875,
+    "grid_power": 1975.52666125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1975.52666125,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.91666666666,
+    "grid_power": 2705.92324375,
+    "charge_power": 794.07675625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2705.92324375,
+    "grid_export": 0
+  },
+  {
+    "time": 45299.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1472.58846875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45300,
+    "grid_power": 3500,
+    "charge_power": 1368.38513875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1602.11760625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1567.26571875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.125,
+    "grid_power": 3500,
+    "charge_power": 1580.4348575,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1630.09085625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.20833333334,
+    "grid_power": 2659.4140625,
+    "charge_power": 840.1926875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2659.4140625,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.25,
+    "grid_power": 1792.25853125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1792.25853125,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.29166666666,
+    "grid_power": 1485.43084375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 238.4375,
+    "load_demand": 0,
+    "grid_import": 1485.43084375,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.33333333334,
+    "grid_power": 681.1608924999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 906.9375,
+    "load_demand": 0,
+    "grid_import": 681.1608924999999,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.375,
+    "grid_power": -1799.513669375,
+    "charge_power": 0,
+    "discharge_power": 1700.486330625,
+    "pv_used": 1604.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1799.513669375
+  },
+  {
+    "time": 45300.41666666666,
+    "grid_power": -2721.323905,
+    "charge_power": 0,
+    "discharge_power": 2268.13294125,
+    "pv_used": 2136.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2721.323905
+  },
+  {
+    "time": 45300.45833333334,
+    "grid_power": -573.472995,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2436.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 573.472995
+  },
+  {
+    "time": 45300.5,
+    "grid_power": -547.424825,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2536.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 547.424825
+  },
+  {
+    "time": 45300.54166666666,
+    "grid_power": -400.57678125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2415.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 400.57678125
+  },
+  {
+    "time": 45300.58333333334,
+    "grid_power": -69.67645124999996,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2054.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 69.67645124999996
+  },
+  {
+    "time": 45300.625,
+    "grid_power": 547.40026875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1442,
+    "load_demand": 0,
+    "grid_import": 547.40026875,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.66666666666,
+    "grid_power": 1352.21396875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 715.75,
+    "load_demand": 0,
+    "grid_import": 1352.21396875,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.70833333334,
+    "grid_power": 1973.76990625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 146.5625,
+    "load_demand": 0,
+    "grid_import": 1973.76990625,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.75,
+    "grid_power": 2130.016705,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2130.016705,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.79166666666,
+    "grid_power": 832.406425,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 832.406425,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.83333333334,
+    "grid_power": -415.7304374999999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 415.7304374999999
+  },
+  {
+    "time": 45300.875,
+    "grid_power": 2056.21704875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2056.21704875,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.91666666666,
+    "grid_power": 2759.969821875,
+    "charge_power": 740.030178125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2759.969821875,
+    "grid_export": 0
+  },
+  {
+    "time": 45300.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1333.44665625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45301,
+    "grid_power": 3500,
+    "charge_power": 1287.51971875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1401.7184375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1486.6816075,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.125,
+    "grid_power": 3500,
+    "charge_power": 1529.63427625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1566.82335625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.20833333334,
+    "grid_power": 2706.430078125,
+    "charge_power": 794.786984375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2706.430078125,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.25,
+    "grid_power": 1885.00192375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1885.00192375,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.29166666666,
+    "grid_power": -2121.133260239083,
+    "charge_power": 0,
+    "discharge_power": 3725.726733989082,
+    "pv_used": 231.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2121.133260239083
+  },
+  {
+    "time": 45301.33333333334,
+    "grid_power": 796.32270625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 890.75,
+    "load_demand": 0,
+    "grid_import": 796.32270625,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.375,
+    "grid_power": -89.85770124999995,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1607.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 89.85770124999995
+  },
+  {
+    "time": 45301.41666666666,
+    "grid_power": -438.521495,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2158.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 438.521495
+  },
+  {
+    "time": 45301.45833333334,
+    "grid_power": -572.0192137500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2445.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 572.0192137500001
+  },
+  {
+    "time": 45301.5,
+    "grid_power": -618.6547137499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2536.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 618.6547137499999
+  },
+  {
+    "time": 45301.54166666666,
+    "grid_power": -437.1015575,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2387.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 437.1015575
+  },
+  {
+    "time": 45301.58333333334,
+    "grid_power": -105.3137,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2045.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 105.3137
+  },
+  {
+    "time": 45301.625,
+    "grid_power": 445.65567375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1480.0625,
+    "load_demand": 0,
+    "grid_import": 445.65567375,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.66666666666,
+    "grid_power": 1247.05614375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 728.4375,
+    "load_demand": 0,
+    "grid_import": 1247.05614375,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.70833333334,
+    "grid_power": 611.9603300000001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 153.125,
+    "load_demand": 0,
+    "grid_import": 611.9603300000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.75,
+    "grid_power": -428.5750887500001,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 428.5750887500001
+  },
+  {
+    "time": 45301.79166666666,
+    "grid_power": -460.6569499999999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 460.6569499999999
+  },
+  {
+    "time": 45301.83333333334,
+    "grid_power": 742.2462049999999,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 742.2462049999999,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.875,
+    "grid_power": 2024.6958,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2024.6958,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.91666666666,
+    "grid_power": 2730.061399375,
+    "charge_power": 769.9386006249999,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2730.061399375,
+    "grid_export": 0
+  },
+  {
+    "time": 45301.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1421.874325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45302,
+    "grid_power": 3500,
+    "charge_power": 1244.2889375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1379.0576875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1488.23203125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.125,
+    "grid_power": 3500,
+    "charge_power": 1528.5833575,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1564.99316875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.20833333334,
+    "grid_power": 2701.5639625,
+    "charge_power": 792.1095075000001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2701.5639625,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.25,
+    "grid_power": 1863.597255,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1863.597255,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.29166666666,
+    "grid_power": 1525.85416125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 231.875,
+    "load_demand": 0,
+    "grid_import": 1525.85416125,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.33333333334,
+    "grid_power": 696.75797375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 897.3125,
+    "load_demand": 0,
+    "grid_import": 696.75797375,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.375,
+    "grid_power": -38.85248125000015,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1609.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 38.85248125000015
+  },
+  {
+    "time": 45302.41666666666,
+    "grid_power": -427.0936875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2169.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 427.0936875
+  },
+  {
+    "time": 45302.45833333334,
+    "grid_power": -630.02859375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2491.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 630.02859375
+  },
+  {
+    "time": 45302.5,
+    "grid_power": -577.4009825,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2576.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 577.4009825
+  },
+  {
+    "time": 45302.54166666666,
+    "grid_power": -439.7393562499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2466.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 439.7393562499999
+  },
+  {
+    "time": 45302.58333333334,
+    "grid_power": -90.98810749999994,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2072,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 90.98810749999994
+  },
+  {
+    "time": 45302.625,
+    "grid_power": 514.13701875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1480.9375,
+    "load_demand": 0,
+    "grid_import": 514.13701875,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.66666666666,
+    "grid_power": 1326.2671875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 753.375,
+    "load_demand": 0,
+    "grid_import": 1326.2671875,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.70833333334,
+    "grid_power": 1917.9815,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 161.875,
+    "load_demand": 0,
+    "grid_import": 1917.9815,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.75,
+    "grid_power": -2859.22021875,
+    "charge_power": 0,
+    "discharge_power": 5000,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2859.22021875
+  },
+  {
+    "time": 45302.79166666666,
+    "grid_power": -2825.11353125,
+    "charge_power": 0,
+    "discharge_power": 5000,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2825.11353125
+  },
+  {
+    "time": 45302.83333333334,
+    "grid_power": 2139.396125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2139.396125,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.875,
+    "grid_power": 2113.48715625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2113.48715625,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.91666666666,
+    "grid_power": 2750.693055625,
+    "charge_power": 749.3069443750001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2750.693055625,
+    "grid_export": 0
+  },
+  {
+    "time": 45302.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1372.34491875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45303,
+    "grid_power": 3500,
+    "charge_power": 1223.8384375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1311.7834825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1429.79245,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.125,
+    "grid_power": 3500,
+    "charge_power": 1467.689545,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1501.63160625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.20833333334,
+    "grid_power": 2735.5449,
+    "charge_power": 765.00332,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2735.5449,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.25,
+    "grid_power": 697.1586125,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 697.1586125,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.29166666666,
+    "grid_power": -2138.218,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 234.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2138.218
+  },
+  {
+    "time": 45303.33333333334,
+    "grid_power": 763.8664237500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 893.8125,
+    "load_demand": 0,
+    "grid_import": 763.8664237500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.375,
+    "grid_power": 41.26000499999998,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1585.9375,
+    "load_demand": 0,
+    "grid_import": 41.26000499999998,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.41666666666,
+    "grid_power": -274.7756374999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2141.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 274.7756374999999
+  },
+  {
+    "time": 45303.45833333334,
+    "grid_power": -461.10534375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2489.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 461.10534375
+  },
+  {
+    "time": 45303.5,
+    "grid_power": -447.0780312500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2593.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 447.0780312500001
+  },
+  {
+    "time": 45303.54166666666,
+    "grid_power": -268.8214999999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2444.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 268.8214999999999
+  },
+  {
+    "time": 45303.58333333334,
+    "grid_power": 102.3058750000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2057.125,
+    "load_demand": 0,
+    "grid_import": 102.3058750000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.625,
+    "grid_power": 653.98096875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1473.0625,
+    "load_demand": 0,
+    "grid_import": 653.98096875,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.66666666666,
+    "grid_power": 168.664,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 755.125,
+    "load_demand": 0,
+    "grid_import": 168.664,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.70833333334,
+    "grid_power": -456.6437812500001,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 168.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 456.6437812500001
+  },
+  {
+    "time": 45303.75,
+    "grid_power": 2234.0395,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2234.0395,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.79166666666,
+    "grid_power": 2129.89240625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2129.89240625,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.83333333334,
+    "grid_power": 2002.99342375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2002.99342375,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.875,
+    "grid_power": 1973.37641125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1973.37641125,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.91666666666,
+    "grid_power": 2730.567549375,
+    "charge_power": 769.432450625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2730.567549375,
+    "grid_export": 0
+  },
+  {
+    "time": 45303.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1421.91829375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45304,
+    "grid_power": 3500,
+    "charge_power": 1214.47634375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1345.61140625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1458.76146875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.125,
+    "grid_power": 3500,
+    "charge_power": 1482.778875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1514.57867,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.20833333334,
+    "grid_power": 2713.097618125,
+    "charge_power": 779.994724375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2713.097618125,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.25,
+    "grid_power": 646.9819375000001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 646.9819375000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.29166666666,
+    "grid_power": 316.81090625,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 230.5625,
+    "load_demand": 0,
+    "grid_import": 316.81090625,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.33333333334,
+    "grid_power": 750.94098625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 879.375,
+    "load_demand": 0,
+    "grid_import": 750.94098625,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.375,
+    "grid_power": 37.65184875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1563.625,
+    "load_demand": 0,
+    "grid_import": 37.65184875,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.41666666666,
+    "grid_power": -418.5971512500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2114.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 418.5971512500001
+  },
+  {
+    "time": 45304.45833333334,
+    "grid_power": -717.235995,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2458.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 717.235995
+  },
+  {
+    "time": 45304.5,
+    "grid_power": -738.0866825,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2563.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 738.0866825
+  },
+  {
+    "time": 45304.54166666666,
+    "grid_power": -534.75310625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2417.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 534.75310625
+  },
+  {
+    "time": 45304.58333333334,
+    "grid_power": -212.6159375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2035.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 212.6159375
+  },
+  {
+    "time": 45304.625,
+    "grid_power": 304.69686125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1459.5,
+    "load_demand": 0,
+    "grid_import": 304.69686125,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.66666666666,
+    "grid_power": 1020.83570625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 754.6875,
+    "load_demand": 0,
+    "grid_import": 1020.83570625,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.70833333334,
+    "grid_power": 1567.74390625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 175,
+    "load_demand": 0,
+    "grid_import": 1567.74390625,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.75,
+    "grid_power": -703.058125,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 703.058125
+  },
+  {
+    "time": 45304.79166666666,
+    "grid_power": -1929.4374375,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1929.4374375
+  },
+  {
+    "time": 45304.83333333334,
+    "grid_power": 1815.541205,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1815.541205,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.875,
+    "grid_power": 1900.65701875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1900.65701875,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.91666666666,
+    "grid_power": 2679.82028125,
+    "charge_power": 820.17971875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2679.82028125,
+    "grid_export": 0
+  },
+  {
+    "time": 45304.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1519.19184375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45305,
+    "grid_power": 3500,
+    "charge_power": 1295.26496875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1444.59921875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1526.821045,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.125,
+    "grid_power": 3500,
+    "charge_power": 1539.85158875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1554.77379375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.20833333334,
+    "grid_power": 2706.487046875,
+    "charge_power": 786.8638906250001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2706.487046875,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.25,
+    "grid_power": 1881.84267375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1881.84267375,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.29166666666,
+    "grid_power": 1528.51213,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 229.25,
+    "load_demand": 0,
+    "grid_import": 1528.51213,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.33333333334,
+    "grid_power": 678.7393625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 875.875,
+    "load_demand": 0,
+    "grid_import": 678.7393625,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.375,
+    "grid_power": -72.35448250000005,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1560.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 72.35448250000005
+  },
+  {
+    "time": 45305.41666666666,
+    "grid_power": -589.7185125000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2112.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 589.7185125000001
+  },
+  {
+    "time": 45305.45833333334,
+    "grid_power": -887.8413575,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2459.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 887.8413575
+  },
+  {
+    "time": 45305.5,
+    "grid_power": -944.8437625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2568.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 944.8437625
+  },
+  {
+    "time": 45305.54166666666,
+    "grid_power": -829.89803125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2427.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 829.89803125
+  },
+  {
+    "time": 45305.58333333334,
+    "grid_power": -455.55771875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2050.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 455.55771875
+  },
+  {
+    "time": 45305.625,
+    "grid_power": 124.8990625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1474.375,
+    "load_demand": 0,
+    "grid_import": 124.8990625,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.66666666666,
+    "grid_power": 784.4564375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 766.5,
+    "load_demand": 0,
+    "grid_import": 784.4564375,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.70833333334,
+    "grid_power": 1429.6823925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 183.75,
+    "load_demand": 0,
+    "grid_import": 1429.6823925,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.75,
+    "grid_power": 1668.5074875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1668.5074875,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.79166666666,
+    "grid_power": -2060.58163875,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2060.58163875
+  },
+  {
+    "time": 45305.83333333334,
+    "grid_power": -492.3806541922395,
+    "charge_power": 0,
+    "discharge_power": 2257.931329192239,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 492.3806541922395
+  },
+  {
+    "time": 45305.875,
+    "grid_power": 1869.01611125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1869.01611125,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.91666666666,
+    "grid_power": 2703.2247525,
+    "charge_power": 796.7752475,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2703.2247525,
+    "grid_export": 0
+  },
+  {
+    "time": 45305.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1408.62948125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45306,
+    "grid_power": 3500,
+    "charge_power": 1242.8058125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1332.73963875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1442.02273125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.125,
+    "grid_power": 3500,
+    "charge_power": 1494.64167,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1530.32391875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.20833333334,
+    "grid_power": 2714.973040625,
+    "charge_power": 776.018491875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2714.973040625,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.25,
+    "grid_power": 1885.17122375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1885.17122375,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.29166666666,
+    "grid_power": 336.39384875,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 233.1875,
+    "load_demand": 0,
+    "grid_import": 336.39384875,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.33333333334,
+    "grid_power": 793.22388,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 899.5,
+    "load_demand": 0,
+    "grid_import": 793.22388,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.375,
+    "grid_power": 52.27931749999993,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1613.5,
+    "load_demand": 0,
+    "grid_import": 52.27931749999993,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.41666666666,
+    "grid_power": -241.67171375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2185.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 241.67171375
+  },
+  {
+    "time": 45306.45833333334,
+    "grid_power": -433.43173125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2513.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 433.43173125
+  },
+  {
+    "time": 45306.5,
+    "grid_power": -388.33715625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2604.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 388.33715625
+  },
+  {
+    "time": 45306.54166666666,
+    "grid_power": -236.8870312500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2514.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 236.8870312500001
+  },
+  {
+    "time": 45306.58333333334,
+    "grid_power": 47.70786125000006,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2127.125,
+    "load_demand": 0,
+    "grid_import": 47.70786125000006,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.625,
+    "grid_power": 542.12176875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1535.1875,
+    "load_demand": 0,
+    "grid_import": 542.12176875,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.66666666666,
+    "grid_power": 1328.1802675,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 791,
+    "load_demand": 0,
+    "grid_import": 1328.1802675,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.70833333334,
+    "grid_power": -577.861325,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 177.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 577.861325
+  },
+  {
+    "time": 45306.75,
+    "grid_power": -1631.0499375,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1631.0499375
+  },
+  {
+    "time": 45306.79166666666,
+    "grid_power": 854.5466250000001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 854.5466250000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.83333333334,
+    "grid_power": 2053.27079875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2053.27079875,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.875,
+    "grid_power": 2009.698925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2009.698925,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.91666666666,
+    "grid_power": 2721.90082125,
+    "charge_power": 778.09917875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2721.90082125,
+    "grid_export": 0
+  },
+  {
+    "time": 45306.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1450.82560625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45307,
+    "grid_power": 3500,
+    "charge_power": 1192.039875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1273.9660625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1435.734795,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.125,
+    "grid_power": 3500,
+    "charge_power": 1502.19529375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1536.21563875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.20833333334,
+    "grid_power": 2712.136086875,
+    "charge_power": 783.959630625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2712.136086875,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.25,
+    "grid_power": 1895.06323625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1895.06323625,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.29166666666,
+    "grid_power": 1532.46445625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 241.0625,
+    "load_demand": 0,
+    "grid_import": 1532.46445625,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.33333333334,
+    "grid_power": 681.07536125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 927.0625,
+    "load_demand": 0,
+    "grid_import": 681.07536125,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.375,
+    "grid_power": 26.7506925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1628.375,
+    "load_demand": 0,
+    "grid_import": 26.7506925,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.41666666666,
+    "grid_power": -267.33841875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2152.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 267.33841875
+  },
+  {
+    "time": 45307.45833333334,
+    "grid_power": -419.1972812499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2488.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 419.1972812499999
+  },
+  {
+    "time": 45307.5,
+    "grid_power": -453.2822812500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2588.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 453.2822812500001
+  },
+  {
+    "time": 45307.54166666666,
+    "grid_power": -344.89634375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2487.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 344.89634375
+  },
+  {
+    "time": 45307.58333333334,
+    "grid_power": -33.22831250000005,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2152.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 33.22831250000005
+  },
+  {
+    "time": 45307.625,
+    "grid_power": 594.9349374999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1554.875,
+    "load_demand": 0,
+    "grid_import": 594.9349374999999,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.66666666666,
+    "grid_power": 1374.02340625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 815.0625,
+    "load_demand": 0,
+    "grid_import": 1374.02340625,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.70833333334,
+    "grid_power": 1973.2535,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 199.0625,
+    "load_demand": 0,
+    "grid_import": 1973.2535,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.75,
+    "grid_power": -1567.74184375,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1567.74184375
+  },
+  {
+    "time": 45307.79166666666,
+    "grid_power": -1585.61553125,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1585.61553125
+  },
+  {
+    "time": 45307.83333333334,
+    "grid_power": -330.1119062499999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 330.1119062499999
+  },
+  {
+    "time": 45307.875,
+    "grid_power": 2185.494455,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2185.494455,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.91666666666,
+    "grid_power": 2807.09680625,
+    "charge_power": 692.90319375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2807.09680625,
+    "grid_export": 0
+  },
+  {
+    "time": 45307.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1249.8234375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45308,
+    "grid_power": 3500,
+    "charge_power": 1129.385375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1246.72059375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1371.78176375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.125,
+    "grid_power": 3500,
+    "charge_power": 1424.8227625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1468.12351375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.20833333334,
+    "grid_power": 2744.230665,
+    "charge_power": 747.578615,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2744.230665,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.25,
+    "grid_power": 706.7560175,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 706.7560175,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.29166666666,
+    "grid_power": -851.7936374999999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 241.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 851.7936374999999
+  },
+  {
+    "time": 45308.33333333334,
+    "grid_power": 821.9666112499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 919.1875,
+    "load_demand": 0,
+    "grid_import": 821.9666112499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.375,
+    "grid_power": 81.6173625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1631,
+    "load_demand": 0,
+    "grid_import": 81.6173625,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.41666666666,
+    "grid_power": -289.3200625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2202.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 289.3200625
+  },
+  {
+    "time": 45308.45833333334,
+    "grid_power": -537.9826249999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2534.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 537.9826249999999
+  },
+  {
+    "time": 45308.5,
+    "grid_power": -488.07596875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2628.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 488.07596875
+  },
+  {
+    "time": 45308.54166666666,
+    "grid_power": -313.4560000000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2531.8125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 313.4560000000001
+  },
+  {
+    "time": 45308.58333333334,
+    "grid_power": 29.34228124999995,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2144.625,
+    "load_demand": 0,
+    "grid_import": 29.34228124999995,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.625,
+    "grid_power": 579.8270625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1555.3125,
+    "load_demand": 0,
+    "grid_import": 579.8270625,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.66666666666,
+    "grid_power": 1373.95178125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 815.5,
+    "load_demand": 0,
+    "grid_import": 1373.95178125,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.70833333334,
+    "grid_power": 2025.14665625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 192.5,
+    "load_demand": 0,
+    "grid_import": 2025.14665625,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.75,
+    "grid_power": 984.68940625,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 984.68940625,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.79166666666,
+    "grid_power": -2799.21409375,
+    "charge_power": 0,
+    "discharge_power": 5000,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2799.21409375
+  },
+  {
+    "time": 45308.83333333334,
+    "grid_power": 927.931,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 927.931,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.875,
+    "grid_power": 2172.284125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2172.284125,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.91666666666,
+    "grid_power": 2788.921649375,
+    "charge_power": 711.078350625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2788.921649375,
+    "grid_export": 0
+  },
+  {
+    "time": 45308.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1315.3602625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45309,
+    "grid_power": 3500,
+    "charge_power": 1097.53484375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1258.4308125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1393.3816075,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.125,
+    "grid_power": 3500,
+    "charge_power": 1443.7211825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1479.20960625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.20833333334,
+    "grid_power": 2738.559884375,
+    "charge_power": 754.343523125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2738.559884375,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.25,
+    "grid_power": 1935.03258125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1935.03258125,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.29166666666,
+    "grid_power": 1602.87542375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 233.1875,
+    "load_demand": 0,
+    "grid_import": 1602.87542375,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.33333333334,
+    "grid_power": 836.6732237499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 891.625,
+    "load_demand": 0,
+    "grid_import": 836.6732237499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.375,
+    "grid_power": 235.7624425000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1587.25,
+    "load_demand": 0,
+    "grid_import": 235.7624425000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.41666666666,
+    "grid_power": -42.91351250000007,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2147.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 42.91351250000007
+  },
+  {
+    "time": 45309.45833333334,
+    "grid_power": -314.9715,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2504.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 314.9715
+  },
+  {
+    "time": 45309.5,
+    "grid_power": -440.33128125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2618.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 440.33128125
+  },
+  {
+    "time": 45309.54166666666,
+    "grid_power": -289.8385312500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2478.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 289.8385312500001
+  },
+  {
+    "time": 45309.58333333334,
+    "grid_power": 45.88939250000004,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2099.5625,
+    "load_demand": 0,
+    "grid_import": 45.88939250000004,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.625,
+    "grid_power": 581.5910812500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1523.375,
+    "load_demand": 0,
+    "grid_import": 581.5910812500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.66666666666,
+    "grid_power": 1370.4406875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 807.625,
+    "load_demand": 0,
+    "grid_import": 1370.4406875,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.70833333334,
+    "grid_power": -480.69184375,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 201.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 480.69184375
+  },
+  {
+    "time": 45309.75,
+    "grid_power": 1005.95896875,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1005.95896875,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.79166666666,
+    "grid_power": -294.1196875000001,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 294.1196875000001
+  },
+  {
+    "time": 45309.83333333334,
+    "grid_power": -340.7508437499999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 340.7508437499999
+  },
+  {
+    "time": 45309.875,
+    "grid_power": 2109.5148925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2109.5148925,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.91666666666,
+    "grid_power": 2765.045174375,
+    "charge_power": 734.954825625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2765.045174375,
+    "grid_export": 0
+  },
+  {
+    "time": 45309.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1335.40673125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45310,
+    "grid_power": 3500,
+    "charge_power": 1107.78325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1256.41346875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1392.90513875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.125,
+    "grid_power": 3500,
+    "charge_power": 1467.406825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1500.911875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.20833333334,
+    "grid_power": 2726.6121875,
+    "charge_power": 763.7190625000001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2726.6121875,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.25,
+    "grid_power": 1908.1805,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1908.1805,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.29166666666,
+    "grid_power": 1565.1701875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 233.1875,
+    "load_demand": 0,
+    "grid_import": 1565.1701875,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.33333333334,
+    "grid_power": 739.2323125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 891.625,
+    "load_demand": 0,
+    "grid_import": 739.2323125,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.375,
+    "grid_power": 4.664204999999974,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1591.1875,
+    "load_demand": 0,
+    "grid_import": 4.664204999999974,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.41666666666,
+    "grid_power": -362.2244187499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2159.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 362.2244187499999
+  },
+  {
+    "time": 45310.45833333334,
+    "grid_power": -535.3365,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2520.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 535.3365
+  },
+  {
+    "time": 45310.5,
+    "grid_power": -558.65425,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2642.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 558.65425
+  },
+  {
+    "time": 45310.54166666666,
+    "grid_power": -411.5622187500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2509.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 411.5622187500001
+  },
+  {
+    "time": 45310.58333333334,
+    "grid_power": -85.61866999999994,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2131.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 85.61866999999994
+  },
+  {
+    "time": 45310.625,
+    "grid_power": 452.9764875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1550.0625,
+    "load_demand": 0,
+    "grid_import": 452.9764875,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.66666666666,
+    "grid_power": 1223.38523625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 817.6875,
+    "load_demand": 0,
+    "grid_import": 1223.38523625,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.70833333334,
+    "grid_power": 1925.14551875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 192.5,
+    "load_demand": 0,
+    "grid_import": 1925.14551875,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.75,
+    "grid_power": -318.35459375,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 318.35459375
+  },
+  {
+    "time": 45310.79166666666,
+    "grid_power": -1581.40103125,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1581.40103125
+  },
+  {
+    "time": 45310.83333333334,
+    "grid_power": 948.029125,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 948.029125,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.875,
+    "grid_power": 2235.73696875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2235.73696875,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.91666666666,
+    "grid_power": 2799.13734375,
+    "charge_power": 700.8626562500001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2799.13734375,
+    "grid_export": 0
+  },
+  {
+    "time": 45310.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1279.34978125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45311,
+    "grid_power": 3500,
+    "charge_power": 1120.5254375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1196.413875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1301.31428125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.125,
+    "grid_power": 3500,
+    "charge_power": 1382.717125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1436.018375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.20833333334,
+    "grid_power": 2765.84936875,
+    "charge_power": 730.1037262499999,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2765.84936875,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.25,
+    "grid_power": 1997.87266125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1997.87266125,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.29166666666,
+    "grid_power": 436.81705,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 239.75,
+    "load_demand": 0,
+    "grid_import": 436.81705,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.33333333334,
+    "grid_power": 833.0736425,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 914.375,
+    "load_demand": 0,
+    "grid_import": 833.0736425,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.375,
+    "grid_power": -46.76183875000005,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1624,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 46.76183875000005
+  },
+  {
+    "time": 45311.41666666666,
+    "grid_power": -598.0654012499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2197.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 598.0654012499999
+  },
+  {
+    "time": 45311.45833333334,
+    "grid_power": -1037.9920125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2562.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1037.9920125
+  },
+  {
+    "time": 45311.5,
+    "grid_power": -1120.09617,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2682.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1120.09617
+  },
+  {
+    "time": 45311.54166666666,
+    "grid_power": -985.2390125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2543.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 985.2390125
+  },
+  {
+    "time": 45311.58333333334,
+    "grid_power": -604.1718575000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2159.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 604.1718575000001
+  },
+  {
+    "time": 45311.625,
+    "grid_power": 3.714987499999992,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1575.4375,
+    "load_demand": 0,
+    "grid_import": 3.714987499999992,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.66666666666,
+    "grid_power": 839.8042812499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 845.25,
+    "load_demand": 0,
+    "grid_import": 839.8042812499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.70833333334,
+    "grid_power": 351.5981737500001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 216.5625,
+    "load_demand": 0,
+    "grid_import": 351.5981737500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.75,
+    "grid_power": 654.59955,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 654.59955,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.79166666666,
+    "grid_power": -1892.75226375,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1892.75226375
+  },
+  {
+    "time": 45311.83333333334,
+    "grid_power": 1896.67251875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1896.67251875,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.875,
+    "grid_power": 1974.9235175,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1974.9235175,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.91666666666,
+    "grid_power": 2701.062611875,
+    "charge_power": 798.937388125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2701.062611875,
+    "grid_export": 0
+  },
+  {
+    "time": 45311.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1512.56810625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45312,
+    "grid_power": 3500,
+    "charge_power": 1245.34753125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1240.1891875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1335.7537325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.125,
+    "grid_power": 3500,
+    "charge_power": 1427.35140125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1479.29940125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.20833333334,
+    "grid_power": 2731.48928375,
+    "charge_power": 757.8235912499999,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2731.48928375,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.25,
+    "grid_power": 674.7202687500001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 674.7202687500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.29166666666,
+    "grid_power": -932.92853125,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 241.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 932.92853125
+  },
+  {
+    "time": 45312.33333333334,
+    "grid_power": 673.30954875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 917.875,
+    "load_demand": 0,
+    "grid_import": 673.30954875,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.375,
+    "grid_power": -167.4482,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1627.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 167.4482
+  },
+  {
+    "time": 45312.41666666666,
+    "grid_power": -741.9463575,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2200.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 741.9463575
+  },
+  {
+    "time": 45312.45833333334,
+    "grid_power": -1095.27795,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2565.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1095.27795
+  },
+  {
+    "time": 45312.5,
+    "grid_power": -1169.8891075,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2681.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1169.8891075
+  },
+  {
+    "time": 45312.54166666666,
+    "grid_power": -979.9417762500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2541.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 979.9417762500001
+  },
+  {
+    "time": 45312.58333333334,
+    "grid_power": -587.6731199999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2161.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 587.6731199999999
+  },
+  {
+    "time": 45312.625,
+    "grid_power": -37.45101249999998,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1578.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 37.45101249999998
+  },
+  {
+    "time": 45312.66666666666,
+    "grid_power": 665.4108612499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 852.6875,
+    "load_demand": 0,
+    "grid_import": 665.4108612499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.70833333334,
+    "grid_power": 1293.18338,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 225.3125,
+    "load_demand": 0,
+    "grid_import": 1293.18338,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.75,
+    "grid_power": -3437.0544325,
+    "charge_power": 0,
+    "discharge_power": 5000,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 3437.0544325
+  },
+  {
+    "time": 45312.79166666666,
+    "grid_power": 330.18195625,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 330.18195625,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.83333333334,
+    "grid_power": 1672.14446875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1672.14446875,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.875,
+    "grid_power": 1855.23592375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1855.23592375,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.91666666666,
+    "grid_power": 2666.01065,
+    "charge_power": 833.9893500000001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2666.01065,
+    "grid_export": 0
+  },
+  {
+    "time": 45312.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1531.56934375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45313,
+    "grid_power": 3500,
+    "charge_power": 1298.23109375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1458.6409375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1563.9553125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.125,
+    "grid_power": 3500,
+    "charge_power": 1600.7100625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1624.1584375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.20833333334,
+    "grid_power": 2683.9496875,
+    "charge_power": 813.8250625000001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2683.9496875,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.25,
+    "grid_power": 1833.49940625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1833.49940625,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.29166666666,
+    "grid_power": 1502.78765625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 238.4375,
+    "load_demand": 0,
+    "grid_import": 1502.78765625,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.33333333334,
+    "grid_power": 678.24003125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 909.5625,
+    "load_demand": 0,
+    "grid_import": 678.24003125,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.375,
+    "grid_power": -91.24556250000002,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1615.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 91.24556250000002
+  },
+  {
+    "time": 45313.41666666666,
+    "grid_power": -429.4669825,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2185.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 429.4669825
+  },
+  {
+    "time": 45313.45833333334,
+    "grid_power": -539.5867625000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2547.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 539.5867625000001
+  },
+  {
+    "time": 45313.5,
+    "grid_power": -557.5019374999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2665.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 557.5019374999999
+  },
+  {
+    "time": 45313.54166666666,
+    "grid_power": -429.4742499999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2527.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 429.4742499999999
+  },
+  {
+    "time": 45313.58333333334,
+    "grid_power": -112.6046700000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2148.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 112.6046700000001
+  },
+  {
+    "time": 45313.625,
+    "grid_power": 427.01263,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1571.0625,
+    "load_demand": 0,
+    "grid_import": 427.01263,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.66666666666,
+    "grid_power": 1212.69459875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 854.4375,
+    "load_demand": 0,
+    "grid_import": 1212.69459875,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.70833333334,
+    "grid_power": -1939.91890125,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 231.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1939.91890125
+  },
+  {
+    "time": 45313.75,
+    "grid_power": -494.1823699999999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 494.1823699999999
+  },
+  {
+    "time": 45313.79166666666,
+    "grid_power": -556.15977625,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 556.15977625
+  },
+  {
+    "time": 45313.83333333334,
+    "grid_power": 1960.05113,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1960.05113,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.875,
+    "grid_power": 1999.1837375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1999.1837375,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.91666666666,
+    "grid_power": 2703.623390625,
+    "charge_power": 796.376609375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2703.623390625,
+    "grid_export": 0
+  },
+  {
+    "time": 45313.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1475.9758125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45314,
+    "grid_power": 3500,
+    "charge_power": 1256.027375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1438.4215,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1541.296295,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.125,
+    "grid_power": 3500,
+    "charge_power": 1592.60866875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1617.13765625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.20833333334,
+    "grid_power": 2682.810509375,
+    "charge_power": 813.3513981250001,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2682.810509375,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.25,
+    "grid_power": 1835.4407375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1835.4407375,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.29166666666,
+    "grid_power": 243.827955,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 235.8125,
+    "load_demand": 0,
+    "grid_import": 243.827955,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.33333333334,
+    "grid_power": 658.0054562500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 898.625,
+    "load_demand": 0,
+    "grid_import": 658.0054562500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.375,
+    "grid_power": -24.6469825000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1595.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 24.6469825000001
+  },
+  {
+    "time": 45314.41666666666,
+    "grid_power": -329.91541875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2159.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 329.91541875
+  },
+  {
+    "time": 45314.45833333334,
+    "grid_power": -517.351295,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2519.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 517.351295
+  },
+  {
+    "time": 45314.5,
+    "grid_power": -550.9829012499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2638.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 550.9829012499999
+  },
+  {
+    "time": 45314.54166666666,
+    "grid_power": -428.99346375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2505.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 428.99346375
+  },
+  {
+    "time": 45314.58333333334,
+    "grid_power": -99.05766875000006,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2132.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 99.05766875000006
+  },
+  {
+    "time": 45314.625,
+    "grid_power": 436.83709375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1559.6875,
+    "load_demand": 0,
+    "grid_import": 436.83709375,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.66666666666,
+    "grid_power": 1155.29290625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 855.3125,
+    "load_demand": 0,
+    "grid_import": 1155.29290625,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.70833333334,
+    "grid_power": -748.0638887499999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 240.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 748.0638887499999
+  },
+  {
+    "time": 45314.75,
+    "grid_power": -487.942995,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 487.942995
+  },
+  {
+    "time": 45314.79166666666,
+    "grid_power": -1745.537075,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1745.537075
+  },
+  {
+    "time": 45314.83333333334,
+    "grid_power": 1995.93709375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1995.93709375,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.875,
+    "grid_power": 2023.93134375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2023.93134375,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.91666666666,
+    "grid_power": 2769.85246875,
+    "charge_power": 730.14753125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2769.85246875,
+    "grid_export": 0
+  },
+  {
+    "time": 45314.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1300.481875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45315,
+    "grid_power": 3500,
+    "charge_power": 1235.26065625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1428.7059825,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1584.5488075,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.125,
+    "grid_power": 3500,
+    "charge_power": 1730.9131375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1718.85178125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.20833333334,
+    "grid_power": 2633.04743125,
+    "charge_power": 860.12891375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2633.04743125,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.25,
+    "grid_power": 1725.4219875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1725.4219875,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.29166666666,
+    "grid_power": 1401.67429875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 237.125,
+    "load_demand": 0,
+    "grid_import": 1401.67429875,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.33333333334,
+    "grid_power": 665.4528487499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 902.125,
+    "load_demand": 0,
+    "grid_import": 665.4528487499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.375,
+    "grid_power": 41.13917500000004,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1600.375,
+    "load_demand": 0,
+    "grid_import": 41.13917500000004,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.41666666666,
+    "grid_power": -329.72095125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2166.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 329.72095125
+  },
+  {
+    "time": 45315.45833333334,
+    "grid_power": -542.06346375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2529.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 542.06346375
+  },
+  {
+    "time": 45315.5,
+    "grid_power": -590.88248125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2652.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 590.88248125
+  },
+  {
+    "time": 45315.54166666666,
+    "grid_power": -487.95834375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2520.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 487.95834375
+  },
+  {
+    "time": 45315.58333333334,
+    "grid_power": -163.71438875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2151.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 163.71438875
+  },
+  {
+    "time": 45315.625,
+    "grid_power": 352.48309875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1580.6875,
+    "load_demand": 0,
+    "grid_import": 352.48309875,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.66666666666,
+    "grid_power": 1126.57376875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 864.5,
+    "load_demand": 0,
+    "grid_import": 1126.57376875,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.70833333334,
+    "grid_power": -711.6617187500001,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 234.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 711.6617187500001
+  },
+  {
+    "time": 45315.75,
+    "grid_power": -1699.59676375,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1699.59676375
+  },
+  {
+    "time": 45315.79166666666,
+    "grid_power": -1712.070575,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1712.070575
+  },
+  {
+    "time": 45315.83333333334,
+    "grid_power": 2029.32371875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2029.32371875,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.875,
+    "grid_power": 2059.01554875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2059.01554875,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.91666666666,
+    "grid_power": 2761.839893125,
+    "charge_power": 738.160106875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2761.839893125,
+    "grid_export": 0
+  },
+  {
+    "time": 45315.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1361.36035625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45316,
+    "grid_power": 3500,
+    "charge_power": 1131.66484375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1291.6772325,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1489.7365575,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.125,
+    "grid_power": 3500,
+    "charge_power": 1562.57546375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1637.82290125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.20833333334,
+    "grid_power": 2611.8367525,
+    "charge_power": 862.1824975,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2611.8367525,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.25,
+    "grid_power": 1673.19447375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1673.19447375,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.29166666666,
+    "grid_power": 1397.32426875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 242.375,
+    "load_demand": 0,
+    "grid_import": 1397.32426875,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.33333333334,
+    "grid_power": 680.69240625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 921.375,
+    "load_demand": 0,
+    "grid_import": 680.69240625,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.375,
+    "grid_power": 37.95312500000006,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1632.3125,
+    "load_demand": 0,
+    "grid_import": 37.95312500000006,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.41666666666,
+    "grid_power": -355.069295,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2208.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 355.069295
+  },
+  {
+    "time": 45316.45833333334,
+    "grid_power": -573.0565124999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2579.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 573.0565124999999
+  },
+  {
+    "time": 45316.5,
+    "grid_power": -565.56996875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2706.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 565.56996875
+  },
+  {
+    "time": 45316.54166666666,
+    "grid_power": -421.0130625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2578.1875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 421.0130625
+  },
+  {
+    "time": 45316.58333333334,
+    "grid_power": -115.44915625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2208.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 115.44915625
+  },
+  {
+    "time": 45316.625,
+    "grid_power": 387.7185937499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1629.25,
+    "load_demand": 0,
+    "grid_import": 387.7185937499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.66666666666,
+    "grid_power": 1154.31065625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 896,
+    "load_demand": 0,
+    "grid_import": 1154.31065625,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.70833333334,
+    "grid_power": 1814.64221875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 242.8125,
+    "load_demand": 0,
+    "grid_import": 1814.64221875,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.75,
+    "grid_power": -457.9185937499999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 457.9185937499999
+  },
+  {
+    "time": 45316.79166666666,
+    "grid_power": -1710.35767,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1710.35767
+  },
+  {
+    "time": 45316.83333333334,
+    "grid_power": 859.5837375000001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 859.5837375000001,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.875,
+    "grid_power": 2150.8005625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2150.8005625,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.91666666666,
+    "grid_power": 2804.793125,
+    "charge_power": 695.206875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2804.793125,
+    "grid_export": 0
+  },
+  {
+    "time": 45316.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1253.42978125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45317,
+    "grid_power": 3500,
+    "charge_power": 1053.8770625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1166.138875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1321.81192,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.125,
+    "grid_power": 3500,
+    "charge_power": 1455.54135625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1504.52167,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.20833333334,
+    "grid_power": 2720.130455625,
+    "charge_power": 768.870856875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2720.130455625,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.25,
+    "grid_power": 1892.5413625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1892.5413625,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.29166666666,
+    "grid_power": 1549.64373625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 248.9375,
+    "load_demand": 0,
+    "grid_import": 1549.64373625,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.33333333334,
+    "grid_power": 686.0868175,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 944.125,
+    "load_demand": 0,
+    "grid_import": 686.0868175,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.375,
+    "grid_power": -92.68999500000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1654.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 92.68999500000001
+  },
+  {
+    "time": 45317.41666666666,
+    "grid_power": -462.7938875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2210.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 462.7938875
+  },
+  {
+    "time": 45317.45833333334,
+    "grid_power": -663.92978125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2564.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 663.92978125
+  },
+  {
+    "time": 45317.5,
+    "grid_power": -636.7325000000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2686.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 636.7325000000001
+  },
+  {
+    "time": 45317.54166666666,
+    "grid_power": -483.9490625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2572.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 483.9490625
+  },
+  {
+    "time": 45317.58333333334,
+    "grid_power": -108.738875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2213.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 108.738875
+  },
+  {
+    "time": 45317.625,
+    "grid_power": 436.959375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1651.5625,
+    "load_demand": 0,
+    "grid_import": 436.959375,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.66666666666,
+    "grid_power": 1204.37015625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 915.25,
+    "load_demand": 0,
+    "grid_import": 1204.37015625,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.70833333334,
+    "grid_power": 1898.8223125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 249.375,
+    "load_demand": 0,
+    "grid_import": 1898.8223125,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.75,
+    "grid_power": -339.3018125,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 339.3018125
+  },
+  {
+    "time": 45317.79166666666,
+    "grid_power": -1629.27671875,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1629.27671875
+  },
+  {
+    "time": 45317.83333333334,
+    "grid_power": 2150.3986875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2150.3986875,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.875,
+    "grid_power": 2292.80121875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2292.80121875,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.91666666666,
+    "grid_power": 2847.8549375,
+    "charge_power": 652.1450625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2847.8549375,
+    "grid_export": 0
+  },
+  {
+    "time": 45317.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1222.18134375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45318,
+    "grid_power": 3500,
+    "charge_power": 1060.580875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1176.82384375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1302.4114375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.125,
+    "grid_power": 3500,
+    "charge_power": 1379.10092,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1441.84240125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.20833333334,
+    "grid_power": 2748.97169,
+    "charge_power": 741.93231,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2748.97169,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.25,
+    "grid_power": 1955.2366925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1955.2366925,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.29166666666,
+    "grid_power": 1537.40376875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 243.6875,
+    "load_demand": 0,
+    "grid_import": 1537.40376875,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.33333333334,
+    "grid_power": 570.9706249999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 931.4375,
+    "load_demand": 0,
+    "grid_import": 570.9706249999999,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.375,
+    "grid_power": -187.8639825000001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1652,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 187.8639825000001
+  },
+  {
+    "time": 45318.41666666666,
+    "grid_power": -625.856745,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2251.375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 625.856745
+  },
+  {
+    "time": 45318.45833333334,
+    "grid_power": -865.42852625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2663.5,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 865.42852625
+  },
+  {
+    "time": 45318.5,
+    "grid_power": -834.89195,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2789.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 834.89195
+  },
+  {
+    "time": 45318.54166666666,
+    "grid_power": -700.002045,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2653.4375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 700.002045
+  },
+  {
+    "time": 45318.58333333334,
+    "grid_power": -330.4934187499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2269.3125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 330.4934187499999
+  },
+  {
+    "time": 45318.625,
+    "grid_power": 277.9122675,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1675.1875,
+    "load_demand": 0,
+    "grid_import": 277.9122675,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.66666666666,
+    "grid_power": 1026.1723625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 937.5625,
+    "load_demand": 0,
+    "grid_import": 1026.1723625,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.70833333334,
+    "grid_power": -860.3758262499999,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 275.625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 860.3758262499999
+  },
+  {
+    "time": 45318.75,
+    "grid_power": -1892.2448075,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1892.2448075
+  },
+  {
+    "time": 45318.79166666666,
+    "grid_power": -1875.067995,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1875.067995
+  },
+  {
+    "time": 45318.83333333334,
+    "grid_power": 1990.61714375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1990.61714375,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.875,
+    "grid_power": 2071.979455,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2071.979455,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.91666666666,
+    "grid_power": 2738.1790025,
+    "charge_power": 761.8209975,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2738.1790025,
+    "grid_export": 0
+  },
+  {
+    "time": 45318.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1370.60410625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45319,
+    "grid_power": 3500,
+    "charge_power": 1091.0179375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1177.0449375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1294.662875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.125,
+    "grid_power": 3500,
+    "charge_power": 1389.32317,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1446.36271375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.20833333334,
+    "grid_power": 2745.386024375,
+    "charge_power": 742.702943125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2745.386024375,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.25,
+    "grid_power": 1955.92498625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1955.92498625,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.29166666666,
+    "grid_power": 332.3654737499999,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 246.3125,
+    "load_demand": 0,
+    "grid_import": 332.3654737499999,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.33333333334,
+    "grid_power": 668.9937062500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 939.75,
+    "load_demand": 0,
+    "grid_import": 668.9937062500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.375,
+    "grid_power": -126.4207812500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1667.75,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 126.4207812500001
+  },
+  {
+    "time": 45319.41666666666,
+    "grid_power": -692.2843437500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2252.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 692.2843437500001
+  },
+  {
+    "time": 45319.45833333334,
+    "grid_power": -1084.30370125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1084.30370125
+  },
+  {
+    "time": 45319.5,
+    "grid_power": -1239.94762,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2751.875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1239.94762
+  },
+  {
+    "time": 45319.54166666666,
+    "grid_power": -1102.60641875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2621.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1102.60641875
+  },
+  {
+    "time": 45319.58333333334,
+    "grid_power": -672.9615625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2243.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 672.9615625
+  },
+  {
+    "time": 45319.625,
+    "grid_power": -106.7991562500001,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1658.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 106.7991562500001
+  },
+  {
+    "time": 45319.66666666666,
+    "grid_power": 594.23275,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 925.75,
+    "load_demand": 0,
+    "grid_import": 594.23275,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.70833333334,
+    "grid_power": 89.2900937500001,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 266.875,
+    "load_demand": 0,
+    "grid_import": 89.2900937500001,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.75,
+    "grid_power": -2035.7665625,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 2035.7665625
+  },
+  {
+    "time": 45319.79166666666,
+    "grid_power": 1781.6035625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1781.6035625,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.83333333334,
+    "grid_power": 1917.33329875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1917.33329875,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.875,
+    "grid_power": 2046.3613175,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2046.3613175,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.91666666666,
+    "grid_power": 2803.8013375,
+    "charge_power": 696.1986625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2803.8013375,
+    "grid_export": 0
+  },
+  {
+    "time": 45319.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1160.23321875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45320,
+    "grid_power": 3500,
+    "charge_power": 1082.5235,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1170.44121875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1310.57240625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.125,
+    "grid_power": 3500,
+    "charge_power": 1404.99857625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1465.38048125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.20833333334,
+    "grid_power": 2752.854796875,
+    "charge_power": 743.062140625,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2752.854796875,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.25,
+    "grid_power": 1975.48365625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1.3125,
+    "load_demand": 0,
+    "grid_import": 1975.48365625,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.29166666666,
+    "grid_power": 1594.38842375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 248.9375,
+    "load_demand": 0,
+    "grid_import": 1594.38842375,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.33333333334,
+    "grid_power": 695.04176875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 945.4375,
+    "load_demand": 0,
+    "grid_import": 695.04176875,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.375,
+    "grid_power": 11.54083000000003,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1672.5625,
+    "load_demand": 0,
+    "grid_import": 11.54083000000003,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.41666666666,
+    "grid_power": -340.7005574999999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2260.5625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 340.7005574999999
+  },
+  {
+    "time": 45320.45833333334,
+    "grid_power": -581.8752,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2638.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 581.8752
+  },
+  {
+    "time": 45320.5,
+    "grid_power": -594.89428125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2770.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 594.89428125
+  },
+  {
+    "time": 45320.54166666666,
+    "grid_power": -452.0368125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2642.0625,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 452.0368125
+  },
+  {
+    "time": 45320.58333333334,
+    "grid_power": -126.4011875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2264.9375,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 126.4011875
+  },
+  {
+    "time": 45320.625,
+    "grid_power": 432.5231874999998,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1679.125,
+    "load_demand": 0,
+    "grid_import": 432.5231874999998,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.66666666666,
+    "grid_power": 1288.68334375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 944.125,
+    "load_demand": 0,
+    "grid_import": 1288.68334375,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.70833333334,
+    "grid_power": 2003.46271875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 275.625,
+    "load_demand": 0,
+    "grid_import": 2003.46271875,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.75,
+    "grid_power": -178.1504687500001,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 178.1504687500001
+  },
+  {
+    "time": 45320.79166666666,
+    "grid_power": -1416.48228125,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1416.48228125
+  },
+  {
+    "time": 45320.83333333334,
+    "grid_power": 1087.06534375,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1087.06534375,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.875,
+    "grid_power": 2326.04090625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2326.04090625,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.91666666666,
+    "grid_power": 2859.41603125,
+    "charge_power": 640.5839687499999,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2859.41603125,
+    "grid_export": 0
+  },
+  {
+    "time": 45320.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1174.5034375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45321,
+    "grid_power": 3500,
+    "charge_power": 1021.02309375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.04166666666,
+    "grid_power": 3500,
+    "charge_power": 1083.78984375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.08333333334,
+    "grid_power": 3500,
+    "charge_power": 1145.9798125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.125,
+    "grid_power": 3500,
+    "charge_power": 1240.902125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.16666666666,
+    "grid_power": 3500,
+    "charge_power": 1338.521125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.20833333334,
+    "grid_power": 2817.92678125,
+    "charge_power": 682.05784375,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2817.92678125,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.25,
+    "grid_power": 2113.9407675,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2.625,
+    "load_demand": 0,
+    "grid_import": 2113.9407675,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.29166666666,
+    "grid_power": 542.21816125,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 261.625,
+    "load_demand": 0,
+    "grid_import": 542.21816125,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.33333333334,
+    "grid_power": 897.892255,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 977.375,
+    "load_demand": 0,
+    "grid_import": 897.892255,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.375,
+    "grid_power": 66.74005,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1713.6875,
+    "load_demand": 0,
+    "grid_import": 66.74005,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.41666666666,
+    "grid_power": -266.2763437499999,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2310,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 266.2763437499999
+  },
+  {
+    "time": 45321.45833333334,
+    "grid_power": -442.32409375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2694.125,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 442.32409375
+  },
+  {
+    "time": 45321.5,
+    "grid_power": -367.85290625,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2805.6875,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 367.85290625
+  },
+  {
+    "time": 45321.54166666666,
+    "grid_power": -195.99925,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2609.25,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 195.99925
+  },
+  {
+    "time": 45321.58333333334,
+    "grid_power": 56.73974999999996,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 2190.5625,
+    "load_demand": 0,
+    "grid_import": 56.73974999999996,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.625,
+    "grid_power": 551.2824999999998,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 1658.125,
+    "load_demand": 0,
+    "grid_import": 551.2824999999998,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.66666666666,
+    "grid_power": 1374.26946875,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 969.0625,
+    "load_demand": 0,
+    "grid_import": 1374.26946875,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.70833333334,
+    "grid_power": 2125.4403125,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 284.375,
+    "load_demand": 0,
+    "grid_import": 2125.4403125,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.75,
+    "grid_power": -1350.765,
+    "charge_power": 0,
+    "discharge_power": 3750,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 1350.765
+  },
+  {
+    "time": 45321.79166666666,
+    "grid_power": -122.9944375,
+    "charge_power": 0,
+    "discharge_power": 2500,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 0,
+    "grid_export": 122.9944375
+  },
+  {
+    "time": 45321.83333333334,
+    "grid_power": 1089.7055625,
+    "charge_power": 0,
+    "discharge_power": 1250,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 1089.7055625,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.875,
+    "grid_power": 2337.02309375,
+    "charge_power": 0,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2337.02309375,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.91666666666,
+    "grid_power": 2876.090796875,
+    "charge_power": 623.909203125,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 2876.090796875,
+    "grid_export": 0
+  },
+  {
+    "time": 45321.95833333334,
+    "grid_power": 3500,
+    "charge_power": 1166.08221875,
+    "discharge_power": 0,
+    "pv_used": 0,
+    "load_demand": 0,
+    "grid_import": 3500,
+    "grid_export": 0
+  }
+]
