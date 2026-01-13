@@ -49,8 +49,8 @@ type InverterPoint = {
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
-const generatePowerProfiles = (range: '7d' | '30d') => {
-  const days = range === '7d' ? 7 : 30;
+const generatePowerProfiles = (range: '24h' | '7d' | '30d') => {
+  const days = range === '24h' ? 1 : range === '7d' ? 7 : 30;
   const points: TimePoint[] = [];
   const now = new Date();
   for (let d = 0; d < days; d++) {
@@ -81,36 +81,42 @@ const generatePowerProfiles = (range: '7d' | '30d') => {
   return points.reverse();
 };
 
-const generateInverterSeries = (name: string) => {
+const generateInverterSeries = (name: string, range: '24h' | '7d' | '30d') => {
+  const days = range === '24h' ? 1 : range === '7d' ? 7 : 30;
   const now = new Date();
   const points: InverterPoint[] = [];
-  for (let h = 0; h < 24; h++) {
-    const t = new Date(now);
-    t.setHours(h, 0, 0, 0);
-    const loadShape = Math.max(0.4, Math.sin(((h - 6) / 12) * Math.PI));
-    const power = Number((400 + loadShape * 350 + Math.random() * 60).toFixed(1)); // kW
-    const efficiency = Number((94 + Math.random() * 2).toFixed(2)); // ~94-96%
-    const frequency = Number((49.5 + Math.random() * 1.0).toFixed(3)); // Hz range ~49.5-50.5
-    points.push({
-      label: `${t.toISOString().slice(0, 10)} ${h}h`,
-      time: `${h}h`,
-      power,
-      efficiency,
-      frequency,
-    });
+  for (let d = 0; d < days; d++) {
+    const dayDate = new Date(now);
+    dayDate.setDate(now.getDate() - d);
+    const dayLabel = dayDate.toISOString().slice(0, 10);
+    for (let h = 0; h < 24; h++) {
+      const t = new Date(dayDate);
+      t.setHours(h, 0, 0, 0);
+      const loadShape = Math.max(0.4, Math.sin(((h - 6) / 12) * Math.PI));
+      const power = Number((400 + loadShape * 350 + Math.random() * 60).toFixed(1)); // kW
+      const efficiency = Number((94 + Math.random() * 2).toFixed(2)); // ~94-96%
+      const frequency = Number((49.5 + Math.random() * 1.0).toFixed(3)); // Hz range ~49.5-50.5
+      points.push({
+        label: `${dayLabel} ${h}h`,
+        time: `${h}h`,
+        power,
+        efficiency,
+        frequency,
+      });
+    }
   }
-  return { name, data: points };
+  return { name, data: points.reverse() };
 };
 
 const OperationalMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>(() => generatePowerProfiles('7d'));
   const [inverterSeries, setInverterSeries] = useState<{ name: string; data: InverterPoint[] }[]>(() => [
-    generateInverterSeries('INV-1'),
-    generateInverterSeries('INV-2'),
-    generateInverterSeries('INV-3'),
+    generateInverterSeries('INV-1', '7d'),
+    generateInverterSeries('INV-2', '7d'),
+    generateInverterSeries('INV-3', '7d'),
   ]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [selectedRange, setSelectedRange] = useState<'7d' | '30d'>('7d');
+  const [selectedRange, setSelectedRange] = useState<'24h' | '7d' | '30d'>('7d');
 
   const arraysPerf = useMemo(
     () =>
@@ -157,16 +163,15 @@ const OperationalMonitoringPage: React.FC = () => {
 
   // Mock KPIs refreshed with the same cadence
   const kpis: Kpi[] = useMemo(() => {
-    // Forecasts and accumulated totals (plant scale)
     const forecastPv = 52000 + Math.random() * 8000; // kWh
-    const forecastLoad = 61000 + Math.random() * 9000; // kWh
     const accumulatedPv = totals.pv;
-    const accumulatedLoad = totals.load;
+    const forecastGridImport = 15000 + Math.random() * 4000; // kWh
+    const forecastBatteryDischarge = 9000 + Math.random() * 2000; // kWh
     return [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 0)} kWh`, color: '#22c55e' },
-      { label: "Today's Forecast (Load)", value: `${formatNumber(forecastLoad, 0)} kWh`, color: '#0ea5e9' },
       { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 0)} kWh`, color: '#f59e0b' },
-      { label: "Today's Accumulated (Load)", value: `${formatNumber(accumulatedLoad, 0)} kWh`, color: '#a855f7' },
+      { label: "Forecast Grid Import", value: `${formatNumber(forecastGridImport, 0)} kWh`, color: '#0ea5e9' },
+      { label: "Forecast Battery Discharge", value: `${formatNumber(forecastBatteryDischarge, 0)} kWh`, color: '#a855f7' },
     ];
   }, [lastUpdated, totals.pv, totals.load]);
 
@@ -205,9 +210,9 @@ const OperationalMonitoringPage: React.FC = () => {
     const refresh = () => {
       setPowerData(generatePowerProfiles(selectedRange));
       setInverterSeries([
-        generateInverterSeries('INV-1'),
-        generateInverterSeries('INV-2'),
-        generateInverterSeries('INV-3'),
+        generateInverterSeries('INV-1', selectedRange),
+        generateInverterSeries('INV-2', selectedRange),
+        generateInverterSeries('INV-3', selectedRange),
       ]);
       setLastUpdated(new Date());
     };
@@ -227,6 +232,9 @@ const OperationalMonitoringPage: React.FC = () => {
   const allowedDates = useMemo(() => {
     const midnights = powerData.filter((p) => p.isMidnight);
     const uniqueDates = Array.from(new Set(midnights.map((p) => p.dateOnly)));
+    if (selectedRange === '24h') {
+      return new Set<string>();
+    }
     if (uniqueDates.length <= 7) return new Set(uniqueDates);
     const target = 6;
     const step = Math.max(1, Math.ceil(uniqueDates.length / target));
@@ -238,7 +246,7 @@ const OperationalMonitoringPage: React.FC = () => {
       picked.push(uniqueDates[uniqueDates.length - 1]);
     }
     return new Set(picked);
-  }, [powerData]);
+  }, [powerData, selectedRange]);
 
   return (
     <div className="space-y-8">
@@ -279,7 +287,6 @@ const OperationalMonitoringPage: React.FC = () => {
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Yesterday's Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
             <li><strong>PV:</strong> {formatNumber(52000 + Math.random() * 5000, 0)} kWh</li>
-            <li><strong>Load:</strong> {formatNumber(61000 + Math.random() * 6000, 0)} kWh</li>
             <li><strong>Grid Import:</strong> {formatNumber(15000 + Math.random() * 4000, 0)} kWh</li>
             <li><strong>Grid Export:</strong> {formatNumber(6000 + Math.random() * 2000, 0)} kWh</li>
             <li><strong>Battery Charge:</strong> {formatNumber(8000 + Math.random() * 2000, 0)} kWh</li>
@@ -290,7 +297,6 @@ const OperationalMonitoringPage: React.FC = () => {
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Avg Last 7 Days' Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
             <li><strong>PV:</strong> {formatNumber(50000 + Math.random() * 4000, 0)} kWh</li>
-            <li><strong>Load:</strong> {formatNumber(59000 + Math.random() * 5000, 0)} kWh</li>
             <li><strong>Grid Import:</strong> {formatNumber(14000 + Math.random() * 3000, 0)} kWh</li>
             <li><strong>Grid Export:</strong> {formatNumber(5500 + Math.random() * 1500, 0)} kWh</li>
             <li><strong>Battery Charge:</strong> {formatNumber(7600 + Math.random() * 1800, 0)} kWh</li>
@@ -306,9 +312,10 @@ const OperationalMonitoringPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
             <select
               value={selectedRange}
-              onChange={(e) => setSelectedRange(e.target.value as '7d' | '30d')}
+              onChange={(e) => setSelectedRange(e.target.value as '24h' | '7d' | '30d')}
               className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1"
             >
+              <option value="24h">Last 24 hours</option>
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
             </select>
@@ -323,6 +330,11 @@ const OperationalMonitoringPage: React.FC = () => {
                 tickFormatter={(v, idx) => {
                   const point = powerData[idx];
                   if (!point) return '';
+                  if (selectedRange === '24h') {
+                    const hour = parseInt(point.time.replace('h', ''), 10);
+                    if (Number.isNaN(hour)) return '';
+                    return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
+                  }
                   if (point.isMidnight && allowedDates.has(point.dateOnly)) {
                     return point.dateOnly;
                   }
@@ -335,7 +347,6 @@ const OperationalMonitoringPage: React.FC = () => {
               <Area type="monotone" dataKey="pv" stackId="1" stroke={chartColors.solar} fill={chartColors.solar} fillOpacity={0.2} name="Solar PV (kW)" />
               <Area type="monotone" dataKey="battery" stackId="1" stroke={chartColors.battery} fill={chartColors.battery} fillOpacity={0.15} name="Battery (kW, +discharge/-charge)" />
               <Line type="monotone" dataKey="grid" stroke={chartColors.grid} strokeWidth={2.4} dot={false} name="Grid (kW, +import/-export)" />
-              <Line type="monotone" dataKey="power" stroke={chartColors.load} strokeWidth={2.8} dot={false} name="Total Load (kW)" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -343,7 +354,6 @@ const OperationalMonitoringPage: React.FC = () => {
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Today's Forecasted Power</h4>
           <div className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
             <p><strong>PV:</strong> {formatNumber(energyStats.forecastTodayPv, 0)} kW</p>
-            <p><strong>Load:</strong> {formatNumber(energyStats.forecastTodayLoad, 0)} kW</p>
           </div>
         </div>
       </div>
@@ -404,12 +414,26 @@ const OperationalMonitoringPage: React.FC = () => {
       {/* Inverter historical charts (one per row) */}
       {inverterSeries.map((series) => {
         const latest = series.data[series.data.length - 1];
+        const inverterDateSet = (() => {
+          const midnights = series.data.filter((p) => p.time === '0h');
+          const dates = Array.from(new Set(midnights.map((p) => p.label.split(' ')[0])));
+          if (selectedRange === '24h') return new Set<string>();
+          if (selectedRange === '7d') return new Set(dates);
+          const target = 6;
+          const step = Math.max(1, Math.ceil(dates.length / target));
+          const picked: string[] = [];
+          for (let i = 0; i < dates.length; i += step) picked.push(dates[i]);
+          if (picked[picked.length - 1] !== dates[dates.length - 1]) picked.push(dates[dates.length - 1]);
+          return new Set(picked);
+        })();
         return (
           <div key={series.name} className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
             <div className="xl:col-span-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-md font-semibold text-gray-900 dark:text-white">{series.name} – Power / Efficiency / Frequency</h4>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Past 24h</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {selectedRange === '24h' ? 'Past 24 hours' : selectedRange === '7d' ? 'Past 7 days' : 'Past 30 days'}
+                </span>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <ComposedChart data={series.data} margin={{ top: 10, right: 30, left: 40, bottom: 10 }}>
@@ -421,7 +445,12 @@ const OperationalMonitoringPage: React.FC = () => {
                     tickFormatter={(v, idx) => {
                       const point = series.data[idx];
                       if (!point) return '';
-                      if (point.time === '0h') {
+                      if (selectedRange === '24h') {
+                        const hour = parseInt(point.time.replace('h', ''), 10);
+                        if (Number.isNaN(hour)) return '';
+                        return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
+                      }
+                      if (point.time === '0h' && inverterDateSet.has(point.label.split(' ')[0])) {
                         return point.label.split(' ')[0];
                       }
                       return '';
