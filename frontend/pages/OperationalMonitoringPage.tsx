@@ -49,36 +49,11 @@ type InverterPoint = {
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
-const generatePowerProfiles = (range: '24h' | '7d' | '30d') => {
-  const days = range === '24h' ? 1 : range === '7d' ? 7 : 30;
-  const points: TimePoint[] = [];
-  const now = new Date();
-  for (let d = 0; d < days; d++) {
-    const dayDate = new Date(now);
-    dayDate.setDate(now.getDate() - d);
-    const dayLabel = dayDate.toISOString().slice(0, 10);
-    for (let h = 0; h < 24; h++) {
-      const pvShape = Math.max(0, Math.sin(((h - 6) / 12) * Math.PI)); // 0 at 6h/18h, peak noon
-      const pv = Number((pvShape * (2500 + Math.random() * 800)).toFixed(1)); // peak ~3.3 MW
-      const loadBase = 1800 + Math.random() * 500; // kW
-      const load = Number((loadBase + (pvShape > 0 ? 400 : 250) + Math.random() * 120).toFixed(1));
-      const battery = Number(
-        (h >= 6 && h <= 17 ? -Math.min(pv * 0.35, 1800) : Math.min(1600, pvShape < 0.1 ? 600 : 250)).toFixed(1)
-      );
-      const grid = Number((load - pv - battery).toFixed(1));
-      points.push({
-        label: `${dayLabel} ${h}h`,
-        time: `${h}h`,
-        power: load,
-        pv,
-        battery,
-        grid,
-        isMidnight: h === 0,
-        dateOnly: dayLabel,
-      });
-    }
+const getPowerApiBase = (): string => {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8000/api/v1';
   }
-  return points.reverse();
+  return import.meta.env.VITE_AI_SERVICE_BASE_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
 };
 
 const generateInverterSeries = (name: string, range: '24h' | '7d' | '30d') => {
@@ -109,7 +84,7 @@ const generateInverterSeries = (name: string, range: '24h' | '7d' | '30d') => {
 };
 
 const OperationalMonitoringPage: React.FC = () => {
-  const [powerData, setPowerData] = useState<TimePoint[]>(() => generatePowerProfiles('7d'));
+  const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [inverterSeries, setInverterSeries] = useState<{ name: string; data: InverterPoint[] }[]>(() => [
     generateInverterSeries('INV-1', '7d'),
     generateInverterSeries('INV-2', '7d'),
@@ -161,17 +136,45 @@ const OperationalMonitoringPage: React.FC = () => {
     };
   }, [powerData]);
 
-  // Mock KPIs refreshed with the same cadence
+  // KPIs (aligned with residential logic: daily-seeded forecast, today-only accumulation, clamp)
   const kpis: Kpi[] = useMemo(() => {
-    const forecastPv = 52000 + Math.random() * 8000; // kWh
-    const accumulatedPv = totals.pv;
-    // const forecastGridImport = 15000 + Math.random() * 4000; // kWh
-    // const forecastBatteryDischarge = 9000 + Math.random() * 2000; // kWh
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const seededDaily = (seed: string, min: number, spread: number) => {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+      }
+      const rand = Math.abs(Math.sin(hash));
+      return min + rand * spread;
+    };
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const todaysPoints = powerData.filter((p) => {
+      if (p.dateOnly !== todayStr) return false;
+      const hourStr = p.label.split(' ')[1]?.replace('h', '');
+      const hourNum = parseInt(hourStr, 10);
+      if (Number.isNaN(hourNum)) return false;
+      return hourNum <= currentHour;
+    });
+
+    const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
+
+    const forecastPv = Math.max(seededDaily(todayStr, 52000, 9000), accumulatedPvRaw * 1.15);
+
+    // Optional smoothing based on sun hours (kept small to avoid jumps)
+    const sunHours = todaysPoints.filter((p) => p.pv > 0).length;
+    const expectedSunHours = 10;
+    const progress = Math.min(sunHours / expectedSunHours, 1);
+
+    const accumulatedPv = Math.min(accumulatedPvRaw, forecastPv);
+    const smoothedAccumulated = Math.min(forecastPv * progress, accumulatedPv);
+
     return [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 0)} kWh`, color: '#22c55e' },
-      { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 0)} kWh`, color: '#f59e0b' },
+      { label: "Today's Accumulated (PV)", value: `${formatNumber(smoothedAccumulated, 0)} kWh`, color: '#f59e0b' },
     ];
-  }, [lastUpdated, totals.pv, totals.load]);
+  }, [powerData]);
 
   const energyStats = useMemo(() => {
     const avg7 = 52000 + Math.random() * 5000; // kWh
@@ -205,8 +208,30 @@ const OperationalMonitoringPage: React.FC = () => {
 
   // Refresh mock data every 15 minutes (and on mount)
   useEffect(() => {
-    const refresh = () => {
-      setPowerData(generatePowerProfiles(selectedRange));
+    const refresh = async () => {
+      try {
+        const res = await fetch(`${getPowerApiBase()}/mock/power/solar?range=${selectedRange}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Invalid data format');
+        const normalized: TimePoint[] = data.map((p: any) => {
+          const timePart = p.time ?? String(p.label ?? '').split(' ')[1] ?? '';
+          return {
+            label: String(p.label ?? ''),
+            time: String(timePart),
+            power: Number(p.power ?? p.load ?? 0),
+            pv: Number(p.pv ?? 0),
+            battery: Number(p.battery ?? 0),
+            grid: Number(p.grid ?? 0),
+            isMidnight: Boolean(p.isMidnight),
+            dateOnly: String(p.dateOnly ?? (p.label ?? '').split(' ')[0] ?? ''),
+          };
+        });
+        setPowerData(normalized);
+      } catch (e) {
+        console.error('Failed to load solar power data', e);
+      }
+
       setInverterSeries([
         generateInverterSeries('INV-1', selectedRange),
         generateInverterSeries('INV-2', selectedRange),

@@ -14,7 +14,7 @@ from app.api.api import api_router
 from app.api.endpoints import (
     optimization, demand_optimization, forecasting, predictions_new,
     battery_insights, solar_insights, energy_loss_insights, forecast_insights,
-    solar_degradation, planning, actions
+    solar_degradation, planning, actions, mock_power
 )
 from app.services.websocket_manager import websocket_handler
 
@@ -61,6 +61,13 @@ try:
     logger.info("✅ Demand optimization router registered at /api/v1/demand-optimize")
 except Exception as e:
     logger.warning(f"⚠️ Demand optimization router not available: {e}")
+
+# Mock power router (Excel-backed telemetry)
+try:
+    app.include_router(mock_power.router)
+    logger.info("✅ Mock power router registered at /api/v1/mock/power/*")
+except Exception as e:
+    logger.warning(f"⚠️ Mock power router not available: {e}")
 
 # Forecasting router
 try:

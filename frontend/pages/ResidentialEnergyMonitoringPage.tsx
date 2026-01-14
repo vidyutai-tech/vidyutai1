@@ -39,40 +39,15 @@ type TimePoint = {
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
-const generateProfiles = (range: 'yesterday' | '7d' | '30d'): TimePoint[] => {
-  const days = range === 'yesterday' ? 1 : range === '7d' ? 7 : 30;
-  const points: TimePoint[] = [];
-  const now = new Date();
-  for (let d = 0; d < days; d++) {
-    const dayDate = new Date(now);
-    dayDate.setDate(now.getDate() - d);
-    const dayLabel = dayDate.toISOString().slice(0, 10);
-    for (let h = 0; h < 24; h++) {
-      const pvShape = Math.max(0, Math.sin(((h - 6) / 12) * Math.PI));
-      const pv = Number((pvShape * (3 + Math.random() * 1.5)).toFixed(3));
-      const loadBase = 0.8 + Math.random() * 0.4;
-      const load = Number((loadBase + (pvShape > 0 ? 0.3 : 0.2) + Math.random() * 0.2).toFixed(3));
-      const battery = Number(
-        (h >= 6 && h <= 17 ? -Math.min(pv * 0.6, 2.5) : Math.min(2.0, pvShape < 0.1 ? 1.2 : 0.4)).toFixed(3)
-      );
-      const grid = Number((load - pv - battery).toFixed(3));
-      points.push({
-        label: `${dayLabel} ${h}h`,
-        load,
-        pv,
-        battery,
-        grid,
-        isMidnight: h === 0,
-        dateOnly: dayLabel,
-      });
-    }
+const getPowerApiBase = (): string => {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:8000/api/v1';
   }
-  // Keep chronological (oldest first)
-  return points.reverse();
+  return import.meta.env.VITE_AI_SERVICE_BASE_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
 };
 
 const ResidentialEnergyMonitoringPage: React.FC = () => {
-  const [powerData, setPowerData] = useState<TimePoint[]>(() => generateProfiles('7d'));
+  const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [selectedRange, setSelectedRange] = useState<'yesterday' | '7d' | '30d'>('7d');
   const arraysPerf = useMemo(
@@ -209,9 +184,26 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
   }, [lastUpdated]);
 
   useEffect(() => {
-    const refresh = () => {
-      setPowerData(generateProfiles(selectedRange));
-      setLastUpdated(new Date());
+    const refresh = async () => {
+      try {
+        const res = await fetch(`${getPowerApiBase()}/mock/power/residential?range=${selectedRange}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Invalid data format');
+        const normalized: TimePoint[] = data.map((p: any) => ({
+          label: String(p.label ?? ''),
+          load: Number(p.load ?? 0),
+          pv: Number(p.pv ?? 0),
+          battery: Number(p.battery ?? 0),
+          grid: Number(p.grid ?? 0),
+          isMidnight: Boolean(p.isMidnight),
+          dateOnly: String(p.dateOnly ?? (p.label ?? '').split(' ')[0] ?? ''),
+        }));
+        setPowerData(normalized);
+        setLastUpdated(new Date());
+      } catch (e) {
+        console.error('Failed to load residential power data', e);
+      }
     };
     refresh();
     const id = setInterval(refresh, 15 * 60 * 1000);
