@@ -312,7 +312,7 @@ const ImpactPage: React.FC = () => {
               ₹{currentCostPerKwh.toFixed(2)}
             </p>
             <p className="text-sm text-green-600 mt-1">
-              ↓ {costSavingsVsRuleBased.toFixed(2)}% vs rule-based
+              ↓ {(includeHydrogen ? savingsWithHydrogenVsRuleBased : costSavingsVsRuleBased).toFixed(2)}% vs rule-based
             </p>
           </div>
         </Card>
@@ -392,19 +392,18 @@ const ImpactPage: React.FC = () => {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Rule-Based Cost</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhRuleBased}</p>
-                <p className="text-xs text-gray-500 mt-1">per kWh</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhRuleBased} / kWh</p>
               </div>
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Optimized (Battery Only)</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhOptimized}</p>
-                <p className="text-xs text-green-600 mt-1">-{costSavingsVsRuleBased.toFixed(2)}%</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhOptimized} / kWh</p>
+                <p className="text-xs text-green-600 mt-1">↓ {costSavingsVsRuleBased.toFixed(2)}% vs Rule-based</p>
               </div>
               <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">With Hydrogen Fuel Cell</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhHydrogen}</p>
-                <p className="text-xs text-green-600 mt-1">-{savingsWithHydrogenVsRuleBased.toFixed(2)}%</p>
-                <p className="text-xs text-green-600 mt-1">Additional -{additionalSavingsWithHydrogen.toFixed(2)}%</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhHydrogen} / kWh</p>
+                <p className="text-xs text-green-600 mt-1">↓ {savingsWithHydrogenVsRuleBased.toFixed(2)}% vs Rule-based</p>
+                <p className="text-xs text-green-600 mt-1">Additional ↓ {additionalSavingsWithHydrogen.toFixed(2)}% vs Battery-only</p>
               </div>
             </div>
           )}
@@ -725,11 +724,7 @@ const ImpactPage: React.FC = () => {
                   offset: 25,
                   dx: -10
                 }}
-                tick={{
-                  angle: -90,
-                  textAnchor: 'middle',
-                  fill: 'currentColor'
-                }}
+                tick={{ fill: 'currentColor' }}
                 tickMargin={10}
               />
               <Tooltip content={<CustomTooltip />} />

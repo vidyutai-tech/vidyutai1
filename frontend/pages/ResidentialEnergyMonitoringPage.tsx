@@ -338,8 +338,9 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
               <YAxis label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10 }} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="pv" stackId="1" stroke={chartColors.solar} fill={chartColors.solar} fillOpacity={0.2} name="Solar PV (kW)" />
-              <Area type="monotone" dataKey="battery" stackId="1" stroke={chartColors.battery} fill={chartColors.battery} fillOpacity={0.15} name="Battery (kW, +discharge/-charge)" />
+              <Area type="monotone" dataKey="pv" stackId="pv" stroke={chartColors.solar} fill={chartColors.solar} fillOpacity={0.2} name="Solar PV (kW)" />
+              {/* Battery unstacked so negative values render below zero */}
+              <Area type="monotone" dataKey="battery" stroke={chartColors.battery} fill={chartColors.battery} fillOpacity={0.15} name="Battery (kW, +discharge/-charge)" />
               <Line type="monotone" dataKey="grid" stroke={chartColors.grid} strokeWidth={2.2} dot={false} name="Grid (kW, +import/-export)" />
               <Line type="monotone" dataKey="load" stroke={chartColors.load} strokeWidth={2.6} dot={false} name="Total Load (kW)" />
             </ComposedChart>
