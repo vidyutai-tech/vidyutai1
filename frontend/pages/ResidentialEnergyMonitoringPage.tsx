@@ -102,27 +102,79 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
   }, [powerData]);
 
   const kpis: Kpi[] = useMemo(() => {
-    // Mock forecasts/accumulated
-    const forecastPv = 12 + Math.random() * 3;
-    const forecastLoad = 15 + Math.random() * 3;
-    const accumulatedPv = totals.pv;
-    const accumulatedLoad = totals.load;
+    // Seeded daily baseline to keep forecasts stable for the day
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const seededDaily = (seed: string, min: number, spread: number) => {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+      }
+      const rand = Math.abs(Math.sin(hash));
+      return min + rand * spread;
+    };
+
+    // Accumulation only for today up to current hour
+    const now = new Date();
+    const currentHour = now.getHours();
+    const todaysPoints = powerData.filter((p) => {
+      if (p.dateOnly !== todayStr) return false;
+      const hourStr = p.label.split(' ')[1]?.replace('h', '');
+      const hourNum = parseInt(hourStr, 10);
+      if (Number.isNaN(hourNum)) return false;
+      return hourNum <= currentHour;
+    });
+
+    const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
+    const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
+
+    // Forecasts stable per day, but not below current accumulated
+    const forecastPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
+    const forecastLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
+
+    // Safety clamp: accumulated cannot exceed forecast
+    const accumulatedPv = Math.min(accumulatedPvRaw, forecastPv);
+    const accumulatedLoad = Math.min(accumulatedLoadRaw, forecastLoad);
+
     return [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 1)} kWh`, color: '#22c55e' },
       { label: "Today's Forecast (Load)", value: `${formatNumber(forecastLoad, 1)} kWh`, color: '#0ea5e9' },
       { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 1)} kWh`, color: '#f59e0b' },
       { label: "Today's Accumulated (Load)", value: `${formatNumber(accumulatedLoad, 1)} kWh`, color: '#a855f7' },
     ];
-  }, [totals.pv, totals.load, lastUpdated]);
+  }, [powerData]);
 
   const energyStats = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const seededDaily = (seed: string, min: number, spread: number) => {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+      }
+      const rand = Math.abs(Math.sin(hash));
+      return min + rand * spread;
+    };
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const todaysPoints = powerData.filter((p) => {
+      if (p.dateOnly !== todayStr) return false;
+      const hourStr = p.label.split(' ')[1]?.replace('h', '');
+      const hourNum = parseInt(hourStr, 10);
+      if (Number.isNaN(hourNum)) return false;
+      return hourNum <= currentHour;
+    });
+
+    const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
+    const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
+
+    const forecastTodayPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
+    const forecastTodayLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
+
+    const expectedLoad = totals.load;
     const avg7 = 14 + Math.random() * 2;
     const avg30 = 13 + Math.random() * 3;
-    const forecastTodayPv = 12 + Math.random() * 3;
-    const forecastTodayLoad = 15 + Math.random() * 3;
-    const expectedLoad = totals.load;
     return { avg7, avg30, forecastTodayPv, forecastTodayLoad, expectedLoad };
-  }, [totals.load, lastUpdated]);
+  }, [powerData, totals.load, lastUpdated]);
 
   const batteryGauge: Gauge = useMemo(() => {
     const soc = 50 + Math.random() * 35;
@@ -250,9 +302,9 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Third row: trend and forecast card */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        <div className="xl:col-span-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
+      {/* Third row: trend chart full width */}
+      <div className="grid grid-cols-1 gap-6">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
             <select
@@ -291,56 +343,9 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm flex flex-col">
-          <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Today's Forecasted Power</h4>
-          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
-            <p><strong>PV:</strong> {formatNumber(energyStats.forecastTodayPv, 1)} kW</p>
-            <p><strong>Load:</strong> {formatNumber(energyStats.forecastTodayLoad, 1)} kW</p>
-          </div>
-        </div>
       </div>
 
-      {/* Fifth row: Inverter + Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-          <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Inverter Status & Performance</h4>
-          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
-            <p><strong>Inverter:</strong> Residential Hybrid INV-1</p>
-            <p><strong>Status:</strong> Online — Operating nominally</p>
-            <p><strong>Power Output:</strong> {formatNumber(1.8 + Math.random() * 0.6, 2)} kW</p>
-            <p><strong>Efficiency:</strong> {formatNumber(96 + Math.random() * 2, 1)}%</p>
-            <p><strong>Frequency:</strong> {formatNumber(49.9 + Math.random() * 0.3, 2)} Hz</p>
-          </div>
-        </div>
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-          <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">System Alarms & Alerts</h4>
-          <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-200">
-            <li className="flex items-start">
-              <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 mr-2" />
-              {(() => {
-                const lowItems = arraysPerf.filter((a) => a.perf < 95);
-                if (lowItems.length > 0) {
-                  return `${lowItems[0].name} Performance Low (${formatNumber(lowItems[0].perf, 1)}%) — Investigate cleaning`;
-                }
-                const low = arraysPerf.reduce((acc, cur) => (cur.perf < acc.perf ? cur : acc), arraysPerf[0]);
-                return `${low.name} Performance OK (${formatNumber(low.perf, 1)}%)`;
-              })()}
-            </li>
-            <li className="flex items-start">
-              <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 mr-2" />
-              Suggested: Clean panels within 3 days for optimal yield
-            </li>
-            <li className="flex items-start">
-              <span className="w-2 h-2 rounded-full bg-green-500 mt-1.5 mr-2" />
-              Battery SOC OK — no alerts
-            </li>
-            <li className="flex items-start">
-              <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 mr-2" />
-              Maintenance due in {24 + Math.floor(Math.random() * 48)} hours
-            </li>
-          </ul>
-        </div>
-      </div>
+     
 
       {/* Fourth row: PV, Env, Grid, Battery */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

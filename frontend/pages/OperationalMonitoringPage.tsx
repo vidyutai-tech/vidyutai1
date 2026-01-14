@@ -165,13 +165,11 @@ const OperationalMonitoringPage: React.FC = () => {
   const kpis: Kpi[] = useMemo(() => {
     const forecastPv = 52000 + Math.random() * 8000; // kWh
     const accumulatedPv = totals.pv;
-    const forecastGridImport = 15000 + Math.random() * 4000; // kWh
-    const forecastBatteryDischarge = 9000 + Math.random() * 2000; // kWh
+    // const forecastGridImport = 15000 + Math.random() * 4000; // kWh
+    // const forecastBatteryDischarge = 9000 + Math.random() * 2000; // kWh
     return [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 0)} kWh`, color: '#22c55e' },
       { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 0)} kWh`, color: '#f59e0b' },
-      { label: "Forecast Grid Import", value: `${formatNumber(forecastGridImport, 0)} kWh`, color: '#0ea5e9' },
-      { label: "Forecast Battery Discharge", value: `${formatNumber(forecastBatteryDischarge, 0)} kWh`, color: '#a855f7' },
     ];
   }, [lastUpdated, totals.pv, totals.load]);
 
@@ -266,7 +264,7 @@ const OperationalMonitoringPage: React.FC = () => {
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-2">
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
@@ -305,9 +303,9 @@ const OperationalMonitoringPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Third row: trend and forecast card */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        <div className="xl:col-span-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
+      {/* Third row: trend chart full width */}
+      <div className="grid grid-cols-1 gap-6">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
             <select
@@ -350,16 +348,11 @@ const OperationalMonitoringPage: React.FC = () => {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm flex flex-col">
-          <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Today's Forecasted Power</h4>
-          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
-            <p><strong>PV:</strong> {formatNumber(energyStats.forecastTodayPv, 0)} kW</p>
-          </div>
-        </div>
+      
       </div>
 
       {/* Mid panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Solar Array Performance</h4>
           <div className="space-y-3">
@@ -408,6 +401,21 @@ const OperationalMonitoringPage: React.FC = () => {
               Grid is currently <strong>{totals.grid >= 0 ? 'Importing' : 'Exporting'}</strong>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm flex flex-col items-center justify-center">
+          <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Battery Energy Storage</h4>
+          <div className="w-full h-6 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${batteryGauge.value}%`, backgroundColor: '#10b981' }}
+            />
+          </div>
+          <p className="text-2xl font-semibold mt-3 text-gray-900 dark:text-white">
+            {batteryGauge.value}
+            {batteryGauge.suffix}
+          </p>
+          {batteryGauge.sublabel && <p className="text-sm text-gray-500 mt-1">{batteryGauge.sublabel}</p>}
         </div>
       </div>
 
