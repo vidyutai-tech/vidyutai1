@@ -1,10 +1,24 @@
 import re
+import os
 from pathlib import Path
 
 import pandas as pd
 
-# Absolute path as provided
-DATA_FILE = Path("/Users/himasoni_123/Documents/IITGN/vidyutai1/ai-service/data/power_profile_one_month_updated.xlsx")
+# Resolve data file relative to this module to work in containers (Render/Netlify)
+BASE_DIR = Path(__file__).resolve().parents[2]  # ai-service/app/utils -> ai-service/
+DEFAULT_DATA_FILE = BASE_DIR / "data" / "power_profile_one_month_updated.xlsx"
+
+# Allow override via env var; otherwise use project-relative data file
+env_path = os.getenv("POWER_DATA_FILE", "")
+candidate_env = Path(env_path) if env_path else None
+cwd_candidate = Path.cwd() / "power_profile_one_month_updated.xlsx"
+
+if candidate_env and candidate_env.exists():
+    DATA_FILE = candidate_env
+elif cwd_candidate.exists():
+    DATA_FILE = cwd_candidate
+else:
+    DATA_FILE = DEFAULT_DATA_FILE
 
 
 def _normalize_col(col: str) -> str:
