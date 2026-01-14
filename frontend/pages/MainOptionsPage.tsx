@@ -161,7 +161,7 @@ const MainOptionsPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               💡 How It Works
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-700 dark:text-gray-300">
               <div>
                 <p className="font-semibold mb-1">1. Energy Advisory Assistance</p>
                 <p className="text-sm">Design your energy system from scratch with step-by-step guidance and AI recommendations.</p>
@@ -169,6 +169,10 @@ const MainOptionsPage: React.FC = () => {
               <div>
                 <p className="font-semibold mb-1">2. Energy Optimization</p>
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">3. Site Monitoring</p>
+                <p className="text-sm">View live PV, battery, grid, and load dashboards for plant and residential sites.</p>
               </div>
             </div>
           </div>
