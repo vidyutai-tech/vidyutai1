@@ -180,7 +180,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
               domain={[-5, 105]}
-              label={{ value: 'State of Charge (%)', angle: -90, position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'State of Charge (%)', angle: -90, position: 'Left', offset: - 5,  dx: -10, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
@@ -244,7 +244,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
               stroke={textColor}
               tick={{ fill: textColor, fontSize: 12 }}
               domain={[-5, 105]}
-              label={{ value: 'Hydrogen Stored (% of Capacity)', angle: -90, position: 'insideLeft', offset: 5, fill: textColor }}
+              label={{ value: 'Hydrogen Stored (% of Capacity)', angle: -90, position: 'Left', offset: -5,  dx: -10, fill: textColor }}
               tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
