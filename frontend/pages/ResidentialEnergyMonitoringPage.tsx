@@ -44,12 +44,16 @@ const getPowerApiBase = (): string => {
     return 'http://localhost:8000/api/v1';
   }
   // Prefer dedicated AI service base; fall back to general API if explicitly set.
-  const base =
+  const raw =
     import.meta.env.VITE_AI_SERVICE_BASE_URL ||
     import.meta.env.VITE_AI_BASE_URL || // documented in ENV_VARIABLES_CHECKLIST.md
     import.meta.env.VITE_API_BASE_URL ||
     '/api/v1';
-  return base.replace(/\/$/, '');
+
+  const trimmed = raw.replace(/\/$/, '');
+  // Ensure we always target an /api/v1 base even if the provided env omits it.
+  const hasApiVersion = /\/api\/v\d+$/i.test(trimmed);
+  return hasApiVersion ? trimmed : `${trimmed}/api/v1`;
 };
 
 const ResidentialEnergyMonitoringPage: React.FC = () => {
