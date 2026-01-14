@@ -43,7 +43,13 @@ const getPowerApiBase = (): string => {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:8000/api/v1';
   }
-  return import.meta.env.VITE_AI_SERVICE_BASE_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  // Prefer dedicated AI service base; fall back to general API if explicitly set.
+  const base =
+    import.meta.env.VITE_AI_SERVICE_BASE_URL ||
+    import.meta.env.VITE_AI_BASE_URL || // documented in ENV_VARIABLES_CHECKLIST.md
+    import.meta.env.VITE_API_BASE_URL ||
+    '/api/v1';
+  return base.replace(/\/$/, '');
 };
 
 const ResidentialEnergyMonitoringPage: React.FC = () => {
