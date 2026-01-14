@@ -1,5 +1,5 @@
 import React, { createContext, useState, useCallback, useMemo } from 'react';
-import { ApplianceUsage, calculateDailyConsumption, calculatePeakLoad, groupByPriority } from '../utils/applianceDatabase';
+import { ApplianceUsage, calculateDailyConsumption, calculatePeakLoad, groupByPriority, getAppliancesForUseCase } from '../utils/applianceDatabase';
 
 interface LoadProfileContextType {
   appliances: ApplianceUsage[];
@@ -7,6 +7,7 @@ interface LoadProfileContextType {
   updateAppliance: (index: number, appliance: ApplianceUsage) => void;
   removeAppliance: (index: number) => void;
   clearAppliances: () => void;
+  initializeAppliancesFromTemplate: (useCaseType: 'residential' | 'commercial' | 'industrial') => void;
   totalDailyConsumption: number; // Wh
   totalDailyConsumptionKWh: number; // kWh
   peakLoad: number; // kW
@@ -41,6 +42,22 @@ export const LoadProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setAppliances([]);
   }, []);
 
+  const initializeAppliancesFromTemplate = useCallback((useCaseType: 'residential' | 'commercial' | 'industrial') => {
+    const templateAppliances = getAppliancesForUseCase(useCaseType);
+    // Pre-populate with a subset of common appliances (about 5-7 items per category)
+    const initialAppliances: ApplianceUsage[] = templateAppliances
+      .slice(0, useCaseType === 'residential' ? 7 : useCaseType === 'commercial' ? 8 : 6)
+      .map(app => ({
+        appliance: app.name,
+        rating: app.typicalRating,
+        quantity: 1,
+        hoursPerDay: app.typicalHours,
+        priority: app.priority,
+        dailyConsumption: app.typicalRating * 1 * app.typicalHours,
+      }));
+    setAppliances(initialAppliances);
+  }, []);
+
   const totalDailyConsumption = useMemo(() => {
     return calculateDailyConsumption(appliances);
   }, [appliances]);
@@ -65,6 +82,7 @@ export const LoadProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
         updateAppliance,
         removeAppliance,
         clearAppliances,
+        initializeAppliancesFromTemplate,
         totalDailyConsumption,
         totalDailyConsumptionKWh,
         peakLoad,

@@ -45,10 +45,10 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
         if time_resolution_minutes not in [15, 30, 60]:
             time_resolution_minutes = 30  # Default to 30 minutes
         
-        grid_connection = max(100, float(params["grid_connection"]))  # kW, minimum 100kW
+        grid_connection = max(0, float(params["grid_connection"]))  # kW
         solar_connection = max(0, float(params["solar_connection"]))  # kW
-        battery_capacity_wh = max(1000, float(params["battery_capacity"]))  # Wh, minimum 1kWh
-        battery_voltage = max(12, float(params["battery_voltage"]))  # V, minimum 12V
+        battery_capacity_ah = max(0, float(params["battery_capacity"]))  # kAh
+        battery_voltage = max(0, float(params["battery_voltage"]))  # V
         diesel_capacity = max(0, float(params["diesel_capacity"]))  # kW
         fuel_price = max(0, float(params["fuel_price"]))  # INR/l
         pv_energy_cost = max(0, float(params["pv_energy_cost"]))  # INR/kWh
@@ -92,8 +92,8 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
     except (ValueError, TypeError, KeyError) as e:
         raise ValueError(f"Invalid input parameters: {str(e)}")
 
-    # Battery capacity: API receives Wh, convert to Ah
-    battery_capacity_ah = battery_capacity_wh / battery_voltage  # Ah
+    # Battery capacity: API receives Wh, convert to Ah for MILP solver compatibility
+    battery_capacity_ah = battery_capacity_ah  # kAh
 
     # Hydrogen system constants
     H2_LHV = 33.3  # kWh/kg
@@ -149,10 +149,10 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
     else:
         solar_profile = upsample_profile(solar_profile_base, steps_per_hour, num_days)
 
-    # System capacities
+    # System capacities - aligned with optimization.py
     grid_max_power = grid_connection
     solar_capacity = solar_connection
-    battery_storage_energy = battery_capacity_wh / 1000.0  # Convert Wh to kWh
+    battery_storage_energy = battery_capacity_ah * battery_voltage# Convert Wh to kWh
     battery_power = battery_storage_energy * 0.5  # kW, 0.5C rate
     bess_charge_capacity = battery_power
     bess_discharge_capacity = battery_power
@@ -597,20 +597,38 @@ def run_demand_optimization(params, load_profiles_dict, price_profile_24h, solar
     plot_bytes = buf.read()
     plt.close()
 
-    # Build chart_data for frontend
-    base_time = datetime.now().replace(minute=0, second=0, microsecond=0)
-    chart_data = []
+    # Build comprehensive chart_data for frontend Recharts
+    chart_data = {
+        "time_series": [],
+        "metadata": {
+            "num_days": num_days,
+            "time_resolution_minutes": time_resolution_minutes,
+            "pv_energy_cost": float(pv_energy_cost),
+            "battery_om_cost": float(battery_om_cost),
+            "fuel_cell_om_cost": float(fuel_cell_om_cost),
+            "electrolyzer_om_cost": float(electrolyzer_om_cost),
+            "critical_loads": critical_loads,
+            "curtailable_loads": dr_loads
+        }
+    }
+    
     for t in T:
-        ts = base_time + timedelta(minutes=t * time_resolution_minutes)
-        chart_data.append({
-            "timestamp": ts.isoformat(),
-            "load_kwh": float(load_demand_total[t]) * step_size,
-            "solar_kwh": float(value(P_pv_used[t])) * step_size,
-            "grid_kwh": float(max(0.0, value(P_grid[t]))) * step_size,
-            "battery_discharge_kwh": float(value(P_discharge[t])) * step_size,
-            "battery_charge_kwh": float(value(P_charge[t])) * step_size,
-            "battery_soc_percent": float(results['Battery_SOC'][t]),
-        })
+        entry = {
+            "time_hours": float(time_hours[t]),
+            "load_demand": float(results['Load_Demand'][t]),
+            "grid_power": float(results['Grid_Power'][t]),
+            "diesel_power": float(results['Diesel_Power'][t]),
+            "pv_used": float(results['PV_Used'][t]),
+            "net_battery_power": float(results['Net_Battery_Power'][t]),
+            "net_h2_power": float(results['Net_H2_Power'][t]),
+            "price": float(results['Price'][t]),
+        }
+        # Add per-load data
+        for i in load_ids:
+            entry[f"load{i}_demand"] = float(results[f'Load{i}_Demand'][t])
+            entry[f"load{i}_served"] = float(results[f'Load{i}_Served'][t])
+            entry[f"load{i}_curtailed"] = float(results[f'Load{i}_Curtailed'][t])
+        chart_data["time_series"].append(entry)
 
     return summary, plot_bytes, chart_data
 
@@ -625,7 +643,7 @@ async def optimize_demand(
     time_resolution_minutes: int = Form(60),
     grid_connection: float = Form(2500),
     solar_connection: float = Form(2000),
-    battery_capacity: float = Form(4000000),  # Wh
+    battery_capacity: float = Form(40),  # kAh
     battery_voltage: float = Form(100),
     diesel_capacity: float = Form(2200),
     fuel_price: float = Form(90),

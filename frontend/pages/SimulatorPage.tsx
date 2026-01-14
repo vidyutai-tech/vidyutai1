@@ -115,18 +115,18 @@ const SimulatorPage: React.FC = () => {
                   <YAxis 
                     yAxisId="left" 
                     stroke="#8884d8" 
-                    label={{ value: `Cost (${CURRENCY_SYMBOLS[currency]})`, angle: -90, position: 'insideLeft', fill: '#8884d8' }}
+                    label={{ value: `Cost (${CURRENCY_SYMBOLS[currency]})`, angle: -90, position: 'insideLeft', offset: 0, fill: '#8884d8' }}
                     tickFormatter={(value) => Number(value).toFixed(2)}
                   />
                   <YAxis 
                     yAxisId="right" 
                     orientation="right" 
                     stroke="#82ca9d" 
-                    label={{ value: `Emissions (${emissionsUnit === 'kg' ? 'kg CO₂' : 'tonnes CO₂'})`, angle: -90, position: 'insideRight', fill: '#82ca9d' }}
+                    label={{ value: `Emissions (${emissionsUnit === 'kg' ? 'kg CO₂' : 'tonnes CO₂'})`, angle: -90, position: 'insideRight', offset: 15, fill: '#82ca9d' }}
                     tickFormatter={(value) => Number(value).toFixed(2)}
                   />
                   <Tooltip contentStyle={{ backgroundColor: theme === 'dark' ? '#1A202C' : '#FFFFFF', border: `1px solid ${gridColor}` }} formatter={(value: number) => value.toFixed(2)} />
-                  <Legend />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Line yAxisId="left" type="monotone" dataKey="cost" stroke="#8884d8" name={`Predicted Cost (${currency})`}/>
                   <Line yAxisId="right" type="monotone" dataKey="emissions" stroke="#82ca9d" name={`Predicted Emissions (${emissionsUnit.toUpperCase()})`}/>
                 </LineChart>

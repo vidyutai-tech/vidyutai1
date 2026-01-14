@@ -8,36 +8,25 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import SiteDetailPage from './pages/SiteDetailPage';
-import ImpactPage from './pages/ImpactPage';
 import AlertsPage from './pages/AlertsPage';
 import MaintenancePage from './pages/MaintenancePage';
 import SimulatorPage from './pages/SimulatorPage';
-import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import SiteSelectPage from './pages/SiteSelectPage';
-import PredictionsPage from './pages/PredictionsPage';
-import BatteryRULPage from './pages/BatteryRULPage';
-import SolarDegradationPage from './pages/SolarDegradationPage';
-import EnergyLossPage from './pages/EnergyLossPage';
-import RootCauseAnalysisPage from './pages/RootCauseAnalysisPage';
-import ManageSitesPage from './pages/ManageSitesPage';
-import ManageAssetsPage from './pages/ManageAssetsPage';
-import DigitalTwinPage from './pages/DigitalTwinPage';
 import DemandOptimizationPage from './pages/DemandOptimizationPage';
 import SourceOptimizationPage from './pages/SourceOptimizationPage';
-import PostLoginWizardPage from './pages/PostLoginWizardPage';
 import PlanningWizardPage from './pages/PlanningWizardPage';
 import PlanningWizardPageEnhanced from './pages/PlanningWizardPageEnhanced';
 import OptimizationSetupPage from './pages/OptimizationSetupPage';
-import OptimizationResultsPage from './pages/OptimizationResultsPage';
 import PlanningAndOptimizationPage from './pages/PlanningAndOptimizationPage';
 import MainOptionsPage from './pages/MainOptionsPage';
 import OptimizationFlowPage from './pages/OptimizationFlowPage';
 import AIMLInsightsPage from './pages/AIMLInsightsPage';
 import UnifiedDashboardPage from './pages/UnifiedDashboardPage';
-import AIRecommendationsPage from './pages/AIRecommendationsPage';
 import AIExplanationsPage from './pages/AIExplanationsPage';
 import EnergyForecastingPage from './pages/EnergyForecastingPage';
+import OperationalMonitoringPage from './pages/OperationalMonitoringPage';
+import ResidentialEnergyMonitoringPage from './pages/ResidentialEnergyMonitoringPage';
 import { AppContext } from './contexts/AppContext';
 import { Telemetry, Alert, RLSuggestion, HealthStatus, Site, RLStrategy } from './types';
 import { useWebSocket } from './hooks/useWebSocket';
@@ -46,8 +35,6 @@ import { fetchHealthStatus, fetchSites, User, getUserProfile } from './services/
 import { io, Socket } from 'socket.io-client';
 
 const App: React.FC = () => {
-  const [showLanding, setShowLanding] = useState<boolean>(!localStorage.getItem('jwt') && !localStorage.getItem('hasSeenLanding'));
-  const [showSignup, setShowSignup] = useState<boolean>(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('jwt'));
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -58,7 +45,6 @@ const App: React.FC = () => {
 
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
-  const [hasCompletedWizard, setHasCompletedWizard] = useState<boolean | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [flowCompleted, setFlowCompleted] = useState<boolean>(false);
 
@@ -83,11 +69,8 @@ const App: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketConnected, setSocketConnected] = useState<boolean>(false);
 
-  // Check wizard completion status
-  useEffect(() => {
-    const completed = localStorage.getItem('hasCompletedWizard');
-    setHasCompletedWizard(completed === 'true');
-  }, []);
+  // Wizard completion status is determined by user profile from backend
+  // Wizard is considered complete if user profile exists with both site_type and workflow_preference set
 
   // Sync user state from localStorage on mount and when authentication changes
   useEffect(() => {
@@ -113,7 +96,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Load user profile
+  // Load user profile (wizard removed, profile loading kept for future use)
   useEffect(() => {
     if (isAuthenticated && currentUser) {
       getUserProfile()
@@ -122,7 +105,11 @@ const App: React.FC = () => {
             setUserProfile(profile);
           }
         })
-        .catch(err => console.error('Failed to load user profile:', err));
+        .catch(err => {
+          console.error('Failed to load user profile:', err);
+        });
+    } else {
+      setUserProfile(null);
     }
   }, [isAuthenticated, currentUser]);
 
@@ -140,7 +127,19 @@ const App: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && selectedSite) {
       const token = localStorage.getItem('jwt');
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001';
+      
+      // Get Socket.IO URL - use same logic as API base URL
+      // For localhost: use explicit localhost URL
+      // For production: use environment variable or derive from API base URL
+      let socketUrl: string;
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        socketUrl = 'http://localhost:5001';
+      } else {
+        // In production, use VITE_SOCKET_URL or derive from API base URL
+        socketUrl = import.meta.env.VITE_SOCKET_URL || 
+                   (import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || window.location.origin);
+      }
+      
       const newSocket = io(socketUrl, {
         auth: { token },
         query: { siteId: selectedSite.id },
@@ -419,8 +418,10 @@ const App: React.FC = () => {
     setCurrentUser(user);
     localStorage.setItem('jwt', token);
     localStorage.setItem('user', JSON.stringify(user));
-    setShowLanding(false);
-    setShowSignup(false);
+    // Mark that user has seen landing page
+    localStorage.setItem('hasSeenLanding', 'true');
+    // Navigate to main options after login
+    window.location.hash = '#/main-options';
     console.log('User logged in successfully:', user.email);
   };
 
@@ -428,18 +429,17 @@ const App: React.FC = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
     setSelectedSite(null);
-    setHasCompletedWizard(null);
     setSocketConnected(false);
     localStorage.removeItem('jwt');
     localStorage.removeItem('user');
     localStorage.removeItem('selectedSiteId');
     localStorage.removeItem('selectedSite');
-    localStorage.removeItem('hasCompletedWizard');
     if (socket) {
       socket.close();
       setSocket(null);
     }
-    setShowLanding(true);
+    // Navigate to landing page after logout
+    window.location.hash = '#/';
   };
 
   const selectSite = (site: Site | null) => {
@@ -456,30 +456,26 @@ const App: React.FC = () => {
   };
 
   const handleGetStarted = () => {
-    setShowLanding(false);
-    setShowSignup(false);
-    if (!isAuthenticated) {
-      // Show login page
-    }
+    // Navigate to login page - this will be handled by routing
+    window.location.hash = '#/login';
   };
 
   const handleBackToLanding = () => {
-    setShowLanding(true);
-    setShowSignup(false);
+    window.location.hash = '#/';
     setShowSignupSuccess(false);
   };
 
   const handleShowSignup = () => {
-    setShowSignup(true);
+    window.location.hash = '#/signup';
   };
 
   const handleSignupSuccess = () => {
     setShowSignupSuccess(true);
-    setShowSignup(false);
+    window.location.hash = '#/login';
   };
 
   const handleBackToLogin = () => {
-    setShowSignup(false);
+    window.location.hash = '#/login';
     setShowSignupSuccess(false);
   };
 
@@ -531,91 +527,164 @@ const App: React.FC = () => {
     );
   };
 
-  const renderContent = () => {
-    if (showLanding) {
-      return <LandingPage onGetStarted={handleGetStarted} />;
-    }
-    if (showSignup) {
-      return (
-        <SignupPage
-          onSignupSuccess={handleSignupSuccess}
-          onBackToLogin={handleBackToLogin}
-          onBack={handleBackToLanding}
-        />
-      );
-    }
+  // Protected Route Component
+  const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+    return <>{children}</>;
+  };
+
+  const renderContent = () => {
       return (
+      <HashRouter>
+        <Routes>
+          {/* Public routes - accessible without authentication */}
+          <Route path="/" element={<LandingPage onGetStarted={handleGetStarted} />} />
+          <Route 
+            path="/login" 
+            element={
         <LoginPage
           onLogin={login}
           onBack={handleBackToLanding}
           onSignupClick={handleShowSignup}
           showSignupSuccess={showSignupSuccess}
         />
-      );
-    }
-    
-    // Post-Login Wizard (if not completed)
-    if (hasCompletedWizard === false) {
-      return (
-        <HashRouter>
-          <Routes>
-            <Route path="*" element={
-              <PostLoginWizardPage 
-                onComplete={() => {
-                  setHasCompletedWizard(true);
-                  // Update localStorage
-                  localStorage.setItem('hasCompletedWizard', 'true');
-                  // Navigate using window.location since we're in a separate router
-                  setTimeout(() => {
-                    window.location.hash = '#/main-options';
-                  }, 100);
-                }} 
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <SignupPage
+                onSignupSuccess={handleSignupSuccess}
+                onBackToLogin={handleBackToLogin}
+                onBack={handleBackToLanding}
               />
-            } />
-          </Routes>
-        </HashRouter>
-      );
-    }
-    
-    // Main application with routing
-    return (
-      <HashRouter>
+            } 
+          />
+          
+          {/* Protected routes - require authentication */}
+          <Route
+            path="/main-options"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <MainOptionsPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning-wizard"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <PlanningWizardPageEnhanced />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning-wizard-old"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <PlanningWizardPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/optimization-flow"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/optimization-setup" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/optimization-setup"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <OptimizationSetupPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/demand-optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <DemandOptimizationPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source-optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <SourceOptimizationPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planning-optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <PlanningAndOptimizationPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/operational-monitoring"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <OperationalMonitoringPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/residential-monitoring"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <ResidentialEnergyMonitoringPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
         <LayoutWrapper>
-                <Routes>
-            <Route path="/" element={<Navigate to="/main-options" />} />
-            <Route path="/main-options" element={<MainOptionsPage />} />
-            <Route path="/planning-wizard" element={<PlanningWizardPageEnhanced />} />
-            <Route path="/planning-wizard-old" element={<PlanningWizardPage />} />
-            <Route path="/optimization-flow" element={<OptimizationFlowPage />} />
-            <Route path="/optimization-setup" element={<OptimizationSetupPage />} />
-            <Route path="/optimization-results" element={<OptimizationResultsPage />} />
-            <Route path="/demand-optimization" element={<DemandOptimizationPage />} />
-            <Route path="/source-optimization" element={<SourceOptimizationPage />} />
-            <Route path="/ai-ml-insights" element={<AIMLInsightsPage />} />
-            <Route path="/energy-forecasting" element={<EnergyForecastingPage />} />
-            <Route path="/ai-recommendations" element={<AIRecommendationsPage />} />
-            <Route path="/ai-explanations" element={<AIExplanationsPage />} />
-            <Route path="/unified-dashboard" element={<UnifiedDashboardPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/site-detail" element={<SiteDetailPage />} />
-                  <Route path="/impact" element={<ImpactPage />} />
-                  <Route path="/digital-twin" element={<DigitalTwinPage />} />
-            <Route path="/planning-optimization" element={<PlanningAndOptimizationPage />} />
-                  <Route path="/alerts" element={<AlertsPage />} />
-                  <Route path="/maintenance" element={<MaintenancePage />} />
-                  <Route path="/simulator" element={<SimulatorPage />} />
-                  <Route path="/predictions" element={<PredictionsPage />} />
-                  <Route path="/battery-rul" element={<BatteryRULPage />} />
-                  <Route path="/solar-degradation" element={<SolarDegradationPage />} />
-                  <Route path="/energy-loss" element={<EnergyLossPage />} />
-                  <Route path="/root-cause-analysis" element={<RootCauseAnalysisPage />} />
-                  <Route path="/manage-sites" element={<ManageSitesPage />} />
-                  <Route path="/manage-assets" element={<ManageAssetsPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
+                  <ProfilePage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Default redirect for authenticated users */}
+          <Route 
+            path="*" 
+            element={
+              isAuthenticated ? (
+                <Navigate to="/main-options" replace />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
                 </Routes>
-        </LayoutWrapper>
       </HashRouter>
     );
   };

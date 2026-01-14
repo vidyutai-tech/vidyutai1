@@ -147,11 +147,28 @@ export const calculateDailyConsumption = (appliances: ApplianceUsage[]): number 
 };
 
 export const calculatePeakLoad = (appliances: ApplianceUsage[]): number => {
-  // Assume 70% diversity factor (not all appliances run simultaneously)
-  const totalConnectedLoad = appliances.reduce((total, app) => {
-    return total + (app.rating * app.quantity);
+  if (appliances.length === 0) return 0;
+  
+  // Calculate peak load using priority-based diversity factors
+  // Critical appliances: 100% (always on or essential)
+  // High priority: 80% (likely to be on during peak hours)
+  // Medium priority: 50% (moderate probability during peak)
+  // Low priority: 30% (less likely during peak hours)
+  const diversityFactors: Record<string, number> = {
+    critical: 1.0,
+    high: 0.8,
+    medium: 0.5,
+    low: 0.3,
+  };
+  
+  // Calculate weighted peak load based on priorities
+  const peakLoad = appliances.reduce((total, app) => {
+    const diversityFactor = diversityFactors[app.priority] || 0.5;
+    return total + (app.rating * app.quantity * diversityFactor);
   }, 0);
-  return totalConnectedLoad * 0.7 / 1000; // Convert to kW
+  
+  // Convert to kW
+  return peakLoad / 1000;
 };
 
 export const groupByPriority = (appliances: ApplianceUsage[]) => {

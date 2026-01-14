@@ -391,8 +391,13 @@ export const forecastEnergy = async (input: ForecastInput): Promise<ForecastResp
     const min = Math.min(...values);
     const minIndex = values.indexOf(min);
     
+    // Calculate actual forecast hours from data (assuming 15-minute intervals)
+    const forecastHours = data.data.length * 0.25;
+    
     data.summary = {
-      total_24h: total,
+      total_24h: total, // Keep for backward compatibility
+      total: total, // Add total without 24h assumption
+      forecast_hours: forecastHours,
       average: average,
       peak: peak,
       peak_hour: data.data[peakIndex]?.hour || 12,
@@ -534,6 +539,13 @@ export const savePlanningStep1 = async (data: { preferred_sources: string[]; pri
 
 export const savePlanningStep2 = async (data: { name: string; appliances: Omit<Appliance, 'id'>[]; site_id?: string }): Promise<{ success: boolean; load_profile: LoadProfile }> => {
   console.log('📤 Saving load profile:', data);
+  
+  // Check if token exists
+  const token = localStorage.getItem('jwt');
+  if (!token) {
+    throw new Error('No authentication token found. Please login again.');
+  }
+  
   const response = await fetch(`${API_BASE_URL}/wizard/planning/step2`, {
     method: 'POST',
     headers: getAuthHeaders(),

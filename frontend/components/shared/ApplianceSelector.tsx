@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { Plus, Trash2, Zap, AlertCircle } from 'lucide-react';
+import React, { useState, useContext, useMemo } from 'react';
+import { Plus, Trash2, Zap } from 'lucide-react';
 import Card from '../ui/Card';
 import { LoadProfileContext } from '../../contexts/LoadProfileContext';
 import { getAppliancesForUseCase, Appliance, ApplianceUsage } from '../../utils/applianceDatabase';
@@ -8,7 +8,7 @@ const ApplianceSelector: React.FC = () => {
   const context = useContext(LoadProfileContext);
   if (!context) throw new Error('ApplianceSelector must be used within LoadProfileProvider');
   
-  const { appliances, addAppliance, updateAppliance, removeAppliance, useCase, totalDailyConsumptionKWh, peakLoad } = context;
+  const { appliances, addAppliance, updateAppliance, removeAppliance, useCase, totalDailyConsumptionKWh } = context;
   
   const [selectionMode, setSelectionMode] = useState<'dropdown' | 'manual'>('dropdown');
   const [selectedApplianceName, setSelectedApplianceName] = useState('');
@@ -20,7 +20,11 @@ const ApplianceSelector: React.FC = () => {
     priority: 'medium' as 'critical' | 'high' | 'medium' | 'low',
   });
 
-  const availableAppliances = getAppliancesForUseCase(useCase);
+  const availableAppliances = useMemo(() => {
+    const appliances = getAppliancesForUseCase(useCase);
+    // Sort alphabetically by name
+    return [...appliances].sort((a, b) => a.name.localeCompare(b.name));
+  }, [useCase]);
 
   const handleAddFromDropdown = () => {
     const selected = availableAppliances.find(a => a.name === selectedApplianceName);
@@ -79,6 +83,23 @@ const ApplianceSelector: React.FC = () => {
     });
   };
 
+  const handleUpdateRating = (index: number, rating: number) => {
+    const app = appliances[index];
+    updateAppliance(index, {
+      ...app,
+      rating: rating,
+      dailyConsumption: rating * app.quantity * app.hoursPerDay,
+    });
+  };
+
+  const handleUpdatePriority = (index: number, priority: 'critical' | 'high' | 'medium' | 'low') => {
+    const app = appliances[index];
+    updateAppliance(index, {
+      ...app,
+      priority: priority,
+    });
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'critical': return 'text-red-600 bg-red-50 dark:bg-red-900/20';
@@ -92,7 +113,7 @@ const ApplianceSelector: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <div className="p-4">
             <div className="flex items-center space-x-2 mb-2">
@@ -103,18 +124,6 @@ const ApplianceSelector: React.FC = () => {
               {totalDailyConsumptionKWh.toFixed(2)}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">kWh per day</p>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <AlertCircle className="w-5 h-5 text-orange-600" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">Peak Load</p>
-            </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {peakLoad.toFixed(2)}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">kW (70% diversity)</p>
           </div>
         </Card>
         <Card>
@@ -295,7 +304,16 @@ const ApplianceSelector: React.FC = () => {
                   {appliances.map((app, index) => (
                     <tr key={index} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="p-3 font-medium text-gray-900 dark:text-white">{app.appliance}</td>
-                      <td className="p-3 text-center text-gray-600 dark:text-gray-400">{app.rating}</td>
+                      <td className="p-3 text-center">
+                        <input
+                          type="number"
+                          value={app.rating}
+                          onChange={(e) => handleUpdateRating(index, parseFloat(e.target.value) || 0)}
+                          min="0"
+                          step="1"
+                          className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </td>
                       <td className="p-3 text-center">
                         <input
                           type="number"
@@ -317,9 +335,24 @@ const ApplianceSelector: React.FC = () => {
                         />
                       </td>
                       <td className="p-3 text-center">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(app.priority)}`}>
-                          {app.priority}
-                        </span>
+                        <select
+                          value={app.priority}
+                          onChange={(e) => handleUpdatePriority(index, e.target.value as 'critical' | 'high' | 'medium' | 'low')}
+                          className={`w-24 px-2 py-1 rounded text-xs font-semibold border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            app.priority === 'critical' 
+                              ? 'border-red-300 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' 
+                              : app.priority === 'high'
+                              ? 'border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800'
+                              : app.priority === 'medium'
+                              ? 'border-yellow-300 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800'
+                              : 'border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800'
+                          }`}
+                        >
+                          <option value="critical">Critical</option>
+                          <option value="high">High</option>
+                          <option value="medium">Medium</option>
+                          <option value="low">Low</option>
+                        </select>
                       </td>
                       <td className="p-3 text-right font-semibold text-gray-900 dark:text-white">
                         {app.dailyConsumption.toFixed(0)}
@@ -340,13 +373,6 @@ const ApplianceSelector: React.FC = () => {
                     <td colSpan={5} className="p-3 text-right">TOTAL DAILY CONSUMPTION:</td>
                     <td className="p-3 text-right text-lg text-blue-600 dark:text-blue-400">
                       {totalDailyConsumptionKWh.toFixed(2)} kWh
-                    </td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td colSpan={5} className="p-3 text-right">PEAK LOAD (70% diversity):</td>
-                    <td className="p-3 text-right text-lg text-orange-600 dark:text-orange-400">
-                      {peakLoad.toFixed(2)} kW
                     </td>
                     <td></td>
                   </tr>

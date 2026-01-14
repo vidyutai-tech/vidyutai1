@@ -1,0 +1,47 @@
+# Render.com deployment configuration for VidyutAI
+# Free tier deployment: https://render.com
+#
+# This file deploys Backend (Node.js) and AI Service (Python FastAPI) to Render
+# Frontend should be deployed separately to Vercel
+#
+# IMPORTANT: After deployment, set environment variables in Render dashboard
+# See DEPLOY_NOW.md for complete deployment instructions
+
+services:
+  # Backend Service (Node.js/Express)
+  - type: web
+    name: vidyutai-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000  # Render free tier uses port from PORT env var or 10000
+      # Add these in Render dashboard after deployment:
+      # - JWT_SECRET (generate a random secret)
+      # - AI_SERVICE_URL (will be https://vidyutai-ai-service.onrender.com)
+      # - FRONTEND_URL (will be your Vercel frontend URL)
+      # - CORS_ORIGIN (your Vercel frontend URL)
+    healthCheckPath: /health
+
+  # AI Service (Python FastAPI)
+  - type: web
+    name: vidyutai-ai-service
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd ai-service && python -m pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+    startCommand: cd ai-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 10000  # Render free tier uses port from PORT env var or 10000
+      - key: PYTHON_VERSION
+        value: "3.11.11"  # Pin to Python 3.11 for compatibility (Python 3.14 not fully supported yet)
+      # Add these in Render dashboard after deployment:
+      # - OPENAI_API_KEY (required for AI insights)
+      # - SECRET_KEY (generate a random secret)
+    healthCheckPath: /health

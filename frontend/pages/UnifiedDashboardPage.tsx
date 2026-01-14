@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, LayoutDashboard, AreaChart, TrendingUp, Share2, SlidersHorizontal, AlertTriangle, Wrench, Building, HardDrive, Settings, ArrowLeft } from 'lucide-react';
+import { ArrowRight, LayoutDashboard, AreaChart, TrendingUp, SlidersHorizontal, AlertTriangle, Wrench, Building, HardDrive, Settings, ArrowLeft } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { AppContext } from '../contexts/AppContext';
 
@@ -35,22 +35,6 @@ const UnifiedDashboardPage: React.FC = () => {
       id: 'analysis',
       title: 'Analysis & Modeling',
       items: [
-        {
-          id: 'impact',
-          title: 'Impact Analysis',
-          description: 'Savings, battery life, renewable utilization, carbon avoided. Compare Optimized vs Conventional EMS',
-          icon: TrendingUp,
-          path: '/impact',
-          color: 'from-purple-500 to-purple-600'
-        },
-        {
-          id: 'digital-twin',
-          title: 'Digital Twin',
-          description: 'Temperature, vibration, efficiency, power output metrics with prediction confidence bands',
-          icon: Share2,
-          path: '/digital-twin',
-          color: 'from-teal-500 to-teal-600'
-        },
         {
           id: 'simulator',
           title: 'Simulator',
@@ -210,19 +194,11 @@ const UnifiedDashboardPage: React.FC = () => {
               <p>Health index (battery, inverter, motor), Telemetry, Anomalies, Power distribution, Motor vibration FFT Spectrogram</p>
             </div>
             <div>
-              <p className="font-semibold mb-1">5.3 Impact Analysis</p>
-              <p>Savings, Battery life, Renewable utilization, Carbon avoided. Compare Optimized vs Conventional EMS. Daily/Weekly/Monthly toggles</p>
-            </div>
-            <div>
-              <p className="font-semibold mb-1">5.4 Digital Twin</p>
-              <p>Temperature, Vibration, Efficiency, Power Output metrics with Prediction confidence band</p>
-            </div>
-            <div>
-              <p className="font-semibold mb-1">5.5 Advanced Modeling</p>
+              <p className="font-semibold mb-1">5.4 Advanced Modeling</p>
               <p>Motor vibration diagnosis (RandomForest), Multi-sensor diagnosis (XGBoost), Solar power forecasting (LSTM)</p>
             </div>
             <div>
-              <p className="font-semibold mb-1">5.6-5.8 Other Tools</p>
+              <p className="font-semibold mb-1">5.5-5.7 Other Tools</p>
               <p>Simulator, Alerts & Maintenance, Sites/Assets/Settings management</p>
             </div>
           </div>

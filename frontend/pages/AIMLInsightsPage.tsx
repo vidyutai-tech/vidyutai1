@@ -59,7 +59,7 @@ const AIMLInsightsPage: React.FC = () => {
     },
     {
       id: 'explanations',
-      title: 'AI Explanations',
+      title: 'AI Interpretations',
       description: 'Get natural language explanations for all AI recommendations and insights. Understand the reasoning behind predictions and actions in plain, actionable language powered by OpenAI.',
       icon: MessageSquare,
       path: '/ai-explanations',
@@ -81,8 +81,8 @@ const AIMLInsightsPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Main Options
           </button>
-          <div className="mb-4">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+          <div className="mb-4 overflow-visible">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3 leading-normal pb-2">
               AI/ML Insights
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-xl max-w-3xl">
@@ -161,7 +161,7 @@ const AIMLInsightsPage: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-orange-100 dark:border-orange-900 shadow-sm">
               <div className="flex items-center mb-2">
                 <MessageSquare className="w-5 h-5 text-orange-600 dark:text-orange-400 mr-2" />
-                <p className="font-bold text-gray-900 dark:text-white">AI Explanations</p>
+                <p className="font-bold text-gray-900 dark:text-white">AI Interpretations</p>
               </div>
               <p className="text-sm leading-relaxed">
                 Natural language explanations powered by OpenAI for all recommendations, predictions, and insights.

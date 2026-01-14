@@ -306,7 +306,7 @@ const MLAlertCard: React.FC<MLAlertCardProps> = ({ alert, onAcknowledge }) => {
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2 mb-3">
                     <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <h4 className="font-semibold text-gray-900 dark:text-white">AI Explanation</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">AI Interpretation</h4>
                   </div>
                   <div className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-line">
                     {llmExplanation.split('\n').map((line, i) => {

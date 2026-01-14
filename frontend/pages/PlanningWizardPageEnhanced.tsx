@@ -1,25 +1,27 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Zap, Battery, Fuel, Grid, Save, Home, School, Factory, Building2, Power, FileText, History, Plus, TrendingUp, DollarSign, Leaf, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Zap, Battery, Grid, Save, Home, School, Factory, Building2, Power, FileText, History, Plus, TrendingUp, DollarSign, Leaf, Trash2 } from 'lucide-react';
 import { PrimaryGoal, SiteType } from '../types';
 import { saveSiteTypeAndWorkflow, savePlanningStep2 } from '../services/api';
 import Card from '../components/ui/Card';
 import ApplianceSelector from '../components/shared/ApplianceSelector';
 import { LoadProfileProvider, LoadProfileContext } from '../contexts/LoadProfileContext';
 import { getUseCaseTemplate, UseCaseTemplate } from '../utils/useCaseTemplates';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const PlanningWizardContent: React.FC = () => {
   const navigate = useNavigate();
   const loadProfileContext = useContext(LoadProfileContext);
   if (!loadProfileContext) throw new Error('LoadProfileContext required');
   
-  const { appliances, totalDailyConsumptionKWh, peakLoad, useCase, setUseCase } = loadProfileContext;
+  const { appliances, totalDailyConsumptionKWh, peakLoad, useCase, setUseCase, initializeAppliancesFromTemplate, clearAppliances } = loadProfileContext;
   
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [showPreviousPlans, setShowPreviousPlans] = useState(false);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
+  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null); // Track current plan being edited
 
   // Step 0 State (Use Case Selection)
   const [selectedUseCase, setSelectedUseCase] = useState<'residential' | 'commercial' | 'industrial'>('residential');
@@ -27,15 +29,17 @@ const PlanningWizardContent: React.FC = () => {
 
   // Step 1 State
   const [preferredSources, setPreferredSources] = useState<string[]>(['solar', 'battery', 'grid']);
-  const [primaryGoals, setPrimaryGoals] = useState<PrimaryGoal[]>([]);
-  const [allowDiesel, setAllowDiesel] = useState(false);
-  const [includeHydrogen, setIncludeHydrogen] = useState(false);
+  // Primary goals are now static - all 4 goals are automatically included (always set to all goals)
+  const [primaryGoals, setPrimaryGoals] = useState<PrimaryGoal[]>(['savings', 'self_sustainability', 'reliability', 'carbon_reduction']);
+  const [allowDiesel] = useState(false); // Kept for API compatibility but not shown in UI
+  const [includeHydrogen] = useState(false); // Kept for API compatibility but not shown in UI
 
   // Step 3 State (Technical Sizing & Economic Analysis)
   const [technicalSizing, setTechnicalSizing] = useState<any>(null);
   const [economicAnalysis, setEconomicAnalysis] = useState<any>(null);
   const [emissionsAnalysis, setEmissionsAnalysis] = useState<any>(null);
   const [loadProfileId, setLoadProfileId] = useState<string | null>(null);
+  const [flaskResponse, setFlaskResponse] = useState<any>(null); // Flask-style response with plots
 
   const useCaseOptions = [
     { 
@@ -68,7 +72,6 @@ const PlanningWizardContent: React.FC = () => {
     { id: 'solar', label: 'Solar PV', icon: <Zap className="w-6 h-6" /> },
     { id: 'battery', label: 'Battery', icon: <Battery className="w-6 h-6" /> },
     { id: 'grid', label: 'Grid Supply', icon: <Grid className="w-6 h-6" /> },
-    { id: 'diesel', label: 'Diesel Generator', icon: <Fuel className="w-6 h-6" /> },
   ];
 
   const goalOptions: { value: PrimaryGoal; label: string; description: string }[] = [
@@ -85,7 +88,18 @@ const PlanningWizardContent: React.FC = () => {
     }
 
     setError('');
+    // Clear ALL previous data when starting a new plan or changing use case
+    clearAppliances();
+    // Clear previous recommendations to prevent showing old data
+    setTechnicalSizing(null);
+    setEconomicAnalysis(null);
+    setEmissionsAnalysis(null);
+    setFlaskResponse(null);
+    setLoadProfileId(null); // CRITICAL: Clear load profile ID so new one is created with correct use case
+    setCurrentPlanId(null); // Clear any saved plan association
+    // Set new use case and initialize appliances
     setUseCase(selectedUseCase);
+    initializeAppliancesFromTemplate(selectedUseCase);
     setStep(1);
   };
 
@@ -97,23 +111,14 @@ const PlanningWizardContent: React.FC = () => {
     );
   };
 
-  const handleGoalToggle = (goal: PrimaryGoal) => {
-    setPrimaryGoals(prev => 
-      prev.includes(goal) 
-        ? prev.filter(g => g !== goal)
-        : [...prev, goal]
-    );
-  };
+  // handleGoalToggle removed - primary goals are now static
 
   const handleStep1Next = () => {
     if (preferredSources.length === 0) {
       setError('Please select at least one energy source');
       return;
     }
-    if (primaryGoals.length === 0) {
-      setError('Please select at least one primary goal');
-      return;
-    }
+    // Primary goals are now static, no validation needed
 
     setError('');
     setStep(2);
@@ -137,6 +142,13 @@ const PlanningWizardContent: React.FC = () => {
   const handleGenerateRecommendation = async () => {
     setIsLoading(true);
     setError('');
+    
+    // Clear any previous recommendation data before generating new one
+    // This ensures we don't show stale data from previous use case
+    setTechnicalSizing(null);
+    setEconomicAnalysis(null);
+    setEmissionsAnalysis(null);
+    setFlaskResponse(null);
 
     try {
       // Validate input
@@ -147,6 +159,12 @@ const PlanningWizardContent: React.FC = () => {
       if (appliances.length === 0) {
         throw new Error('Please add at least one appliance to create a load profile');
       }
+      
+      // Validate use case is set correctly
+      if (!useCase || !selectedUseCase) {
+        console.warn('⚠️ Use case not set, defaulting to residential');
+        setUseCase('residential');
+      }
 
       // Call backend technical sizing API
       // Use full URL for localhost, relative URL for production
@@ -156,100 +174,149 @@ const PlanningWizardContent: React.FC = () => {
         : (import.meta.env.VITE_API_BASE_URL || '/api/v1');
       const token = localStorage.getItem('jwt');
 
-      // Step 1: Save load profile first (if not already saved)
-      let currentLoadProfileId = loadProfileId;
-      if (!currentLoadProfileId) {
-        console.log('📝 Saving load profile first...');
-        try {
-          // Convert ApplianceUsage to Appliance format expected by backend
-          const mapCategory = (applianceName: string, priority: string): 'lighting' | 'fans' | 'it' | 'cooling_heating' | 'cleaning' | 'kitchen_misc' => {
-            const name = applianceName.toLowerCase();
-            if (name.includes('led') || name.includes('light') || name.includes('bulb') || name.includes('tube')) return 'lighting';
-            if (name.includes('fan')) return 'fans';
-            if (name.includes('computer') || name.includes('laptop') || name.includes('monitor') || name.includes('printer')) return 'it';
-            if (name.includes('ac') || name.includes('heater') || name.includes('cooling') || name.includes('heating')) return 'cooling_heating';
-            if (name.includes('washing') || name.includes('vacuum') || name.includes('clean')) return 'cleaning';
-            return 'kitchen_misc';
-          };
-          
-          const backendAppliances = appliances.map((app) => ({
-            category: mapCategory(app.appliance, app.priority),
-            name: app.appliance,
-            power_rating: app.rating / 1000, // Convert W to kW
-            quantity: app.quantity,
-            avg_hours: app.hoursPerDay,
-          }));
-          
-          const loadProfileResult = await savePlanningStep2({
-            name: planName || `Load Profile - ${new Date().toLocaleDateString()}`,
-            appliances: backendAppliances
-          });
-          currentLoadProfileId = loadProfileResult.load_profile.id;
-          setLoadProfileId(currentLoadProfileId);
-          console.log('✅ Load profile saved:', currentLoadProfileId);
-        } catch (loadProfileError: any) {
-          console.error('❌ Failed to save load profile:', loadProfileError);
-          // Extract the actual error message
-          const errorMessage = loadProfileError.message || 'Unknown error occurred while saving load profile';
-          throw new Error(errorMessage);
-        }
+      // Step 1: Always create a NEW load profile to ensure it matches current use case and appliances
+      // CRITICAL: Don't reuse old loadProfileId as it may contain appliances from different use case
+      console.log('📝 Creating new load profile for current use case:', useCase);
+      let currentLoadProfileId: string;
+      try {
+        // Convert ApplianceUsage to Appliance format expected by backend
+        const mapCategory = (applianceName: string, priority: string): 'lighting' | 'fans' | 'it' | 'cooling_heating' | 'cleaning' | 'kitchen_misc' => {
+          const name = applianceName.toLowerCase();
+          if (name.includes('led') || name.includes('light') || name.includes('bulb') || name.includes('tube')) return 'lighting';
+          if (name.includes('fan')) return 'fans';
+          if (name.includes('computer') || name.includes('laptop') || name.includes('monitor') || name.includes('printer')) return 'it';
+          if (name.includes('ac') || name.includes('heater') || name.includes('cooling') || name.includes('heating')) return 'cooling_heating';
+          if (name.includes('washing') || name.includes('vacuum') || name.includes('clean')) return 'cleaning';
+          return 'kitchen_misc';
+        };
+        
+        const backendAppliances = appliances.map((app) => ({
+          category: mapCategory(app.appliance, app.priority),
+          name: app.appliance,
+          power_rating: app.rating / 1000, // Convert W to kW
+          quantity: app.quantity,
+          avg_hours: app.hoursPerDay,
+        }));
+        
+        const loadProfileResult = await savePlanningStep2({
+          name: planName || `Load Profile - ${useCase} - ${new Date().toLocaleDateString()}`,
+          appliances: backendAppliances
+        });
+        currentLoadProfileId = loadProfileResult.load_profile.id;
+        setLoadProfileId(currentLoadProfileId); // Store for potential future use
+        console.log('✅ New load profile created:', currentLoadProfileId, 'for use case:', useCase);
+      } catch (loadProfileError: any) {
+        console.error('❌ Failed to save load profile:', loadProfileError);
+        // Extract the actual error message
+        const errorMessage = loadProfileError.message || 'Unknown error occurred while saving load profile';
+        throw new Error(errorMessage);
       }
 
-      // Step 2: Call technical sizing API with save=true
-      const requestBody = {
-        total_energy_consumption_kwh: totalDailyConsumptionKWh,
-        use_case: useCase,
-        include_hydrogen: includeHydrogen,
-        save: true, // Enable saving to database
+      // Step 2: Call backend proxy which forwards to AI service for Flask-style response
+      // Use backend proxy (same pattern as other endpoints) instead of direct AI service call
+      const aiServiceRequest = {
         load_profile_id: currentLoadProfileId,
+        total_daily_energy_kwh: totalDailyConsumptionKWh,
         preferred_sources: preferredSources.length > 0 ? preferredSources : ['solar', 'battery'],
         primary_goals: primaryGoals.length > 0 ? primaryGoals : ['savings'],
+        primary_goal: primaryGoals.length > 0 ? primaryGoals[0] : 'savings', // Backward compatibility
         allow_diesel: allowDiesel,
       };
 
-      console.log('📤 Calling technical sizing API:', {
-        url: `${API_BASE_URL}/planning/technical-sizing`,
-        body: requestBody
+      console.log('📤 Calling backend proxy for planning recommendation:', {
+        url: `${API_BASE_URL}/wizard/planning/step3`,
+        body: aiServiceRequest
       });
 
-      const response = await fetch(`${API_BASE_URL}/planning/technical-sizing`, {
+      const aiResponse = await fetch(`${API_BASE_URL}/wizard/planning/step3`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(aiServiceRequest)
       });
 
-      let result;
+      let backendResponse;
       try {
-        result = await response.json();
+        backendResponse = await aiResponse.json();
       } catch (parseError) {
-        console.error('❌ Failed to parse response as JSON:', parseError);
-        throw new Error(`Server returned invalid response (${response.status}). Please check if the backend is running.`);
+        console.error('❌ Failed to parse backend response as JSON:', parseError);
+        throw new Error(`Backend returned invalid response (${aiResponse.status})`);
       }
-      
-      console.log('📥 Technical sizing response:', { status: response.status, result });
 
-      if (!response.ok) {
-        // Extract error message from response
-        const errorMsg = result.message || result.error || `Server error (${response.status})`;
-        console.error('❌ Technical sizing error:', errorMsg, result);
+      if (!aiResponse.ok) {
+        const errorMsg = backendResponse.error || backendResponse.detail || `Backend error (${aiResponse.status})`;
+        console.error('❌ Backend error:', errorMsg);
         throw new Error(errorMsg);
       }
       
-      if (result.success) {
-        console.log('✅ Technical sizing successful:', result.data);
-        if (result.saved) {
-          console.log('✅ Planning recommendation saved to database:', result.recommendation_id);
-        } else if (result.warning) {
-          console.warn('⚠️', result.warning);
-        }
-        setTechnicalSizing(result.data.technical_analysis);
-        setEconomicAnalysis(result.data.economic_analysis);
-        setEmissionsAnalysis(result.data.emissions_analysis);
-      } else {
-        throw new Error(result.error || result.message || 'Calculation failed');
+      // Backend returns { success: true, flask_response: {...}, ... }
+      // Extract the Flask-style response from the backend response
+      const flaskResult = backendResponse.flask_response || backendResponse;
+      
+      if (!flaskResult || !flaskResult['Technical Analysis']) {
+        console.warn('⚠️ No Flask response in backend response, using full response');
+      }
+      
+      console.log('✅ Flask-style response received from backend');
+      
+      // Store Flask response for display
+      setFlaskResponse(flaskResult);
+      
+      // Also extract data for legacy display compatibility
+      if (flaskResult['Technical Analysis']) {
+        const tech = flaskResult['Technical Analysis'];
+        const econ = flaskResult['Economic Analysis'];
+        const capitalGen = flaskResult['Capital Cost & Annual Generation'];
+        const payback = flaskResult['Simple Payback Period'];
+        const carbon = flaskResult['Carbon Emission'];
+
+        // Calculate peak power from daily consumption (average load * 2 for peak estimate)
+        const peak_power_kw = (totalDailyConsumptionKWh / 24) * 2;
+        
+        setTechnicalSizing({
+          solar_capacity_kw: parseFloat(tech['Solar Panel Power Rating (kW)'] || '0'),
+          battery_capacity_kwh: parseFloat(tech['Battery Energy (kWh)'] || '0'),
+          battery_nominal_voltage_v: parseInt(tech['Battery Nominal Voltage (V)'] || '12'),
+          battery_capacity_ah: parseFloat(tech['Battery Capacity (kAh)'] || '0') * 1000,
+          inverter_capacity_kw: parseFloat(tech['Inverter Rating (kVA)'] || '0'),
+          dc_converter_capacity_kw: parseFloat(tech['DC-DC Converter Rating (kW)'] || '0'),
+          grid_connection_kw: peak_power_kw,
+          peak_power_kw: peak_power_kw,
+          totalDailyConsumptionKWh: totalDailyConsumptionKWh, // Store consumption for display
+          recommendations: [
+            `Install ${tech['Solar Panel Power Rating (kW)']} kW solar PV system`,
+            `Install ${tech['Battery Energy (kWh)']} kWh battery storage (${tech['Battery Capacity (kAh)']} kAh at ${tech['Battery Nominal Voltage (V)']}V)`,
+            `Inverter rating: ${tech['Inverter Rating (kVA)']} kVA`,
+            `DC-DC converter rating: ${tech['DC-DC Converter Rating (kW)']} kW`
+          ]
+        });
+
+        setEconomicAnalysis({
+          ...econ,
+          capital_cost_dual_mode_rs: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+          capital_cost_on_grid_rs: parseFloat(capitalGen['Capital Cost On-Grid (Rs)'] || '0'),
+          simple_payback_dual_mode_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+          simple_payback_on_grid_years: parseFloat(payback['On-Grid System (years)'] || '0'),
+          flask_response: flaskResult
+        });
+
+        // Calculate derived emission values for UI display
+        const dualModeEmissions = parseFloat(carbon['Dual Mode System (Ton)'] || '0');
+        const onGridEmissions = parseFloat(carbon['On-Grid System (Ton)'] || '0');
+        // Estimate CO2 reduction (simplified calculation)
+        const annualCo2ReductionKg = (onGridEmissions - dualModeEmissions) * 1000;
+        const carbonOffsetPercentage = onGridEmissions > 0 ? ((onGridEmissions - dualModeEmissions) / onGridEmissions) * 100 : 0;
+        const lifetimeCo2ReductionTonnes = annualCo2ReductionKg * 25 / 1000;
+        
+        setEmissionsAnalysis({
+          carbon_emission_dual_mode_ton: dualModeEmissions,
+          carbon_emission_on_grid_ton: onGridEmissions,
+          annual_co2_reduction_kg: annualCo2ReductionKg,
+          carbon_offset_percentage: carbonOffsetPercentage,
+          lifetime_co2_reduction_tonnes: lifetimeCo2ReductionTonnes,
+        });
       }
     } catch (err: any) {
       console.error('❌ Error generating recommendation:', err);
@@ -280,32 +347,161 @@ const PlanningWizardContent: React.FC = () => {
       }
     }
     // Sort by creation date (newest first)
-    plans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    plans.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     setSavedPlans(plans);
   };
 
+  // Helper function to get count directly from localStorage
+  const getSavedPlansCount = () => {
+    let count = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('plan_')) count++;
+    }
+    return count;
+  };
+
+  // Load saved plans on component mount
+  useEffect(() => {
+    loadSavedPlans();
+  }, []);
+
+  // Helper function to clean up old plans when storage is getting full
+  const cleanupOldPlans = (keepCount: number = 10) => {
+    try {
+      const plans: any[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('plan_')) {
+          try {
+            const planData = JSON.parse(localStorage.getItem(key) || '{}');
+            plans.push({ id: key, createdAt: planData.createdAt || 0 });
+          } catch (e) {
+            // Remove corrupted plans
+            localStorage.removeItem(key);
+          }
+        }
+      }
+      
+      // Sort by creation date (oldest first)
+      plans.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+      
+      // Remove oldest plans if we have more than keepCount
+      if (plans.length > keepCount) {
+        const plansToRemove = plans.slice(0, plans.length - keepCount);
+        plansToRemove.forEach(plan => {
+          localStorage.removeItem(plan.id);
+          console.log(`🗑️ Cleaned up old plan: ${plan.id}`);
+        });
+        return plansToRemove.length;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error cleaning up old plans:', error);
+      return 0;
+    }
+  };
+
+  // Helper function to optimize flaskResponse for storage
+  // Note: We keep plots data as it's relatively small (JSON arrays) and useful for display
+  // Main optimization is automatic cleanup of old plans
+  const optimizeFlaskResponseForStorage = (flaskResp: any) => {
+    if (!flaskResp) return null;
+    // Keep full flaskResponse including plots - they're relatively small
+    // The real optimization is cleanup of old plans
+    return flaskResp;
+  };
+
   const handleSavePlan = () => {
+    // Validate that we have required data before saving
+    if (!flaskResponse && !technicalSizing) {
+      setError('Cannot save plan: No recommendation data available. Please generate a recommendation first.');
+      return;
+    }
+
+    // Ensure economicAnalysis has the required fields, fallback to flaskResponse if needed
+    let economicAnalysisToSave = economicAnalysis;
+    if (!economicAnalysisToSave?.capital_cost_dual_mode_rs && flaskResponse?.['Capital Cost & Annual Generation']) {
+      const capitalGen = flaskResponse['Capital Cost & Annual Generation'];
+      economicAnalysisToSave = {
+        ...economicAnalysisToSave,
+        capital_cost_dual_mode_rs: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+        capital_cost_on_grid_rs: parseFloat(capitalGen['Capital Cost On-Grid (Rs)'] || '0'),
+      };
+    }
+
+    if (!economicAnalysisToSave?.simple_payback_dual_mode_years && flaskResponse?.['Simple Payback Period']) {
+      const payback = flaskResponse['Simple Payback Period'];
+      economicAnalysisToSave = {
+        ...economicAnalysisToSave,
+        simple_payback_dual_mode_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+        simple_payback_on_grid_years: parseFloat(payback['On-Grid System (years)'] || '0'),
+      };
+    }
+
+    // Optimize flaskResponse for storage (remove plots data to save space)
+    const optimizedFlaskResponse = optimizeFlaskResponseForStorage(flaskResponse);
+
     // Save to localStorage
     const planData = {
       planName,
       useCase,
       powerLevel: useCaseOptions.find(u => u.value === useCase)?.powerLevel,
       appliances,
-      totalDailyConsumptionKWh,
-      peakLoad,
+      totalDailyConsumptionKWh: technicalSizing?.totalDailyConsumptionKWh ?? totalDailyConsumptionKWh,
       preferredSources,
       primaryGoals,
       technicalSizing,
-      economicAnalysis,
+      economicAnalysis: economicAnalysisToSave, // Use validated economicAnalysis
       emissionsAnalysis,
-      createdAt: new Date().toISOString(),
+      flaskResponse: optimizedFlaskResponse, // Save optimized Flask-style response (without plots data)
+      createdAt: currentPlanId ? savedPlans.find(p => p.id === currentPlanId)?.createdAt || new Date().toISOString() : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(`plan_${Date.now()}`, JSON.stringify(planData));
+    // Use existing plan ID if editing, otherwise create new one
+    const planId = currentPlanId || `plan_${Date.now()}`;
     
-    // Show success message and navigate
-    alert('Plan saved successfully!');
-    navigate('/main-options');
+    try {
+      localStorage.setItem(planId, JSON.stringify(planData));
+      setCurrentPlanId(planId); // Track this as current plan
+      setError(''); // Clear any previous errors
+    } catch (error: any) {
+      // Handle quota exceeded error
+      if (error.name === 'QuotaExceededError' || error.message?.includes('quota')) {
+        console.warn('⚠️ Storage quota exceeded, cleaning up old plans...');
+        
+        // Clean up old plans (keep only the 10 most recent)
+        const cleanedCount = cleanupOldPlans(10);
+        
+        if (cleanedCount > 0) {
+          // Try saving again after cleanup
+          try {
+            localStorage.setItem(planId, JSON.stringify(planData));
+            setCurrentPlanId(planId);
+            setError(`Storage was full. Cleaned up ${cleanedCount} old plan(s). Your plan has been saved.`);
+            setTimeout(() => setError(''), 5000); // Clear message after 5 seconds
+          } catch (retryError: any) {
+            // Still failing - suggest manual cleanup
+            setError(`Unable to save plan: Storage is full. Please delete some old plans manually. (Cleaned ${cleanedCount} plans)`);
+          }
+        } else {
+          // No old plans to clean - storage is truly full
+          setError('Unable to save plan: Storage is full. Please delete some old plans manually or clear browser data.');
+        }
+        return;
+      }
+      // Other errors
+      setError(`Failed to save plan: ${error.message || 'Unknown error'}`);
+      console.error('❌ Error saving plan:', error);
+    }
+    
+    // Refresh saved plans list and show "My Saved Plans" view
+    loadSavedPlans();
+    
+    // Clear current wizard state and show saved plans
+    setStep(0);
+    setShowPreviousPlans(true);
   };
 
   const handleDeletePlan = (planId: string) => {
@@ -315,26 +511,228 @@ const PlanningWizardContent: React.FC = () => {
     }
   };
 
-  const handleLoadPlan = (plan: any) => {
+  const handleLoadPlan = async (plan: any) => {
+    // Clear existing state first to avoid accumulation
+    loadProfileContext.clearAppliances();
+    setPlanName('');
+    setTechnicalSizing(null);
+    setEconomicAnalysis(null);
+    setEmissionsAnalysis(null);
+    setFlaskResponse(null);
+    
+    // Set current plan ID to track this plan
+    setCurrentPlanId(plan.id);
+    
     // Load plan data into wizard
     setPlanName(plan.planName);
     setSelectedUseCase(plan.useCase);
     setUseCase(plan.useCase);
     setPreferredSources(plan.preferredSources || []);
-    // Support both old format (single) and new format (array)
-    setPrimaryGoals(Array.isArray(plan.primaryGoals) ? plan.primaryGoals : (plan.primaryGoal ? [plan.primaryGoal] : []));
+    // Primary goals are now static - always use all 4 goals
+    setPrimaryGoals(['savings', 'self_sustainability', 'reliability', 'carbon_reduction']);
     
-    // Load appliances into context
-    plan.appliances?.forEach((app: any) => {
+    // Load appliances into context (after clearing)
+    if (plan.appliances && Array.isArray(plan.appliances)) {
+      plan.appliances.forEach((app: any) => {
       loadProfileContext.addAppliance(app);
     });
+    }
     
-    setTechnicalSizing(plan.technicalSizing);
+    // Restore technical sizing, ensuring consumption value is preserved
+    if (plan.technicalSizing) {
+      setTechnicalSizing({
+        ...plan.technicalSizing,
+        // Always use saved consumption value, not recalculated one
+        totalDailyConsumptionKWh: plan.totalDailyConsumptionKWh ?? plan.technicalSizing.totalDailyConsumptionKWh
+      });
+    } else {
+      setTechnicalSizing(null);
+    }
+    
     setEconomicAnalysis(plan.economicAnalysis);
     setEmissionsAnalysis(plan.emissionsAnalysis);
     
+    // Check if flaskResponse exists - if not, automatically regenerate it
+    if (!plan.flaskResponse && plan.technicalSizing && plan.totalDailyConsumptionKWh) {
+      // Plan is missing flaskResponse - automatically regenerate it
+      console.log('🔄 Plan missing flaskResponse - automatically regenerating...');
+      setIsLoading(true);
+      setError('');
+      
+      try {
+        // Wait a bit for state to settle
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Regenerate recommendation using the same logic as handleGenerateRecommendation
+        const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+        const API_BASE_URL = isLocalhost 
+          ? 'http://localhost:5001/api/v1' 
+          : (import.meta.env.VITE_API_BASE_URL || '/api/v1');
+        const token = localStorage.getItem('jwt');
+
+        // Save load profile if needed
+        let currentLoadProfileId = loadProfileId;
+        if (!currentLoadProfileId && plan.appliances && plan.appliances.length > 0) {
+          try {
+            const mapCategory = (applianceName: string): 'lighting' | 'fans' | 'it' | 'cooling_heating' | 'cleaning' | 'kitchen_misc' => {
+              const name = applianceName.toLowerCase();
+              if (name.includes('led') || name.includes('light') || name.includes('bulb') || name.includes('tube')) return 'lighting';
+              if (name.includes('fan')) return 'fans';
+              if (name.includes('computer') || name.includes('laptop') || name.includes('monitor') || name.includes('printer')) return 'it';
+              if (name.includes('ac') || name.includes('heater') || name.includes('cooling') || name.includes('heating')) return 'cooling_heating';
+              if (name.includes('washing') || name.includes('vacuum') || name.includes('clean')) return 'cleaning';
+              return 'kitchen_misc';
+            };
+            
+            const backendAppliances = plan.appliances.map((app: any) => ({
+              category: mapCategory(app.appliance || app.name),
+              name: app.appliance || app.name,
+              power_rating: (app.rating || app.power_rating || 0) / 1000, // Convert W to kW
+              quantity: app.quantity || 1,
+              avg_hours: app.hoursPerDay || app.avg_hours || 8,
+            }));
+            
+            const loadProfileResult = await savePlanningStep2({
+              name: plan.planName || `Load Profile - ${new Date().toLocaleDateString()}`,
+              appliances: backendAppliances
+            });
+            currentLoadProfileId = loadProfileResult.load_profile.id;
+            setLoadProfileId(currentLoadProfileId);
+          } catch (loadProfileError) {
+            console.warn('⚠️ Could not save load profile, using existing ID if available');
+          }
+        }
+
+        // Call API to regenerate recommendation
+        const aiServiceRequest = {
+          load_profile_id: currentLoadProfileId || plan.loadProfileId,
+          total_daily_energy_kwh: plan.totalDailyConsumptionKWh || plan.technicalSizing.totalDailyConsumptionKWh,
+          preferred_sources: plan.preferredSources || ['solar', 'battery'],
+          primary_goals: ['savings', 'self_sustainability', 'reliability', 'carbon_reduction'],
+          primary_goal: 'savings',
+          allow_diesel: false,
+        };
+
+        const aiResponse = await fetch(`${API_BASE_URL}/wizard/planning/step3`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(aiServiceRequest)
+        });
+
+        const backendResponse = await aiResponse.json();
+
+        if (!aiResponse.ok) {
+          throw new Error(backendResponse.error || backendResponse.detail || 'Failed to regenerate recommendation');
+        }
+        
+        const flaskResult = backendResponse.flask_response || backendResponse;
+        
+        if (flaskResult && flaskResult['Technical Analysis']) {
+          // Extract data from flask response
+          const tech = flaskResult['Technical Analysis'];
+          const econ = flaskResult['Economic Analysis'];
+          const capitalGen = flaskResult['Capital Cost & Annual Generation'];
+          const payback = flaskResult['Simple Payback Period'];
+          const carbon = flaskResult['Carbon Emission'];
+          
+          // Prepare economicAnalysis object with all required fields
+          const updatedEconomicAnalysis = {
+            ...plan.economicAnalysis, // Preserve existing fields
+            ...econ, // Add Flask economic analysis fields
+            capital_cost_dual_mode_rs: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+            capital_cost_on_grid_rs: parseFloat(capitalGen['Capital Cost On-Grid (Rs)'] || '0'),
+            simple_payback_dual_mode_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+            simple_payback_on_grid_years: parseFloat(payback['On-Grid System (years)'] || '0'),
+          };
+
+          // Prepare emissionsAnalysis
+          const dualModeEmissions = parseFloat(carbon['Dual Mode System (Ton)'] || '0');
+          const onGridEmissions = parseFloat(carbon['On-Grid System (Ton)'] || '0');
+          const updatedEmissionsAnalysis = {
+            ...plan.emissionsAnalysis, // Preserve existing fields
+            carbon_emission_dual_mode_ton: dualModeEmissions,
+            carbon_emission_on_grid_ton: onGridEmissions,
+            annual_co2_reduction_kg: (onGridEmissions - dualModeEmissions) * 1000,
+            carbon_offset_percentage: onGridEmissions > 0 ? ((onGridEmissions - dualModeEmissions) / onGridEmissions) * 100 : 0,
+          };
+
+          // Optimize flaskResponse for storage (remove plots data)
+          const optimizedFlaskResponse = optimizeFlaskResponseForStorage(flaskResult);
+
+          // Update plan with flaskResponse and all derived data
+          const updatedPlanData = {
+            ...plan,
+            flaskResponse: optimizedFlaskResponse,
+            economicAnalysis: updatedEconomicAnalysis,
+            emissionsAnalysis: updatedEmissionsAnalysis,
+            updatedAt: new Date().toISOString(),
+          };
+          
+          try {
+            localStorage.setItem(plan.id, JSON.stringify(updatedPlanData));
+          } catch (error: any) {
+            if (error.name === 'QuotaExceededError' || error.message?.includes('quota')) {
+              // Clean up old plans and try again
+              cleanupOldPlans(10);
+              try {
+                localStorage.setItem(plan.id, JSON.stringify(updatedPlanData));
+              } catch (retryError) {
+                console.error('❌ Still unable to save after cleanup:', retryError);
+              }
+            } else {
+              throw error;
+            }
+          }
+          
+          // Update state
+          setFlaskResponse(flaskResult);
+          
+          const peak_power_kw = ((plan.totalDailyConsumptionKWh || plan.technicalSizing.totalDailyConsumptionKWh) / 24) * 2;
+          
+          setTechnicalSizing({
+            solar_capacity_kw: parseFloat(tech['Solar Panel Power Rating (kW)'] || '0'),
+            battery_capacity_kwh: parseFloat(tech['Battery Energy (kWh)'] || '0'),
+            battery_nominal_voltage_v: parseInt(tech['Battery Nominal Voltage (V)'] || '12'),
+            battery_capacity_ah: parseFloat(tech['Battery Capacity (kAh)'] || '0') * 1000,
+            inverter_capacity_kw: parseFloat(tech['Inverter Rating (kVA)'] || '0'),
+            dc_converter_capacity_kw: parseFloat(tech['DC-DC Converter Rating (kW)'] || '0'),
+            grid_connection_kw: peak_power_kw,
+            peak_power_kw: peak_power_kw,
+            totalDailyConsumptionKWh: plan.totalDailyConsumptionKWh || plan.technicalSizing.totalDailyConsumptionKWh,
+            recommendations: [
+              `Install ${tech['Solar Panel Power Rating (kW)']} kW solar PV system`,
+              `Install ${tech['Battery Energy (kWh)']} kWh battery storage (${tech['Battery Capacity (kAh)']} kAh at ${tech['Battery Nominal Voltage (V)']}V)`,
+              `Inverter rating: ${tech['Inverter Rating (kVA)']} kVA`,
+              `DC-DC converter rating: ${tech['DC-DC Converter Rating (kW)']} kW`
+            ]
+          });
+
+          setEconomicAnalysis(updatedEconomicAnalysis);
+          setEmissionsAnalysis(updatedEmissionsAnalysis);
+          
+          // Refresh saved plans list
+          loadSavedPlans();
+          
+          console.log('✅ Successfully regenerated and saved flaskResponse for plan');
+        }
+      } catch (regenerateError: any) {
+        console.error('❌ Failed to regenerate flaskResponse:', regenerateError);
+        setError(`Failed to regenerate recommendation: ${regenerateError.message || 'Unknown error'}`);
+        // Still proceed to show what we have
+        setFlaskResponse(plan.flaskResponse || null);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Plan already has flaskResponse - just restore it
+      setFlaskResponse(plan.flaskResponse);
+    }
+    
     // Go to results step if recommendation exists
-    if (plan.technicalSizing) {
+    if (plan.technicalSizing || plan.flaskResponse) {
       setStep(3);
     } else {
       setStep(2);
@@ -368,21 +766,44 @@ const PlanningWizardContent: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Saved Plans</h1>
               <p className="text-gray-600 dark:text-gray-400">View and manage your energy planning plans</p>
             </div>
-            <button
-              onClick={() => {
-                setShowPreviousPlans(false);
-                setStep(0);
-                loadProfileContext.clearAppliances();
-                setPlanName('');
-                setTechnicalSizing(null);
-                setEconomicAnalysis(null);
-                setEmissionsAnalysis(null);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center space-x-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Create New Plan</span>
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete all but the 10 most recent plans? This will free up storage space.`)) {
+                    const cleaned = cleanupOldPlans(10);
+                    loadSavedPlans();
+                    if (cleaned > 0) {
+                      alert(`Cleaned up ${cleaned} old plan(s).`);
+                    } else {
+                      alert('No old plans to clean up.');
+                    }
+                  }
+                }}
+                className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg font-semibold hover:bg-orange-200 dark:hover:bg-orange-900/40 flex items-center space-x-2"
+                title="Clean up old plans to free storage space"
+              >
+                <Trash2 className="w-5 h-5" />
+                <span>Clean Old Plans</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowPreviousPlans(false);
+                  setStep(0);
+                  setCurrentPlanId(null); // Reset current plan ID for new plan
+                  loadProfileContext.clearAppliances();
+                  setPlanName('');
+                  setTechnicalSizing(null);
+                  setEconomicAnalysis(null);
+                  setEmissionsAnalysis(null);
+                  setPreferredSources(['solar', 'battery', 'grid']);
+                  setPrimaryGoals(['savings', 'self_sustainability', 'reliability', 'carbon_reduction']); // Static - always all 4 goals
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center space-x-2"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Create New Plan</span>
+              </button>
+            </div>
           </div>
 
           {savedPlans.length === 0 ? (
@@ -429,13 +850,31 @@ const PlanningWizardContent: React.FC = () => {
                         <div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total CAPEX</p>
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            ₹{(plan.economicAnalysis.total_capex / 100000).toFixed(2)} L
+                            {(() => {
+                              // Try multiple possible field names for CAPEX
+                              const capex = plan.economicAnalysis?.capital_cost_dual_mode_rs 
+                                || plan.economicAnalysis?.total_capex
+                                || plan.flaskResponse?.['Capital Cost & Annual Generation']?.['Capital Cost Dual Mode (Rs)']
+                                || 0;
+                              const capexNum = typeof capex === 'string' ? parseFloat(capex.replace(/[^\d.-]/g, '')) : Number(capex);
+                              if (isNaN(capexNum) || capexNum === 0) return 'N/A';
+                              return `₹${(capexNum / 100000).toFixed(2)} L`;
+                            })()}
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Payback Period</p>
                           <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-                            {plan.economicAnalysis.payback_period_years?.toFixed(1)} years
+                            {(() => {
+                              // Try multiple possible field names for payback
+                              const payback = plan.economicAnalysis?.simple_payback_dual_mode_years
+                                || plan.economicAnalysis?.payback_period_years
+                                || plan.flaskResponse?.['Simple Payback Period']?.['Dual Mode System (years)']
+                                || null;
+                              if (!payback || isNaN(Number(payback))) return 'N/A';
+                              const paybackNum = typeof payback === 'string' ? parseFloat(payback) : Number(payback);
+                              return `${paybackNum.toFixed(1)} years`;
+                            })()}
                           </p>
                         </div>
                       </div>
@@ -471,19 +910,20 @@ const PlanningWizardContent: React.FC = () => {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Planning Wizard</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Energy Advisory Assistance</h1>
             <p className="text-gray-600 dark:text-gray-400">Design your optimal energy management system</p>
           </div>
           <div className="flex space-x-3">
             <button
               onClick={() => {
+                setCurrentPlanId(null); // Reset when viewing all plans
                 loadSavedPlans();
                 setShowPreviousPlans(true);
               }}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 flex items-center space-x-2"
             >
               <History className="w-5 h-5" />
-              <span>View Saved Plans</span>
+              <span>View Saved Plans ({savedPlans.length || getSavedPlansCount()})</span>
             </button>
             <button
               onClick={() => navigate('/main-options')}
@@ -499,22 +939,21 @@ const PlanningWizardContent: React.FC = () => {
           <div className="flex items-center justify-center space-x-4">
             {[0, 1, 2, 3].map((s) => (
               <React.Fragment key={s}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
-                  step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-                }`}>
-                  {step > s ? <Check className="w-6 h-6" /> : s + 1}
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
+                    step >= s ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                  }`}>
+                    {step > s ? <Check className="w-6 h-6" /> : s + 1}
+                  </div>
+                  <span className="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                    {s === 0 ? 'Use Case' : s === 1 ? 'Preferences' : s === 2 ? 'Load Profile' : 'Results'}
+                  </span>
                 </div>
                 {s < 3 && (
                   <div className={`w-24 h-1 ${step > s ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`} />
                 )}
               </React.Fragment>
             ))}
-          </div>
-          <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-400 px-4">
-            <span>Use Case</span>
-            <span>Preferences</span>
-            <span>Load Profile</span>
-            <span>Results</span>
           </div>
         </div>
 
@@ -546,14 +985,7 @@ const PlanningWizardContent: React.FC = () => {
                   className="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg font-semibold hover:bg-indigo-200 dark:hover:bg-indigo-900/40 flex items-center space-x-2"
                 >
                   <History className="w-5 h-5" />
-                  <span>Saved Plans ({(() => {
-                    let count = 0;
-                    for (let i = 0; i < localStorage.length; i++) {
-                      const key = localStorage.key(i);
-                      if (key?.startsWith('plan_')) count++;
-                    }
-                    return count;
-                  })()})</span>
+                  <span>Saved Plans ({getSavedPlansCount()})</span>
                 </button>
               </div>
 
@@ -581,7 +1013,21 @@ const PlanningWizardContent: React.FC = () => {
                     {useCaseOptions.map((option) => (
                       <button
                         key={option.value}
-                        onClick={() => setSelectedUseCase(option.value)}
+                        onClick={() => {
+                          // When use case changes, clear ALL data to prevent showing old recommendations
+                          if (selectedUseCase !== option.value) {
+                            console.log(`🔄 Use case changed from ${selectedUseCase} to ${option.value} - clearing all data`);
+                            setTechnicalSizing(null);
+                            setEconomicAnalysis(null);
+                            setEmissionsAnalysis(null);
+                            setFlaskResponse(null);
+                            setLoadProfileId(null); // CRITICAL: Clear load profile ID so new one is created
+                            setCurrentPlanId(null);
+                            clearAppliances();
+                            setError(''); // Clear any errors
+                          }
+                          setSelectedUseCase(option.value);
+                        }}
                         className={`p-6 rounded-xl border-2 transition-all ${
                           selectedUseCase === option.value
                             ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg scale-105'
@@ -693,21 +1139,16 @@ const PlanningWizardContent: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Primary Goal */}
+                {/* Primary Goal - Static Display */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                    Primary Goal <span className="text-gray-500 text-xs">(Select one or more)</span>
+                    Primary Goals
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {goalOptions.map((goal) => (
-                      <button
+                      <div
                         key={goal.value}
-                        onClick={() => handleGoalToggle(goal.value)}
-                        className={`p-4 rounded-xl border-2 transition-all text-left ${
-                          primaryGoals.includes(goal.value)
-                            ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
-                        }`}
+                        className="p-4 rounded-xl border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-left"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -718,40 +1159,10 @@ const PlanningWizardContent: React.FC = () => {
                               {goal.description}
                             </p>
                           </div>
-                          {primaryGoals.includes(goal.value) && (
                             <Check className="w-5 h-5 text-blue-600 flex-shrink-0 ml-2" />
-                          )}
                         </div>
-                      </button>
+                      </div>
                     ))}
-                  </div>
-                </div>
-
-                {/* Advanced Options */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="allowDiesel"
-                      checked={allowDiesel}
-                      onChange={(e) => setAllowDiesel(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded"
-                    />
-                    <label htmlFor="allowDiesel" className="text-sm text-gray-700 dark:text-gray-300">
-                      Include diesel generator as backup
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="includeHydrogen"
-                      checked={includeHydrogen}
-                      onChange={(e) => setIncludeHydrogen(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded"
-                    />
-                    <label htmlFor="includeHydrogen" className="text-sm text-gray-700 dark:text-gray-300">
-                      Include hydrogen fuel cell system (long-duration storage)
-                    </label>
                   </div>
                 </div>
 
@@ -759,7 +1170,7 @@ const PlanningWizardContent: React.FC = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={handleStep1Next}
-                    disabled={preferredSources.length === 0 || primaryGoals.length === 0}
+                    disabled={preferredSources.length === 0}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
                   >
                     <span>Next: Add Appliances</span>
@@ -834,8 +1245,24 @@ const PlanningWizardContent: React.FC = () => {
                   System Recommendation
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Based on your {totalDailyConsumptionKWh.toFixed(2)} kWh/day consumption
+                  Based on your {
+                    // Always prefer saved consumption from technicalSizing if available
+                    // This ensures consistency when viewing saved plans
+                    (technicalSizing?.totalDailyConsumptionKWh ?? totalDailyConsumptionKWh).toFixed(2)
+                  } kWh/day consumption
+                  {useCase && (
+                    <span className="ml-2 text-blue-600 dark:text-blue-400 font-semibold">
+                      ({useCase.charAt(0).toUpperCase() + useCase.slice(1)})
+                    </span>
+                  )}
                 </p>
+
+                {/* Show warning if recommendation exists but use case doesn't match */}
+                {technicalSizing && useCase && (
+                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-800 dark:text-blue-300 text-sm">
+                    ℹ️ Recommendation generated for <strong>{useCase.charAt(0).toUpperCase() + useCase.slice(1)}</strong> use case
+                  </div>
+                )}
 
                 {!technicalSizing && (
                   <div className="text-center py-12">
@@ -861,44 +1288,19 @@ const PlanningWizardContent: React.FC = () => {
               </div>
             </Card>
 
-            {/* Technical Sizing Results */}
-            {technicalSizing && (
+            {/* Flask-style Response Display */}
+            {flaskResponse ? (
               <>
-                <Card title="Recommended Tech Rating">
+                    {/* Technical Analysis */}
+                <Card title="Technical Analysis">
                   <div className="p-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Solar Capacity</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {technicalSizing.solar_capacity_kw.toFixed(2)} kW
-                        </p>
+                    <div className="space-y-3">
+                          {Object.entries(flaskResponse['Technical Analysis'] || {}).map(([key, value]: [string, any]) => (
+                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{key}:</span>
+                              <span className="text-gray-900 dark:text-white font-semibold">{value}</span>
                       </div>
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Battery Capacity</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {technicalSizing.battery_capacity_kwh.toFixed(2)} kWh
-                        </p>
-                      </div>
-                      <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Inverter Capacity</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {technicalSizing.inverter_capacity_kw.toFixed(2)} kW
-                        </p>
-                      </div>
-                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Peak Load</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {technicalSizing.peak_power_kw.toFixed(2)} kW
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {technicalSizing.recommendations.map((rec: string, i: number) => (
-                        <div key={i} className="flex items-start space-x-2 text-sm text-gray-700 dark:text-gray-300">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span>{rec}</span>
-                        </div>
-                      ))}
+                          ))}
                     </div>
                   </div>
                 </Card>
@@ -906,140 +1308,304 @@ const PlanningWizardContent: React.FC = () => {
                 {/* Economic Analysis */}
                 <Card title="Economic Analysis">
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                      <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <DollarSign className="w-8 h-8 text-green-600" />
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Total CAPEX</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              ₹{(economicAnalysis.total_capex / 100000).toFixed(2)} L
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Initial investment</p>
-                      </div>
-
-                      <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <TrendingUp className="w-8 h-8 text-blue-600" />
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Payback Period</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {economicAnalysis.payback_period_years.toFixed(1)} yrs
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Return on investment</p>
-                      </div>
-
-                      <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <DollarSign className="w-8 h-8 text-purple-600" />
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Savings</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              ₹{economicAnalysis.monthly_savings.toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">vs grid-only system</p>
-                      </div>
+                        <div className="overflow-x-auto mb-6">
+                          <table className="w-full text-sm border-collapse">
+                            <thead className="bg-gray-100 dark:bg-gray-800">
+                              <tr>
+                                <th className="p-3 text-left border border-gray-300 dark:border-gray-600">Parameter</th>
+                                <th className="p-3 text-right border border-gray-300 dark:border-gray-600">Dual Mode (Rs)</th>
+                                <th className="p-3 text-right border border-gray-300 dark:border-gray-600">On-Grid (Rs)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Solar Panel Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Solar Panel Cost (Rs)'] || '0').toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Solar Panel Cost (Rs)'] || '0').toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Battery Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Battery Cost (Rs)'] || '0').toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">0</td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Inverter Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Inverter Cost (Rs)'] || '0').toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Inverter Cost (Rs)'] || '0').toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">DC-DC Converter Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['DC-DC Converter Cost (Rs)'] || '0').toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">0</td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Installation Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Installation Cost Dual Mode (Rs)'] || '0').toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Installation Cost On-Grid (Rs)'] || '0').toLocaleString()}
+                                </td>
+                              </tr>
+                              <tr className="border-b border-gray-200 dark:border-gray-700">
+                                <td className="p-3 border border-gray-300 dark:border-gray-600">Annual O&M Cost</td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Annual O&M Cost Dual Mode (Rs)'] || '0').toLocaleString()}
+                                </td>
+                                <td className="p-3 text-right border border-gray-300 dark:border-gray-600">
+                                  {parseFloat(flaskResponse['Economic Analysis']?.['Annual O&M Cost On-Grid (Rs)'] || '0').toLocaleString()}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                     </div>
+                  </div>
+                </Card>
 
-                    {/* Cost Breakdown Table */}
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-100 dark:bg-gray-800">
-                          <tr>
-                            <th className="p-3 text-left">Component</th>
-                            <th className="p-3 text-right">Cost (₹)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(economicAnalysis.cost_breakdown).map(([key, value]: [string, any]) => (
-                            <tr key={key} className="border-b border-gray-200 dark:border-gray-700">
-                              <td className="p-3 text-gray-700 dark:text-gray-300">{key}</td>
-                              <td className="p-3 text-right font-semibold text-gray-900 dark:text-white">
-                                {Number(value).toLocaleString()}
-                              </td>
-                            </tr>
+                {/* Capital Cost & Annual Generation */}
+                  <Card title="Capital Cost & Annual Generation">
+                    <div className="p-6">
+                      <div className="space-y-3">
+                          {Object.entries(flaskResponse['Capital Cost & Annual Generation'] || {}).map(([key, value]: [string, any]) => (
+                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{key}:</span>
+                              <span className="text-gray-900 dark:text-white font-semibold">{value}</span>
+                        </div>
                           ))}
-                          <tr className="bg-gray-100 dark:bg-gray-800 font-bold">
-                            <td className="p-3">TOTAL CAPEX</td>
-                            <td className="p-3 text-right text-lg text-blue-600 dark:text-blue-400">
-                              ₹{economicAnalysis.total_capex.toLocaleString()}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                        </div>
+                        </div>
+                    </Card>
 
-                    <div className="mt-6 grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Annual O&M Cost</p>
-                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                          ₹{economicAnalysis.annual_om_cost_rs.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Annual Savings</p>
-                        <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-                          ₹{economicAnalysis.annual_savings.toLocaleString()}
-                        </p>
+                    {/* Plots */}
+                    {flaskResponse['Plots'] && (
+                      <Card title="Analysis Plots">
+                        <div className="p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {Object.entries(flaskResponse['Plots']).map(([key, plotData]: [string, any]) => {
+                            // Check if plot data exists or if we need to regenerate it
+                            if (plotData && typeof plotData === 'object' && plotData.data && Array.isArray(plotData.data)) {
+                              // Plot data exists - render with Recharts
+                              return (
+                                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{plotData.title || key}</h4>
+                                  <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                      <BarChart data={plotData.data} margin={{ left: 20, right: 10, top: 10, bottom: 40 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                        <XAxis 
+                                          dataKey="name" 
+                                          tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.xLabel, position: 'insideBottom', offset: -10 }}
+                                        />
+                                        <YAxis 
+                                          // tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.yLabel, angle: -90, position: 'Left', offset: 25, dx: -10 }}
+                                          tick={{
+                                            angle: -90,
+                                            textAnchor: 'middle',
+                                            fill: 'currentColor'
+                                          }}
+                                          tickMargin={10}
+                                        />
+                                        <Tooltip 
+                                          contentStyle={{ 
+                                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '6px'
+                                          }}
+                                          formatter={(value: any) => {
+                                            if (key.includes('Capital Cost')) {
+                                              // Check yLabel to determine unit (Thousands or Cr)
+                                              const yLabel = plotData.yLabel || '';
+                                              if (yLabel.includes('Thousands')) {
+                                                return `₹${Number(value).toFixed(2)}K`;
+                                              } else if (yLabel.includes('Cr')) {
+                                                return `₹${value} Cr`;
+                                              }
+                                              return `₹${Number(value).toFixed(2)}K`; // Default to thousands
+                                            }
+                                            if (key.includes('Payback')) return `${value} years`;
+                                            if (key.includes('Carbon')) return `${value} Kiloton`;
+                                            return `₹${value}/kWh`;
+                                          }}
+                                        />
+                                        <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]}>
+                                          {plotData.data.map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#60a5fa'} />
+                                          ))}
+                                        </Bar>
+                                      </BarChart>
+                                    </ResponsiveContainer>
+                        </div>
+                        </div>
+                              );
+                            } else if (plotData && typeof plotData === 'object' && plotData.type && !plotData.data) {
+                              // Plot metadata exists but data is missing (optimized storage) - show message
+                              return (
+                                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{plotData.title || key}</h4>
+                                  <div className="h-80 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                    <p>Plot data will be regenerated when you view this plan</p>
+                                  </div>
+                                </div>
+                              );
+                            } else if (plotData && typeof plotData === 'object' && plotData.type === 'bar' && plotData.data) {
+                              // Legacy check - keep for compatibility
+                              return (
+                                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{plotData.title}</h4>
+                                  <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                      <BarChart data={plotData.data} margin={{ left: 20, right: 10, top: 10, bottom: 40 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                        <XAxis 
+                                          dataKey="name" 
+                                          tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.xLabel, position: 'insideBottom', offset: -2 }}
+                                        />
+                                        <YAxis 
+                                          tick={{ fill: 'currentColor' }}
+                                          label={{ value: plotData.yLabel, angle: -90, position: 'Left', offset: 10 }}
+                                        />
+                                        <Tooltip 
+                                          contentStyle={{ 
+                                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '6px'
+                                          }}
+                                          formatter={(value: any) => {
+                                            if (key.includes('Capital Cost')) {
+                                              // Check yLabel to determine unit (Thousands or Cr)
+                                              const yLabel = plotData.yLabel || '';
+                                              if (yLabel.includes('Thousands')) {
+                                                return `₹${Number(value).toFixed(2)}K`;
+                                              } else if (yLabel.includes('Cr')) {
+                                                return `₹${value} Cr`;
+                                              }
+                                              return `₹${Number(value).toFixed(2)}K`; // Default to thousands
+                                            }
+                                            if (key.includes('Payback')) return `${value} years`;
+                                            if (key.includes('Carbon')) return `${value} Kiloton`;
+                                            return `₹${value}/kWh`;
+                                          }}
+                                        />
+                                        <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]}>
+                                          {plotData.data.map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#60a5fa'} />
+                                          ))}
+                                        </Bar>
+                                      </BarChart>
+                                    </ResponsiveContainer>
+                        </div>
+                        </div>
+                              );
+                            } else {
+                              // Old base64 format - render as image (backward compatibility)
+                              return (
+                                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                  <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">{key}</h4>
+                                  <img 
+                                    src={`data:image/png;base64,${plotData}`} 
+                                    alt={key}
+                                    className="w-full h-auto rounded"
+                                  />
+                                </div>
+                              );
+                            }
+                          })}
                       </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                )}
 
-                {/* Emissions Analysis */}
-                <Card title="Environmental Impact">
+                    {/* Cost of Energy Generation */}
+                    <Card title="Cost of Energy and Grid Outage Effect">
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="p-6 bg-gradient-to-br from-teal-50 to-green-50 dark:from-teal-900/20 dark:to-green-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <Leaf className="w-8 h-8 text-teal-600" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          The Cost of Energy is defined as the average cost to produce one unit of electricity from the system. 
+                          An installed solar system is connected to the grid, and during a grid outage, energy generation stops, 
+                          with energy loss directly related to the outage duration.
+                        </p>
+                        <div className="space-y-4">
                           <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Annual CO₂ Reduction</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {(emissionsAnalysis.annual_co2_reduction_kg / 1000).toFixed(2)} t
-                            </p>
-                          </div>
+                            <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">Dual Mode System</h4>
+                            <div className="space-y-2">
+                              {Object.entries(flaskResponse['Cost of Energy Generation'] || {}).map(([key, value]: [string, any]) => (
+                                <div key={key} className="flex justify-between items-center py-1">
+                                  <span className="text-gray-700 dark:text-gray-300 text-sm">{key}:</span>
+                                  <span className="text-gray-900 dark:text-white font-semibold">{value}</span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">tonnes per year</p>
+                              ))}
                       </div>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">On-Grid System</h4>
+                            <div className="space-y-2">
+                              {Object.entries(flaskResponse['On-Grid Cost of Energy Generation'] || {}).map(([key, value]: [string, any]) => (
+                                <div key={key} className="flex justify-between items-center py-1">
+                                  <span className="text-gray-700 dark:text-gray-300 text-sm">{key}:</span>
+                                  <span className="text-gray-900 dark:text-white font-semibold">{value}</span>
+                          </div>
+                              ))}
+                        </div>
+                      </div>
+                        </div>
+                      </div>
+                    </Card>
 
-                      <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <TrendingUp className="w-8 h-8 text-green-600" />
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Carbon Offset</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {emissionsAnalysis.carbon_offset_percentage.toFixed(1)}%
-                            </p>
+                    {/* Simple Payback Period */}
+                    <Card title="Simple Payback Period">
+                      <div className="p-6">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          The simple payback period is defined as the time an investment takes to generate an amount of money equal to its initial cost.
+                        </p>
+                        <div className="space-y-2">
+                          {Object.entries(flaskResponse['Simple Payback Period'] || {}).map(([key, value]: [string, any]) => (
+                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{key}:</span>
+                              <span className="text-gray-900 dark:text-white font-semibold">{value}</span>
                           </div>
+                          ))}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">vs grid-only</p>
                       </div>
+                    </Card>
 
-                      <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <Leaf className="w-8 h-8 text-emerald-600" />
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">25-Year Reduction</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                              {emissionsAnalysis.lifetime_co2_reduction_tonnes.toFixed(1)} t
-                            </p>
+                    {/* Carbon Emission */}
+                    <Card title="Environment Effect">
+                      <div className="p-6">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          Using renewable resources to generate energy will reduce fossil fuel burning for energy generation, 
+                          ultimately saving carbon emissions.
+                        </p>
+                        <div className="space-y-2">
+                          <h4 className="font-semibold mb-2 text-gray-900 dark:text-white">Carbon Emission Comparison</h4>
+                          {Object.entries(flaskResponse['Carbon Emission'] || {}).map(([key, value]: [string, any]) => (
+                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{key}:</span>
+                              <span className="text-gray-900 dark:text-white font-semibold">{value}</span>
                           </div>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">lifetime impact</p>
-                      </div>
+                          ))}
                     </div>
                   </div>
                 </Card>
+                  </>
+                ) : null}
 
                 {/* Action Buttons */}
-                <div className="flex justify-end space-x-4">
+                    {(flaskResponse || technicalSizing) && (
+                    <div className="flex justify-end space-x-4 mt-6">
                   <button
                     onClick={handleSavePlan}
                     className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center space-x-2"
@@ -1055,7 +1621,6 @@ const PlanningWizardContent: React.FC = () => {
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
-              </>
             )}
           </div>
         )}

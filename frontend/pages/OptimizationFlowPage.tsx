@@ -9,21 +9,12 @@ const OptimizationFlowPage: React.FC = () => {
   const options = [
     {
       id: 'setup',
-      title: 'Optimization Setup',
+      title: 'Optimization Configuration',
       description: 'Configure optimization parameters, load data, tariffs, and system parameters',
       icon: Settings,
       path: '/optimization-setup',
       color: 'from-blue-500 to-blue-600',
       step: 'O1'
-    },
-    {
-      id: 'results',
-      title: 'Optimization Results',
-      description: 'View optimization results, KPIs, cost savings, and emissions analysis',
-      icon: TrendingUp,
-      path: '/optimization-results',
-      color: 'from-green-500 to-green-600',
-      step: 'O2'
     },
     {
       id: 'demand',
@@ -57,7 +48,7 @@ const OptimizationFlowPage: React.FC = () => {
             Back to Main Options
           </button>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Optimization Flow
+            Energy Optimization
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
             Optimize your energy system for cost, CO2 emissions, or both
@@ -99,22 +90,15 @@ const OptimizationFlowPage: React.FC = () => {
         </div>
 
         <div className="mt-8 p-6 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-            📊 Optimization Flow Process
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            📊 Energy Optimization Process
           </h3>
           <div className="space-y-3 text-gray-700 dark:text-gray-300">
             <div className="flex items-start">
               <span className="font-semibold text-green-600 dark:text-green-400 mr-3">O1:</span>
               <div>
-                <p className="font-semibold">Optimization Setup</p>
+                <p className="font-semibold">Optimization Configuration</p>
                 <p className="text-sm">Configure load data, tariffs, PV/battery/grid parameters. Auto-load from planning if available.</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <span className="font-semibold text-green-600 dark:text-green-400 mr-3">O2:</span>
-              <div>
-                <p className="font-semibold">Optimization Results</p>
-                <p className="text-sm">View KPIs: cost savings, emissions reduction, battery life impact, grid independence.</p>
               </div>
             </div>
             <div className="flex items-start">

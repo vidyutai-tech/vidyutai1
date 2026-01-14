@@ -250,13 +250,15 @@ const PredictionsPage: React.FC = () => {
                             dataKey="cycle_count" 
                             label={{ value: 'Charge/Discharge Cycles', position: 'insideBottom', offset: -5 }}
                             tick={{ fontSize: 12 }}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <YAxis 
-                            label={{ value: 'RUL (hours)', angle: -90, position: 'insideLeft' }}
+                            label={{ value: 'RUL (hours)', angle: -90, position: 'insideLeft', offset: 0 }}
                             tick={{ fontSize: 12 }}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <Tooltip content={<CustomTooltip />} />
-                          <Legend />
+                          <Legend wrapperStyle={{ paddingTop: '20px' }} />
                           <Area 
                             type="monotone" 
                             dataKey="rul_hours" 
@@ -352,21 +354,24 @@ const PredictionsPage: React.FC = () => {
                             dataKey="age_years" 
                             label={{ value: 'Panel Age (years)', position: 'insideBottom', offset: -5 }}
                             tick={{ fontSize: 12 }}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <YAxis 
                             yAxisId="left"
-                            label={{ value: 'Efficiency (%)', angle: -90, position: 'insideLeft' }}
+                            label={{ value: 'Efficiency (%)', angle: -90, position: 'insideLeft', offset: 0 }}
                             tick={{ fontSize: 12 }}
                             domain={[0, 20]}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <YAxis 
                             yAxisId="right"
                             orientation="right"
-                            label={{ value: 'Degradation (%)', angle: 90, position: 'insideRight' }}
+                            label={{ value: 'Degradation (%)', angle: 90, position: 'insideRight', offset: 15 }}
                             tick={{ fontSize: 12 }}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <Tooltip content={<CustomTooltip />} />
-                          <Legend />
+                          <Legend wrapperStyle={{ paddingTop: '20px' }} />
                           <Line 
                             yAxisId="left"
                             type="monotone" 
@@ -482,13 +487,15 @@ const PredictionsPage: React.FC = () => {
                             dataKey="load_kw" 
                             label={{ value: 'Load (kW)', position: 'insideBottom', offset: -5 }}
                             tick={{ fontSize: 12 }}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <YAxis 
-                            label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft' }}
+                            label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft', offset: 0 }}
                             tick={{ fontSize: 12 }}
+                            tickFormatter={(value) => Number(value).toFixed(2)}
                           />
                           <Tooltip content={<CustomTooltip />} />
-                          <Legend />
+                          <Legend wrapperStyle={{ paddingTop: '20px' }} />
                           <Area 
                             type="monotone" 
                             dataKey="loss_percent" 
@@ -570,11 +577,11 @@ const PredictionsPage: React.FC = () => {
 
             {/* Actionable Insights - Isolated per prediction type with unique keys */}
             {selectedType === 'battery' && batteryData && (
-              <ActionableInsights 
+            <ActionableInsights 
                 key="battery-insights"
-                context="predictions" 
-                predictionData={{
-                  battery: batteryData,
+              context="predictions" 
+              predictionData={{
+                battery: batteryData,
                   solar: null,
                   loss: null
                 }}
@@ -588,7 +595,7 @@ const PredictionsPage: React.FC = () => {
                 context="predictions" 
                 predictionData={{
                   battery: null,
-                  solar: solarData,
+                solar: solarData,
                   loss: null
                 }}
                 predictionSubType="solar"
@@ -602,11 +609,11 @@ const PredictionsPage: React.FC = () => {
                 predictionData={{
                   battery: null,
                   solar: null,
-                  loss: lossData
-                }}
+                loss: lossData
+              }}
                 predictionSubType="loss"
-                compact={true}
-              />
+              compact={true}
+            />
             )}
           </>
         )}

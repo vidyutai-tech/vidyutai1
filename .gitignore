@@ -284,6 +284,12 @@ checkpoints/
 saved_models/
 mlruns/
 
+# BUT allow models needed for production deployment
+!ai-service/app/ml-models/*.joblib
+!ai-service/app/ml-models/*.keras
+!ai-service/app/ml-models/*.json
+!ai-service/app/ml-models/*.txt
+
 # Data files
 *.csv
 *.tsv

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { ArrowRight, BarChart3, TrendingUp, Brain, LayoutDashboard, UserCircle, LogOut } from 'lucide-react';
+import { ArrowRight, BarChart3, TrendingUp, UserCircle, LogOut } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { AppContext } from '../contexts/AppContext';
 
@@ -25,7 +25,7 @@ const MainOptionsPage: React.FC = () => {
   const options = [
     {
       id: 'planning',
-      title: 'Planning Wizard',
+      title: 'Energy Advisory Assistance',
       description: 'Create a new energy system plan with site type selection, load profiling, energy sources selection, and AI-powered recommendations',
       icon: BarChart3,
       path: '/planning-wizard',
@@ -34,30 +34,12 @@ const MainOptionsPage: React.FC = () => {
     },
     {
       id: 'optimization',
-      title: 'Optimization Flow',
-      description: 'Optimize your existing energy system for cost, CO2 emissions, or both. Setup optimization parameters and run analysis',
+      title: 'Energy Optimization',
+      description: 'Optimize your existing energy system for cost, CO2 emissions, or both. Configure optimization parameters and run analysis',
       icon: TrendingUp,
       path: '/optimization-flow',
       color: 'from-green-500 to-green-600',
-      steps: 'O1 → O2 → Advanced'
-    },
-    {
-      id: 'ai-insights',
-      title: 'AI/ML Insights',
-      description: 'Get AI-powered predictions, recommendations, renewable optimization, and natural language explanations',
-      icon: Brain,
-      path: '/ai-ml-insights',
-      color: 'from-purple-500 to-purple-600',
-      steps: 'Predictions & Recommendations'
-    },
-    {
-      id: 'dashboard',
-      title: 'Unified Dashboard (EDA)',
-      description: 'Exploratory Data Analysis dashboard with real-time monitoring, visualizations, and comprehensive energy metrics',
-      icon: LayoutDashboard,
-      path: '/unified-dashboard',
-      color: 'from-orange-500 to-orange-600',
-      steps: '8 Sub-Modules'
+      steps: 'Configuration → Analysis'
     }
   ];
 
@@ -172,20 +154,12 @@ const MainOptionsPage: React.FC = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
               <div>
-                <p className="font-semibold mb-1">1. Planning Wizard</p>
+                <p className="font-semibold mb-1">1. Energy Advisory Assistance</p>
                 <p className="text-sm">Design your energy system from scratch with step-by-step guidance and AI recommendations.</p>
               </div>
               <div>
-                <p className="font-semibold mb-1">2. Optimization Flow</p>
+                <p className="font-semibold mb-1">2. Energy Optimization</p>
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-1">3. AI/ML Insights</p>
-                <p className="text-sm">Leverage machine learning for predictions, anomaly detection, and intelligent insights.</p>
-              </div>
-              <div>
-                <p className="font-semibold mb-1">4. Unified Dashboard</p>
-                <p className="text-sm">Monitor your energy system in real-time with comprehensive EDA and visualizations.</p>
               </div>
             </div>
           </div>

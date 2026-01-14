@@ -49,9 +49,9 @@ const PostLoginWizardPage: React.FC<PostLoginWizardPageProps> = ({ onComplete })
       });
 
       if (response.ok) {
-        // Mark wizard as completed
-        localStorage.setItem('hasCompletedWizard', 'true');
+        // Profile saved to backend database - wizard completion is now determined by profile existence
         // Call onComplete callback if provided (this updates App state and navigates)
+        // App.tsx will check the profile on next render to determine wizard completion status
         if (onComplete) {
           onComplete();
         } else {
@@ -64,8 +64,7 @@ const PostLoginWizardPage: React.FC<PostLoginWizardPageProps> = ({ onComplete })
       }
     } catch (error) {
       console.error('Error saving preferences:', error);
-      // Still mark as completed and navigate even if save fails
-      localStorage.setItem('hasCompletedWizard', 'true');
+      // Even if save fails, try to navigate (user can complete wizard again if needed)
       if (onComplete) {
         onComplete();
       } else {

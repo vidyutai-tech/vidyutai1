@@ -135,7 +135,8 @@ const EnhancedTelemetryChart: React.FC<EnhancedTelemetryChartProps> = ({
               dataKey="timestamp"
               label={{ value: 'Time', position: 'insideBottom', offset: -5 }}
               stroke={textColor}
-              tick={{ fill: textColor }}
+              tick={{ fill: textColor, angle: -45, textAnchor: 'end' }}
+              height={80}
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -144,15 +145,15 @@ const EnhancedTelemetryChart: React.FC<EnhancedTelemetryChartProps> = ({
             <YAxis
               yAxisId="left"
               stroke="#8884d8"
-              label={{ value: 'Voltage/Power', angle: -90, position: 'insideLeft', fill: '#8884d8' }}
-              tickFormatter={(value) => Number(value).toFixed(2)}
+              label={{ value: 'Voltage/Power', angle: -90, position: 'insideLeft', offset: 8, fill: '#8884d8' }}
+              tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
               stroke="#82ca9d"
-              label={{ value: 'Current/Frequency/SoC', angle: -90, position: 'insideRight', fill: '#82ca9d' }}
-              tickFormatter={(value) => Number(value).toFixed(2)}
+              label={{ value: 'Current/Frequency/SoC', angle: -90, position: 'insideRight', offset: 20, fill: '#82ca9d' }}
+              tickFormatter={(value) => Math.round(Number(value)).toString()}
             />
             <Tooltip
               contentStyle={{
@@ -164,7 +165,7 @@ const EnhancedTelemetryChart: React.FC<EnhancedTelemetryChartProps> = ({
                 return date.toLocaleString();
               }}
             />
-            <Legend />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} />
 
             {/* Main data lines */}
             {selectedAxes.has('voltage') && (

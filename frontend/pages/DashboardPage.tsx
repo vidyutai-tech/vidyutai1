@@ -347,12 +347,12 @@ const DashboardPage: React.FC = () => {
                     tick={{ fill: 'currentColor' }} 
                   />
                   <YAxis 
-                    label={{ value: 'Cost (₹)', angle: -90, position: 'insideLeft' }} 
+                    label={{ value: 'Cost (₹)', angle: -90, position: 'insideLeft', offset: -1 }} 
                     tick={{ fill: 'currentColor' }}
                     tickFormatter={(value) => Number(value).toFixed(2)}
                   />
                   <Tooltip />
-                  <Legend />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar dataKey="cost" name="Actual Cost" fill="#ef4444" />
                   <Bar dataKey="savings" name="Savings vs Conv." fill="#10b981" />
                 </BarChart>

@@ -97,7 +97,7 @@ const SolarDegradationCurves: React.FC<SolarDegradationCurvesProps> = ({
               interval="preserveStartEnd"
             />
             <YAxis
-              label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft', offset: 0 }}
               tick={{ fill: 'currentColor' }}
               tickFormatter={(value) => Number(value).toFixed(2)}
             />
@@ -109,7 +109,7 @@ const SolarDegradationCurves: React.FC<SolarDegradationCurvesProps> = ({
               }}
               formatter={(value: any) => Number(value).toFixed(2)}
             />
-            <Legend />
+            <Legend wrapperStyle={{ paddingTop: '20px' }} />
             <Line
               type="monotone"
               dataKey="soilingIndex"

@@ -246,7 +246,7 @@ const PlanningWizardPage: React.FC = () => {
       await loadPreviousPlans();
 
       if (action === 'proceed_to_optimization') {
-        // Navigate to optimization setup with planning data
+        // Navigate to optimization configuration with planning data
         navigate('/optimization-setup', { state: { planningRecommendation: result.recommendation } });
       } else {
         // Show success message and option to view plans or create new
@@ -376,7 +376,7 @@ const PlanningWizardPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header with View Plans button */}
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Planning Wizard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Energy Advisory Assistance</h1>
           <button
             onClick={() => {
               setShowPreviousPlans(true);

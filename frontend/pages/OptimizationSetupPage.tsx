@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Upload, FileText, Settings, Zap, Battery, Grid, Sun, CheckCircle, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Upload, FileText, Settings, Zap, Battery, Grid, Sun, CheckCircle, Users, Download } from 'lucide-react';
 import { AppContext } from '../contexts/AppContext';
 import { getLoadProfiles, getPlanningRecommendations } from '../services/api';
 import Card from '../components/ui/Card';
@@ -32,7 +32,7 @@ const OptimizationSetupPage: React.FC = () => {
     // System Configuration
     grid_connection: 2500,
     solar_connection: 2000,
-    battery_capacity: 4000000,  // Wh
+    battery_capacity: 40,  // kAh
     battery_voltage: 100,
     diesel_capacity: 2200,
     storage_type: 'battery', // 'battery', 'phes', 'hybrid'
@@ -50,6 +50,14 @@ const OptimizationSetupPage: React.FC = () => {
     battery_om_cost: 6.085,
     fuel_cell_om_cost: 1.5,
     electrolyzer_om_cost: 0.5,
+    
+    // CO2 Parameters (kg CO2/kWh)
+    co2_grid_import: 0.82,
+    co2_diesel: 0.27,
+    co2_battery_discharge: 0.02,
+    co2_pv_used: 0.05,
+    co2_fuel_cell: 0.0,
+    co2_electrolyzer: 0.0,
     
     // File upload
     uploadedFile: null as File | null,
@@ -71,7 +79,7 @@ const OptimizationSetupPage: React.FC = () => {
         setLoadProfiles(profiles);
         setPlanningRecommendations(recommendations);
         
-        // If coming from planning wizard, pre-fill data
+        // If coming from energy advisory assistance, pre-fill data
         if (planningRecommendation) {
           if (planningRecommendation.load_profile_id) {
             setSelectedLoadProfile(planningRecommendation.load_profile_id);
@@ -85,7 +93,7 @@ const OptimizationSetupPage: React.FC = () => {
             setFormData(prev => ({
               ...prev,
               solar_connection: planningRecommendation.technical_sizing.solar_capacity_kw || prev.solar_connection,
-              battery_capacity: (planningRecommendation.technical_sizing.battery_capacity_kwh || 0) * 1000 || prev.battery_capacity,
+              battery_capacity: (planningRecommendation.technical_sizing.battery_capacity_kwh || 0) || prev.battery_capacity,
               grid_connection: planningRecommendation.technical_sizing.grid_connection_kw || prev.grid_connection,
             }));
           }
@@ -171,7 +179,7 @@ const OptimizationSetupPage: React.FC = () => {
             Back to Main Options
           </button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Optimization Setup
+            Optimization Configuration
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Configure common parameters for optimization. Choose Demand or Source Optimization to proceed.
@@ -190,7 +198,7 @@ const OptimizationSetupPage: React.FC = () => {
               <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-2 mt-0.5" />
               <div>
                 <p className="text-green-800 dark:text-green-300 font-semibold">
-                  Data Pre-filled from Planning Wizard
+                  Data Pre-filled from Energy Advisory Assistance
                 </p>
                 <p className="text-green-700 dark:text-green-400 text-sm mt-1">
                   Your planning recommendation data has been automatically loaded. You can modify any fields as needed.
@@ -327,7 +335,7 @@ const OptimizationSetupPage: React.FC = () => {
 
                 <div className={controlWrapperClass}>
                   <label className="label">
-                    <span className={labelClass}>Battery Capacity (Wh)</span>
+                    <span className={labelClass}>Battery Capacity (kAh)</span>
                   </label>
                   <input
                     type="number"
@@ -537,6 +545,98 @@ const OptimizationSetupPage: React.FC = () => {
             </div>
           </Card>
 
+          {/* CO2 Parameters */}
+          <Card>
+            <div className={sectionPanelClass}>
+              <h3 className="text-lg font-semibold mb-4">CO₂ Parameters (kg CO₂/kWh)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={controlWrapperClass}>
+                  <label className="label">
+                    <span className={labelClass}>Grid Import</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="co2_grid_import"
+                    value={formData.co2_grid_import}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    step="0.01"
+                  />
+                </div>
+
+                <div className={controlWrapperClass}>
+                  <label className="label">
+                    <span className={labelClass}>Diesel</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="co2_diesel"
+                    value={formData.co2_diesel}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    step="0.01"
+                  />
+                </div>
+
+                <div className={controlWrapperClass}>
+                  <label className="label">
+                    <span className={labelClass}>Battery Discharge</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="co2_battery_discharge"
+                    value={formData.co2_battery_discharge}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    step="0.001"
+                  />
+                </div>
+
+                <div className={controlWrapperClass}>
+                  <label className="label">
+                    <span className={labelClass}>PV Used</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="co2_pv_used"
+                    value={formData.co2_pv_used}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    step="0.001"
+                  />
+                </div>
+
+                <div className={controlWrapperClass}>
+                  <label className="label">
+                    <span className={labelClass}>Fuel Cell</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="co2_fuel_cell"
+                    value={formData.co2_fuel_cell}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    step="0.001"
+                  />
+                </div>
+
+                <div className={controlWrapperClass}>
+                  <label className="label">
+                    <span className={labelClass}>Electrolyzer</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="co2_electrolyzer"
+                    value={formData.co2_electrolyzer}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                    step="0.001"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* File Upload */}
           <Card>
             <div className={sectionPanelClass}>
@@ -551,13 +651,37 @@ const OptimizationSetupPage: React.FC = () => {
                   onChange={handleFileUpload}
                   className={fileInputClass}
                 />
-                <label className="label">
-                  <span className="label-text-alt">
-                    For Source Optimization: CSV should have 'Load', 'Price', and optional 'Solar/PV' columns
-                    <br />
-                    For Demand Optimization: CSV should have Load1, Load2, Load3, Load4, Load5, Price columns
-                  </span>
-                </label>
+                
+                {/* Sample File Downloads */}
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Download sample files:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://drive.google.com/uc?export=download&id=1n5gou1ddaSA6liX6JMtrzH92pbyqN_8-"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Source Optimization Sample
+                    </a>
+                    <a
+                      href="https://drive.google.com/uc?export=download&id=1ZsnBth9n809w9KGFSMtqC2fl0xKRTaZd"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors text-sm font-medium"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Demand Optimization Sample
+                    </a>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                    <p><strong>Source Optimization:</strong> Time, Load (kW), Price (Rs/kWh), Solar/PV (kW, optional)</p>
+                    <p><strong>Demand Optimization:</strong> Time, Load1-Load5 (kW each), Price (Rs/kWh)</p>
+                  </div>
+                </div>
               </div>
             </div>
           </Card>

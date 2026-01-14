@@ -96,10 +96,21 @@ npm install
 Create a `.env` file (optional, defaults are provided):
 
 ```bash
-VITE_API_URL=http://localhost:8000
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-VITE_WS_URL=ws://localhost:8000
+# API Base URL (for HTTP requests)
+VITE_API_BASE_URL=http://localhost:5001/api/v1
+
+# Socket.IO URL (for WebSocket connections)
+# If not set, will be derived from VITE_API_BASE_URL or use window.location.origin
+VITE_SOCKET_URL=http://localhost:5001
+
+# AI Service URL (optional)
+VITE_AI_BASE_URL=http://localhost:8000
 ```
+
+**For Production Deployment (Render/Netlify):**
+- Set `VITE_API_BASE_URL` to your backend URL: `https://your-backend.onrender.com/api/v1`
+- Set `VITE_SOCKET_URL` to your backend URL: `https://your-backend.onrender.com`
+- The app will automatically detect production and use these environment variables
 
 ### 3. Run Development Server
 

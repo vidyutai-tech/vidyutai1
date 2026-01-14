@@ -1,49 +1,38 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, Bot, SlidersHorizontal, Settings, X, Bolt, Share2, Building, HardDrive, TrendingUp, Zap, Users, Lightbulb, MessageSquare, Battery, Search } from 'lucide-react';
+import { LayoutDashboard, AlertTriangle, AreaChart, Wrench, SlidersHorizontal, Settings, X, Bolt, Building, HardDrive, TrendingUp, Zap, MessageSquare, Battery, Search, Activity, Home } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
   setSidebarOpen: (isOpen: boolean) => void;
 }
 
-// Organized by 4 main pipelines
+// Organized by main pipelines
 const planningNavItems = [
-  { name: 'Planning Wizard', path: '/planning-wizard', icon: Bolt },
+  { name: 'Energy Advisory Assistance', path: '/planning-wizard', icon: Bolt },
 ];
 
 const optimizationNavItems = [
-  { name: 'Optimization Flow', path: '/optimization-flow', icon: TrendingUp },
-  { name: 'Optimization Setup', path: '/optimization-setup', icon: Settings },
-  { name: 'Optimization Results', path: '/optimization-results', icon: TrendingUp },
-  { name: 'Demand Optimization', path: '/demand-optimization', icon: Users },
-  { name: 'Source Optimization', path: '/source-optimization', icon: Zap },
+  { name: 'Optimization Configuration', path: '/optimization-setup', icon: Settings },
 ];
 
+const dashboardNavItems = [
+  { name: 'Solar Plant Energy Monitoring', path: '/operational-monitoring', icon: Activity },
+  { name: 'Residential Energy Monitoring', path: '/residential-monitoring', icon: Home },
+];
+
+// AI/ML Insights items - moved to dashboard section as they're navigation utilities
 const aiMlNavItems = [
-  { name: 'AI/ML Insights', path: '/ai-ml-insights', icon: Bot },
   { name: 'Energy Forecasting', path: '/energy-forecasting', icon: TrendingUp },
   { name: 'Battery RUL Prediction', path: '/battery-rul', icon: Battery },
   { name: 'Solar Degradation Prediction', path: '/solar-degradation', icon: Zap },
   { name: 'Energy Loss Prediction', path: '/energy-loss', icon: AlertTriangle },
   { name: 'Root Cause Analysis', path: '/root-cause-analysis', icon: Search },
-  { name: 'AI Explanations', path: '/ai-explanations', icon: MessageSquare },
+  { name: 'AI Interpretations', path: '/ai-explanations', icon: MessageSquare },
 ];
 
-const dashboardNavItems = [
-  { name: 'Unified Dashboard', path: '/unified-dashboard', icon: LayoutDashboard },
-  { name: 'Operations Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Site Detail', path: '/site-detail', icon: AreaChart },
-  { name: 'Digital Twin', path: '/digital-twin', icon: Share2 },
-  { name: 'Simulator', path: '/simulator', icon: SlidersHorizontal },
-  { name: 'Alerts', path: '/alerts', icon: AlertTriangle },
-  { name: 'Maintenance', path: '/maintenance', icon: Wrench },
-];
-
-const impactActionsNavItems = [
-  { name: 'Actionable Insights', path: '/ai-recommendations', icon: Lightbulb },
-  { name: 'Impact Analysis', path: '/impact', icon: TrendingUp },
-];
+// Actionable Insights section removed
+const impactActionsNavItems: typeof planningNavItems = [];
 
 const managementNavItems = [
   { name: 'Sites', path: '/manage-sites', icon: Building },
@@ -57,10 +46,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
 
   // Determine which pipeline section is active
   const isPlanningActive = currentPath.includes('/planning-wizard');
-  const isOptimizationActive = currentPath.includes('/optimization') || currentPath.includes('/demand-optimization') || currentPath.includes('/source-optimization');
-  const isAIMLActive = currentPath.includes('/ai-ml') || currentPath.includes('/predictions') || currentPath.includes('/ai-explanations') || currentPath.includes('/energy-forecasting') || currentPath.includes('/battery-rul') || currentPath.includes('/solar-degradation') || currentPath.includes('/energy-loss') || currentPath.includes('/root-cause-analysis');
-  const isDashboardActive = currentPath.includes('/unified-dashboard') || currentPath.includes('/dashboard') || currentPath.includes('/site-detail') || currentPath.includes('/digital-twin') || currentPath.includes('/simulator') || currentPath.includes('/alerts') || currentPath.includes('/maintenance');
-  const isImpactActionsActive = currentPath.includes('/ai-recommendations') || currentPath.includes('/impact');
+  const isOptimizationActive = currentPath.includes('/optimization-setup');
+  const isDashboardActive = currentPath.includes('/operational-monitoring');
 
   const NavItem: React.FC<{ item: { name: string; path: string; icon: any } }> = ({ item }) => (
     <NavLink
@@ -130,24 +117,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
               </NavLink>
             </div>
             
-            <NavSection title="1. Planning Wizard" items={planningNavItems} isActive={isPlanningActive} />
-            <NavSection title="2. Optimization Flow" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. AI/ML Insights" items={aiMlNavItems} isActive={isAIMLActive} />
-            <NavSection title="4. Unified Dashboard" items={dashboardNavItems} isActive={isDashboardActive} />
-            <NavSection title="5. Impact & Actions" items={impactActionsNavItems} isActive={isImpactActionsActive} />
-            
-            <div className="px-4 mt-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Management</h3>
-            </div>
-            <nav className="mt-2">
-              <ul>
-                {managementNavItems.map((item) => (
-                  <li key={item.name}>
-                    <NavItem item={item} />
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
+            <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
+            <NavSection title="3. Dashboards" items={dashboardNavItems} isActive={isDashboardActive} />
           </nav>
         </div>
       </aside>

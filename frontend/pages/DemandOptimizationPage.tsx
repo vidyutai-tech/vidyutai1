@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AppContext } from "../contexts/AppContext";
 import axios from "axios";
 import { Snackbar, Alert } from "@mui/material";
+import DemandOptimizationCharts from "../components/shared/DemandOptimizationCharts";
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -15,7 +16,7 @@ import {
 } from "recharts";
 import {
   BatteryCharging,
-  DollarSign,
+  Coins,
   Fuel,
   Gauge,
   Leaf,
@@ -24,16 +25,36 @@ import {
   Users,
   AlertCircle,
   ArrowLeft,
+  ArrowUp,
 } from "lucide-react";
+import InlineOptimizationSetup from "../components/shared/InlineOptimizationSetup";
 
 const DemandOptimizationPage = () => {
-  const { currentUser } = useContext(AppContext)!;
+  const appContext = useContext(AppContext);
+  if (!appContext) {
+    return <div>Loading...</div>; // Safety check
+  }
+  const { currentUser, theme } = appContext;
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get common config from location state (from Optimization Setup)
-  const commonConfig = (location.state as any)?.commonConfig;
-  const uploadedFile = (location.state as any)?.uploadedFile;
+  // Get common config from location state (from Optimization Configuration) or localStorage
+  const locationConfig = (location.state as any)?.commonConfig;
+  const locationFile = (location.state as any)?.uploadedFile;
+  
+  // Check localStorage for saved config
+  const savedConfig = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('optimizationConfig');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Use location config first, then saved config, then null
+  const commonConfig = locationConfig || savedConfig;
+  const uploadedFile = locationFile;
 
   // Demand-specific form data (only curtailment penalties)
   const [demandSpecificData, setDemandSpecificData] = useState({
@@ -46,11 +67,13 @@ const DemandOptimizationPage = () => {
   const [mergedFormData, setMergedFormData] = useState<any>(null);
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [chartData, setChartData] = useState<any[]>([]);
   const [plotUrl, setPlotUrl] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use backend proxy instead of direct AI service call to avoid CORS issues
   const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
@@ -108,19 +131,50 @@ const DemandOptimizationPage = () => {
     return formatted === "-" ? "-" : `${formatted} kWh`;
   };
 
-  // Merge common config with demand-specific data
-  useEffect(() => {
+  // Basic file-type guard to avoid sending HTML/error downloads as CSV
+  const validateUploadedFile = (file: File) => {
+    const name = file.name.toLowerCase();
+    const type = (file.type || "").toLowerCase();
+    const isCsv = name.endsWith(".csv") || type.includes("csv");
+    const isExcel = name.endsWith(".xlsx") || name.endsWith(".xls") || type.includes("excel");
+    return isCsv || isExcel;
+  };
+
+  const getServerErrorMessage = (err: any) => {
+    const data = err?.response?.data;
+    if (data?.message) return data.message;
+    if (data?.details?.message) return data.details.message;
+    if (typeof data === "string") return data;
+    return err?.message || "An unexpected error occurred";
+  };
+
+  // Handle config from inline setup
+  const handleInlineConfigReady = (config: any) => {
+    // Store config in localStorage (without file, as files can't be serialized)
+    const { uploadedFile: file, ...configWithoutFile } = config;
+    localStorage.setItem('optimizationConfig', JSON.stringify(configWithoutFile));
+    
+    const merged = {
+      ...config,
+      ...demandSpecificData,
+      objective_type: "cost",
+      uploadedFile: config.uploadedFile || uploadedFile || null,
+    };
+    setMergedFormData(merged);
+  };
+
+  // Initialize mergedFormData with defaults immediately or from config
+  const getDefaultMergedData = useMemo(() => {
     if (commonConfig) {
-      const merged = {
+      return {
         ...commonConfig,
         ...demandSpecificData,
         objective_type: "cost", // Demand optimization only supports cost
         uploadedFile: uploadedFile || null,
       };
-      setMergedFormData(merged);
     } else {
       // If no common config, use defaults (for backward compatibility)
-      const defaultMerged = {
+      return {
         weather: "Sunny",
         objective_type: "cost",
         num_days: 1,
@@ -128,7 +182,7 @@ const DemandOptimizationPage = () => {
         profile_type: "Auto detect",
         grid_connection: 2500,
         solar_connection: 2000,
-        battery_capacity: 4000000,
+        battery_capacity: 40,
         battery_voltage: 100,
         diesel_capacity: 2200,
         electrolyzer_capacity: 1000.0,
@@ -142,9 +196,13 @@ const DemandOptimizationPage = () => {
         electrolyzer_om_cost: 0.5,
         ...demandSpecificData,
       };
-      setMergedFormData(defaultMerged);
     }
   }, [commonConfig, demandSpecificData, uploadedFile]);
+
+  // Merge common config with demand-specific data
+  useEffect(() => {
+    setMergedFormData(getDefaultMergedData);
+  }, [getDefaultMergedData]);
 
   useEffect(() => {
     const savedResponse = localStorage.getItem("demandOptimizationResponse");
@@ -153,9 +211,13 @@ const DemandOptimizationPage = () => {
     const parsed = JSON.parse(savedResponse);
     setResponse(parsed);
     if (parsed.chart_data) {
-      setChartData(parsed.chart_data);
+      if (Array.isArray(parsed.chart_data)) {
+        setChartData(parsed.chart_data);
+      } else {
+        setChartData(parsed.chart_data.time_series || []);
+      }
     }
-    if (parsed.plot_base64) {
+    if (parsed.plot_base64 && !parsed.chart_data) {
       setPlotUrl(`data:image/png;base64,${parsed.plot_base64}`);
     }
   }, []);
@@ -171,6 +233,11 @@ const DemandOptimizationPage = () => {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && mergedFormData) {
+      if (!validateUploadedFile(file)) {
+        setError("Please upload a valid CSV or Excel file (not HTML/download pages).");
+        setOpen(true);
+        return;
+      }
       setMergedFormData(prev => ({
         ...prev,
         uploadedFile: file
@@ -180,7 +247,7 @@ const DemandOptimizationPage = () => {
 
   const handleSubmit = async () => {
     if (!mergedFormData) {
-      setError("Please configure optimization parameters first in Optimization Setup");
+      setError("Please configure optimization parameters first in Optimization Configuration");
       setOpen(true);
       return;
     }
@@ -199,8 +266,22 @@ const DemandOptimizationPage = () => {
     }
 
     setLoading(true);
+    setProgress(0);
     setError(null);
     setOpen(false);
+    
+    // Start progress simulation
+    progressIntervalRef.current = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          // Slow down near the end, wait for actual completion
+          return prev;
+        }
+        // Increment progress with some randomness to make it feel natural
+        // Cap at 100 to prevent exceeding 100%
+        return Math.min(100, prev + Math.random() * 15 + 5);
+      });
+    }, 500);
 
     try {
       // Get auth token
@@ -246,8 +327,18 @@ const DemandOptimizationPage = () => {
 
       if (res.data.status === "success") {
         setResponse(res.data);
-        setChartData(res.data.chart_data || []);
-        if (res.data.plot_base64) {
+        // Handle new chart_data structure (with time_series and metadata) or old array structure
+        if (res.data.chart_data) {
+          if (Array.isArray(res.data.chart_data)) {
+            // Old structure - convert to new structure for backward compatibility
+            setChartData(res.data.chart_data);
+          } else {
+            // New structure already
+            setChartData(res.data.chart_data.time_series || []);
+          }
+        }
+        // Only set plotUrl if chart_data is not available (backward compatibility)
+        if (res.data.plot_base64 && !res.data.chart_data) {
           setPlotUrl(`data:image/png;base64,${res.data.plot_base64}`);
         } else {
           setPlotUrl(null);
@@ -267,13 +358,24 @@ const DemandOptimizationPage = () => {
         return;
       }
       if (err.response?.data?.message) {
-        setError(err.response.data.message);
+        setError(err.response.data.message || getServerErrorMessage(err));
       } else {
-        setError(err.message || "An unexpected error occurred");
+        setError(getServerErrorMessage(err));
       }
       setOpen(true);
     } finally {
-      setLoading(false);
+      // Clear progress interval
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      // Complete progress bar
+      setProgress(100);
+      // Small delay to show 100% before hiding
+      setTimeout(() => {
+        setLoading(false);
+        setProgress(0);
+      }, 300);
     }
   };
 
@@ -285,6 +387,9 @@ const DemandOptimizationPage = () => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
       }
     };
   }, []);
@@ -298,15 +403,21 @@ const DemandOptimizationPage = () => {
   const formattedBreakdown = useMemo(() => {
     if (!response?.summary?.Costs?.Breakdown) return [];
     const breakdown = response.summary.Costs.Breakdown;
+    
+    // Helper function to format labels (replace underscores with spaces)
+    const formatLabel = (label: string) => {
+      return label.replace(/_/g, ' ');
+    };
+    
     if (Array.isArray(breakdown)) {
       return breakdown.map((item: any) => ({
-        label: item.label,
+        label: formatLabel(item.label),
         value: item.value,
       }));
     }
     if (breakdown && typeof breakdown === "object") {
       return Object.entries(breakdown).map(([label, value]) => ({
-        label,
+        label: formatLabel(label),
         value,
       }));
     }
@@ -369,7 +480,7 @@ const DemandOptimizationPage = () => {
         value: summary.Costs?.TOTAL_COST_INR != null ? `₹${formatNumber(summary.Costs.TOTAL_COST_INR, 0)}` : "-",
         subtext: costPerKwh ? `₹${formatNumber(costPerKwh, 2)} per kWh` : "Includes grid, diesel & storage costs",
         accent: "from-emerald-500 via-emerald-500 to-emerald-600",
-        icon: DollarSign,
+        icon: Coins,
       },
       {
         title: "Load Served",
@@ -393,16 +504,23 @@ const DemandOptimizationPage = () => {
         icon: Gauge,
       },
       {
-        title: "Battery Cycling",
+        title: "Grid Exports",
+        value: formatKWh(summary.Grid?.Export_kWh, 0),
+        subtext: summary.Grid?.Export_kWh != null && summary.Grid.Export_kWh > 0 ? "Energy exported to grid" : "No exports",
+        accent: "from-green-500 to-emerald-500",
+        icon: ArrowUp,
+      },
+      {
+        title: "Battery Cycling (Charging & Discharging)",
         value: `${formatKWh(summary.Battery?.Charged_kWh, 0)} / ${formatKWh(summary.Battery?.Discharged_kWh, 0)}`,
         subtext: `${formatNumber(summary.Battery?.Capacity_kWh, 0)} kWh • ${formatNumber(summary.Battery?.Voltage_V, 0)} V`,
         accent: "from-violet-500 to-purple-500",
         icon: BatteryCharging,
       },
       {
-        title: "CO2 Emissions",
+        title: "CO₂ Emissions",
         value: totalCO2kg != null ? `${formatNumber(totalCO2kg, 2)} kg` : "-",
-        subtext: co2Intensity != null ? `${formatNumber(co2Intensity, 4)} kg CO2/kWh` : "Emission intensity",
+        subtext: co2Intensity != null ? `${formatNumber(co2Intensity, 4)} kg CO₂/kWh` : "Emission intensity",
         accent: "from-teal-500 to-emerald-500",
         icon: Leaf,
       },
@@ -429,7 +547,8 @@ const DemandOptimizationPage = () => {
                 Configure Demand Optimization
               </h2>
               <p className="mt-3 max-w-2xl text-sm text-base-content/70 md:text-[0.95rem]">
-                Configure curtailment penalties for multi-load prioritization. Common parameters are already set from Optimization Setup.
+                Optimize energy demand patterns across multiple loads with priority-based curtailment. 
+                Manages critical vs. flexible loads and determines optimal load serving strategy to minimize total cost.
               </p>
             </div>
             {mergedFormData && (
@@ -447,11 +566,40 @@ const DemandOptimizationPage = () => {
             )}
           </div>
 
+          {/* Purpose and Usage Info Box */}
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+            <div className="flex items-start gap-3">
+              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Purpose & Usage</h4>
+                <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1.5">
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>When to use:</strong> Manage energy demand across multiple loads (critical and flexible) with different priorities</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>What it does:</strong> Uses MILP optimization to determine which loads to serve or curtail based on penalties, ensuring critical loads are always served</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>Output:</strong> Per-load dispatch analysis, curtailment decisions, cost breakdown, and 7-subplot visualization charts</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span><strong>Note:</strong> Requires 5 load profiles in your data file. Loads 1-2 are critical (always served), Loads 3-5 can be curtailed based on penalties</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           {!commonConfig && (
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p className="text-yellow-800 dark:text-yellow-300">
-                ⚠️ No configuration found. Please start from <button onClick={() => navigate('/optimization-setup')} className="underline font-semibold">Optimization Setup</button> first.
-              </p>
+            <div className="mb-6">
+              <InlineOptimizationSetup 
+                onConfigReady={handleInlineConfigReady}
+                compact={true}
+              />
             </div>
           )}
 
@@ -519,7 +667,7 @@ const DemandOptimizationPage = () => {
           {/* Display Common Configuration (Read-only) */}
           {mergedFormData && (
             <div className={sectionPanelClass}>
-              <h3 className="text-lg font-semibold mb-4">Common Configuration (from Optimization Setup)</h3>
+              <h3 className="text-lg font-semibold mb-4">Common Configuration (from Optimization Configuration)</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-base-content/60">Weather:</span>
@@ -547,38 +695,101 @@ const DemandOptimizationPage = () => {
                 </div>
                 <div>
                   <span className="text-base-content/60">Battery:</span>
-                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity / 1000).toFixed(0)} kWh</span>
+                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity)*(mergedFormData.battery_voltage).toFixed(0)} kWh</span>
                 </div>
                 <div>
                   <span className="text-base-content/60">Diesel:</span>
                   <span className="ml-2 font-semibold">{mergedFormData.diesel_capacity} kW</span>
                 </div>
               </div>
-              <button
-                onClick={() => navigate('/optimization-setup', { state: { commonConfig: mergedFormData } })}
-                className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Edit common parameters →
-              </button>
+              <div className="mt-4 space-y-2">
+                {!mergedFormData.uploadedFile && !uploadedFile && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Currently no data uploaded. If you want to upload,{' '}
+                    <button
+                      onClick={() => {
+                        // Scroll to inline setup if it exists, or navigate to optimization configuration
+                        const inlineSetup = document.querySelector('[data-inline-setup]');
+                        if (inlineSetup) {
+                          inlineSetup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          // Try to expand it if it's collapsed
+                          const expandButton = inlineSetup.querySelector('button');
+                          if (expandButton) expandButton.click();
+                        } else {
+                          navigate('/optimization-setup', { state: { commonConfig: mergedFormData } });
+                        }
+                      }}
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                    >
+                      click here
+                    </button>
+                  </p>
+                )}
+                {(mergedFormData.uploadedFile || uploadedFile) && (
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    ✓ Custom data file uploaded: {(mergedFormData.uploadedFile || uploadedFile)?.name || 'File'}
+                  </p>
+                )}
+                <button
+                  onClick={() => navigate('/optimization-setup', { state: { commonConfig: mergedFormData } })}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Edit common parameters →
+                </button>
+              </div>
             </div>
           )}
 
-          <div className="flex justify-center pt-4">
+          <div className="flex flex-col items-center pt-4 space-y-3">
             <button
               onClick={handleSubmit}
-              className="btn h-12 min-h-12 rounded-2xl border-none bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 px-10 text-base font-semibold text-white shadow-lg shadow-indigo-300/40 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+              className="relative btn h-12 min-h-12 rounded-2xl border-none bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 px-10 text-base font-semibold text-white shadow-lg shadow-indigo-300/40 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70 overflow-hidden"
               disabled={loading || !mergedFormData}
             >
-              {loading ? "Optimizing..." : "Run Demand Optimization"}
+              {loading && (
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 transition-all duration-300 ease-out"
+                  style={{ 
+                    width: `${progress}%`,
+                    transition: 'width 0.3s ease-out'
+                  }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Optimizing... {Math.round(progress)}%
+                  </>
+                ) : (
+                  "Run Demand Optimization"
+                )}
+              </span>
             </button>
+            {loading && (
+              <div className="w-full max-w-md">
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 transition-all duration-300 ease-out rounded-full"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-2">
+                  Processing optimization... This may take a few moments
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {response && (
         <div className="space-y-8">
-          {/* Optimization Summary */}
-          {plotUrl && (
+          {/* Optimization Summary - Use Recharts if chart_data is available, otherwise fallback to image */}
+          {(response.chart_data || plotUrl) && (
             <div className="rounded-3xl border border-base-200/70 bg-base-100/95 shadow-xl shadow-purple-100/40">
               <div className="space-y-4 p-6 md:p-8">
                 <div className="flex items-center justify-between">
@@ -594,16 +805,20 @@ const DemandOptimizationPage = () => {
                     </p>
                   </div>
                   <span className="rounded-full border border-purple-400/30 bg-purple-50 px-4 py-1 text-xs font-semibold text-purple-600">
-                    Multi-load analysis
+                    {response.chart_data && typeof response.chart_data === 'object' && response.chart_data.time_series ? 'Interactive charts' : 'Multi-load analysis'}
                   </span>
                 </div>
-                <div className="flex justify-center overflow-x-auto">
-                  <img
-                    src={plotUrl}
-                    alt="Demand Optimization Results"
-                    className="max-w-full rounded-2xl shadow-lg"
-                  />
-                </div>
+                {response.chart_data && typeof response.chart_data === 'object' && response.chart_data.time_series ? (
+                  <DemandOptimizationCharts chartData={response.chart_data} theme={theme} />
+                ) : plotUrl ? (
+                  <div className="flex justify-center overflow-x-auto">
+                    <img
+                      src={plotUrl}
+                      alt="Demand Optimization Results"
+                      className="max-w-full rounded-2xl shadow-lg"
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>
           )}

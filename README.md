@@ -228,7 +228,7 @@ source venv/bin/activate  # On macOS/Linux
 
 # Start the FastAPI server
 cd app
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Expected output:
 # INFO:     Uvicorn running on http://0.0.0.0:8000

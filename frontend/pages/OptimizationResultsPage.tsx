@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Download, CheckCircle, TrendingUp, TrendingDown, Zap, Battery, Grid, Sun, Leaf, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, CheckCircle, TrendingUp, TrendingDown, Zap, Battery, Grid, Sun, Leaf, Coins } from 'lucide-react';
 import { AppContext } from '../contexts/AppContext';
 import Card from '../components/ui/Card';
 import axios from 'axios';
@@ -90,7 +90,7 @@ const OptimizationResultsPage: React.FC = () => {
               onClick={() => navigate('/optimization-setup')}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
             >
-              Go to Optimization Setup
+              Go to Optimization Configuration
             </button>
           </Card>
         )}
@@ -110,7 +110,7 @@ const OptimizationResultsPage: React.FC = () => {
                       {summary?.Costs?.Cost_per_kWh_INR?.toFixed(2) || '0.00'} ₹/kWh
                     </p>
                   </div>
-                  <DollarSign className="w-12 h-12 text-green-600 dark:text-green-400" />
+                  <Coins className="w-12 h-12 text-green-600 dark:text-green-400" />
                 </div>
               </Card>
 
@@ -170,14 +170,18 @@ const OptimizationResultsPage: React.FC = () => {
             {summary?.Costs?.Breakdown && (
               <Card title="Cost Breakdown">
                 <div className="space-y-2">
-                  {Object.entries(summary.Costs.Breakdown).map(([key, value]: [string, any]) => (
-                    <div key={key} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{key}</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        ₹{Number(value).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                  {Object.entries(summary.Costs.Breakdown).map(([key, value]: [string, any]) => {
+                    // Format label by replacing underscores with spaces
+                    const formattedLabel = key.replace(/_/g, ' ');
+                    return (
+                      <div key={key} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{formattedLabel}</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          ₹{Number(value).toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
             )}

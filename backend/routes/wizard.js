@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
 const UserProfileModel = require('../database/models/userProfiles');
 const LoadProfileModel = require('../database/models/loadProfiles');
 const PlanningRecommendationModel = require('../database/models/planningRecommendations');
@@ -8,7 +9,6 @@ const OptimizationConfigModel = require('../database/models/optimizationConfigs'
 
 // Helper to extract user ID from token (simplified - in production use proper JWT)
 const getUserId = (req) => {
-  // This is a simplified version - in production, decode JWT properly
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     console.log('[getUserId] No authorization header found');
@@ -16,40 +16,58 @@ const getUserId = (req) => {
   }
   
   try {
-    let token = authHeader.replace('Bearer ', '').trim();
+    // Remove 'Bearer ' prefix if present
+    let token = authHeader.startsWith('Bearer ') 
+      ? authHeader.substring(7).trim() 
+      : authHeader.trim();
+    
     if (!token) {
-      console.log('[getUserId] Token is empty after removing Bearer');
+      console.log('[getUserId] Token is empty after processing');
       return null;
     }
     
-    // Handle both base64 encoded token and plain token
+    // Decode base64 encoded token (as created in auth.js)
     let decoded;
     try {
-      decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+      const decodedString = Buffer.from(token, 'base64').toString('utf-8');
+      decoded = JSON.parse(decodedString);
     } catch (e) {
-      // If base64 decode fails, try parsing as JSON directly
+      console.error('[getUserId] Failed to decode base64 token:', e.message);
+      console.error('[getUserId] Token (first 50 chars):', token.substring(0, 50));
+      // Try parsing as plain JSON (fallback)
       try {
         decoded = JSON.parse(token);
       } catch (e2) {
-        console.error('[getUserId] Failed to decode token:', e2.message);
+        console.error('[getUserId] Failed to parse token as JSON:', e2.message);
         return null;
       }
     }
     
-    if (!decoded || !decoded.userId) {
-      console.log('[getUserId] Decoded token does not contain userId:', decoded);
+    if (!decoded) {
+      console.log('[getUserId] Decoded token is null or undefined');
       return null;
     }
     
-    // Check if token is expired
-    if (decoded.exp && decoded.exp < Date.now()) {
-      console.log('[getUserId] Token has expired');
+    // Check for userId (the token uses 'userId' not 'user_id')
+    if (!decoded.userId) {
+      console.log('[getUserId] Decoded token does not contain userId. Keys:', Object.keys(decoded));
       return null;
     }
     
+    // Check if token is expired (exp is in milliseconds)
+    if (decoded.exp) {
+      const now = Date.now();
+      if (decoded.exp < now) {
+        console.log('[getUserId] Token has expired. Exp:', new Date(decoded.exp), 'Now:', new Date(now));
+        return null;
+      }
+    }
+    
+    console.log('[getUserId] Successfully extracted userId:', decoded.userId);
     return decoded.userId;
   } catch (e) {
-    console.error('[getUserId] Error decoding token:', e.message);
+    console.error('[getUserId] Unexpected error:', e.message);
+    console.error('[getUserId] Stack:', e.stack);
     return null;
   }
 };
@@ -208,10 +226,19 @@ router.post('/planning/step1', (req, res) => {
 // POST /api/v1/wizard/planning/step2 - P2: Appliances & Load Profile
 router.post('/planning/step2', async (req, res) => {
   try {
+    console.log('[step2] Request received. Auth header present:', !!req.headers.authorization);
+    
     const userId = getUserId(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
+      console.error('[step2] Authentication failed - no userId extracted');
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Unauthorized',
+        message: 'Authentication required. Please login again.'
+      });
     }
+    
+    console.log('[step2] Authenticated user:', userId);
 
     const { site_id, name, appliances } = req.body;
 
@@ -357,30 +384,94 @@ router.post('/planning/step3', async (req, res) => {
     const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     
     try {
-      const planningResponse = await fetch(`${AI_SERVICE_URL}/api/v1/planning/recommend`, {
-        method: 'POST',
+      const planningResponse = await axios.post(`${AI_SERVICE_URL}/api/v1/planning/recommend`, {
+        load_profile_id,
+        total_daily_energy_kwh: totalDailyEnergy,
+        preferred_sources,
+        primary_goal: goals[0], // AI service currently expects single goal, send first one
+        primary_goals: goals, // Also send array for future compatibility
+        allow_diesel
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': req.headers.authorization || ''
         },
-        body: JSON.stringify({
-          load_profile_id,
-          total_daily_energy_kwh: totalDailyEnergy,
-          preferred_sources,
-          primary_goal: goals[0], // AI service currently expects single goal, send first one
-          primary_goals: goals, // Also send array for future compatibility
-          allow_diesel
-        }),
         timeout: 30000 // 30 second timeout
       });
 
-      if (!planningResponse.ok) {
-        const errorText = await planningResponse.text();
-        console.error('AI Service error response:', errorText);
-        throw new Error(`Planning service error: ${planningResponse.status} ${errorText}`);
-      }
+      const planningData = planningResponse.data;
 
-      const planningData = await planningResponse.json();
+      // Handle Flask-style response structure
+      // Transform Flask response to match database schema
+      let technical_sizing = {};
+      let economic_analysis = {};
+      let emissions_analysis = {};
+
+      if (planningData['Technical Analysis']) {
+        // Flask-style response - transform it
+        const tech = planningData['Technical Analysis'];
+        const econ = planningData['Economic Analysis'];
+        const capitalGen = planningData['Capital Cost & Annual Generation'];
+        const costEnergy = planningData['Cost of Energy Generation'];
+        const onGridCost = planningData['On-Grid Cost of Energy Generation'];
+        const payback = planningData['Simple Payback Period'];
+        const carbon = planningData['Carbon Emission'];
+
+        technical_sizing = {
+          solar_capacity_kw: parseFloat(tech['Solar Panel Power Rating (kW)'] || '0'),
+          battery_capacity_kwh: parseFloat(tech['Battery Energy (kWh)'] || '0'),
+          battery_nominal_voltage_v: parseInt(tech['Battery Nominal Voltage (V)'] || '12'),
+          battery_capacity_ah: parseFloat(tech['Battery Capacity (kAh)'] || '0') * 1000, // Convert kAh to Ah
+          inverter_capacity_kw: parseFloat(tech['Inverter Rating (kVA)'] || '0'),
+          dc_converter_capacity_kw: parseFloat(tech['DC-DC Converter Rating (kW)'] || '0'),
+          grid_connection_kw: 0, // Not in Flask response, set default
+          diesel_capacity_kw: null,
+          recommendations: []
+        };
+
+        economic_analysis = {
+          solar_cost_rs: parseFloat(econ['Solar Panel Cost (Rs)'] || '0'),
+          battery_cost_rs: parseFloat(econ['Battery Cost (Rs)'] || '0'),
+          inverter_cost_rs: parseFloat(econ['Inverter Cost (Rs)'] || '0'),
+          dc_converter_cost_rs: parseFloat(econ['DC-DC Converter Cost (Rs)'] || '0'),
+          installation_cost_dual_mode_rs: parseFloat(econ['Installation Cost Dual Mode (Rs)'] || '0'),
+          installation_cost_on_grid_rs: parseFloat(econ['Installation Cost On-Grid (Rs)'] || '0'),
+          annual_om_cost_dual_mode_rs: parseFloat(econ['Annual O&M Cost Dual Mode (Rs)'] || '0'),
+          annual_om_cost_on_grid_rs: parseFloat(econ['Annual O&M Cost On-Grid (Rs)'] || '0'),
+          capital_cost_dual_mode_rs: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+          capital_cost_on_grid_rs: parseFloat(capitalGen['Capital Cost On-Grid (Rs)'] || '0'),
+          annual_energy_generation_dual_mode_kwh: parseFloat(capitalGen['Annual Energy Generation Dual Mode (kWh)'] || '0'),
+          annual_energy_generation_on_grid_kwh: parseFloat(capitalGen['Annual Energy Generation On-Grid (kWh)'] || '0'),
+          annual_revenue_dual_mode_rs: parseFloat(capitalGen['Annual Revenue Dual Mode (Rs)']?.replace(/,/g, '') || '0'),
+          annual_revenue_on_grid_rs: parseFloat(capitalGen['Annual Revenue On-Grid (Rs)']?.replace(/,/g, '') || '0'),
+          cost_energy_dual_mode_rs_per_kwh: parseFloat(costEnergy['Dual Mode Cost (Rs/kWh)'] || '0'),
+          cost_energy_on_grid_rs_per_kwh: parseFloat(onGridCost['On-Grid Cost (Rs/kWh)'] || '0'),
+          simple_payback_dual_mode_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+          simple_payback_on_grid_years: parseFloat(payback['On-Grid System (years)'] || '0'),
+          // Legacy fields
+          total_capex: parseFloat(capitalGen['Capital Cost Dual Mode (Rs)'] || '0'),
+          annual_opex: parseFloat(econ['Annual O&M Cost Dual Mode (Rs)'] || '0'),
+          payback_period_years: parseFloat(payback['Dual Mode System (years)'] || '0'),
+          npv_10_years: 0, // Not in Flask response
+          roi_percentage: 0, // Not in Flask response
+          monthly_savings: 0, // Not in Flask response
+          // Store full Flask response for UI display
+          flask_response: planningData
+        };
+
+        emissions_analysis = {
+          carbon_emission_dual_mode_ton: parseFloat(carbon['Dual Mode System (Ton)'] || '0'),
+          carbon_emission_on_grid_ton: parseFloat(carbon['On-Grid System (Ton)'] || '0'),
+          annual_co2_reduction_kg: 0, // Not directly in Flask response
+          carbon_offset_percentage: 0,
+          lifetime_co2_reduction_tonnes: 0
+        };
+      } else {
+        // Legacy response structure (backward compatibility)
+        technical_sizing = planningData.technical_sizing || {};
+        economic_analysis = planningData.economic_analysis || {};
+        emissions_analysis = planningData.emissions_analysis || {};
+      }
 
       // Create planning recommendation
       const recommendation = {
@@ -391,9 +482,9 @@ router.post('/planning/step3', async (req, res) => {
         preferred_sources,
         primary_goals: goals,
         allow_diesel: allow_diesel || false,
-        technical_sizing: planningData.technical_sizing || {},
-        economic_analysis: planningData.economic_analysis || {},
-        emissions_analysis: planningData.emissions_analysis || {},
+        technical_sizing: technical_sizing,
+        economic_analysis: economic_analysis,
+        emissions_analysis: emissions_analysis,
         scenario_link: action === 'proceed_to_optimization' ? uuidv4() : null,
         status: action === 'save' ? 'saved' : 'draft'
       };
@@ -408,7 +499,8 @@ router.post('/planning/step3', async (req, res) => {
         success: true,
         recommendation,
         action,
-        saved: true
+        saved: true,
+        flask_response: planningData['Technical Analysis'] ? planningData : null // Pass Flask response if available
       });
     } catch (aiError) {
       console.error('AI service error:', aiError);
@@ -625,5 +717,6 @@ router.get('/optimization/configs', (req, res) => {
 // Export getUserId for use in other routes
 module.exports = router;
 module.exports.getUserId = getUserId;
+
 
 

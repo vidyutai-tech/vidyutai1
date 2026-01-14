@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const http = require('http');
 const socketIo = require('socket.io');
+const axios = require('axios');
 require('dotenv').config();
 const { ensureInitialized } = require('./database/db');
 
@@ -21,6 +22,42 @@ const insightsRoutes = require('./routes/insights');
 const wizardRoutes = require('./routes/wizard');
 const planningRoutes = require('./routes/planning');
 const optimizationRoutes = require('./routes/optimization');
+const xaiRoutes = require('./routes/xai');
+const gdprRoutes = require('./routes/gdpr');
+const caseStudiesRoutes = require('./routes/case-studies');
+
+// Cache for legacy route (shared with case-studies route logic)
+const legacyCache = new Map();
+const LEGACY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getLegacyCached(key) {
+  const cached = legacyCache.get(key);
+  if (cached && Date.now() - cached.timestamp < LEGACY_CACHE_TTL) {
+    return cached.data;
+  }
+  legacyCache.delete(key);
+  return null;
+}
+
+function setLegacyCache(key, data) {
+  legacyCache.set(key, { data, timestamp: Date.now() });
+}
+
+async function retryWithBackoffLegacy(fn, maxRetries = 3, baseDelay = 1000) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (error.response?.status === 429 && attempt < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log(`Rate limited (429), retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
 
 // Initialize Express app
 const app = express();
@@ -133,6 +170,65 @@ app.use('/api/v1/insights', insightsRoutes); // Dedicated insights endpoints
 app.use('/api/v1/wizard', wizardRoutes);
 app.use('/api/v1/planning', planningRoutes);
 app.use('/api/v1', optimizationRoutes);
+app.use('/api/v1/xai', xaiRoutes); // XAI routes - proxy to Python AI service
+app.use('/api/v1/gdpr', gdprRoutes); // GDPR compliance routes
+app.use('/api/v1/case-studies', caseStudiesRoutes); // Case studies routes
+
+// Legacy route for backward compatibility (maintains old endpoint path)
+// This allows the frontend to continue using /api/v1/solar-panel-degradation
+// It has the same caching and retry logic as the case-studies route
+app.post('/api/v1/solar-panel-degradation', async (req, res) => {
+  const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+  
+  try {
+    // Create cache key from request body
+    const cacheKey = `solar-degradation-legacy-${JSON.stringify(req.body)}`;
+    
+    // Check cache first
+    const cached = getLegacyCached(cacheKey);
+    if (cached) {
+      console.log('✅ Returning cached solar panel degradation result (legacy route)');
+      return res.json(cached);
+    }
+
+    // Make request with retry logic
+    const response = await retryWithBackoffLegacy(async () => {
+      return await axios.post(`${AI_SERVICE_URL}/api/v1/solar-panel-degradation`, req.body, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.authorization || ''
+        },
+        timeout: 60000
+      });
+    });
+
+    // Cache successful response
+    setLegacyCache(cacheKey, response.data);
+    
+    return res.json(response.data);
+  } catch (error) {
+    console.error('Error in legacy solar panel degradation route:', error.message);
+    
+    // If 429 error, return cached data if available (even if expired)
+    if (error.response?.status === 429) {
+      const cacheKey = `solar-degradation-legacy-${JSON.stringify(req.body)}`;
+      const cached = legacyCache.get(cacheKey);
+      if (cached) {
+        console.log('⚠️ Rate limited - returning stale cached data (legacy route)');
+        return res.json(cached.data);
+      }
+    }
+    
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: 'Failed to calculate solar panel degradation',
+      message: error.response?.status === 429 
+        ? 'Rate limit exceeded. Please try again in a few moments.'
+        : error.message,
+      details: error.response?.data || null
+    });
+  }
+});
 
 // Simulator endpoint (also available as /api/v1/simulate for convenience)
 app.post('/api/v1/simulate', async (req, res) => {
