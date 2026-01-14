@@ -16,24 +16,19 @@ VidyutAI Realtime Dashboard provides:
 
 ### Technology Stack
 
-**Frontend:**
-- React 19 with TypeScript
-- Vite for fast development and building
-- Recharts for data visualization
-- React Router for navigation
-- Lucide React for icons
+**Frontend (Netlify / Vite):**
+- React 19 + TypeScript, Vite 6
+- Recharts for charts, React Router for routing, Lucide for icons
 
-**Backend (Node.js):**
-- Express.js for REST API
-- Socket.IO for real-time data streaming
-- SQLite for database (with better-sqlite3)
-- JWT for authentication (future)
+**Backend (Render / Node.js):**
+- Express REST API + Socket.IO for realtime
+- Postgres / Timescale schema + Redis client (see `backend/database/*`)
+- JWT auth & site/asset/wizard routes
 
-**AI Service (Python):**
-- Python FastAPI for high-performance ML API
-- TensorFlow & Scikit-learn for ML models
-- Pandas for data processing
-- Uvicorn ASGI server
+**AI Service (Render / Python):**
+- FastAPI + Uvicorn
+- Pandas / scikit-learn; Excel-backed mock power data
+- `openpyxl` to read `ai-service/data/power_profile_one_month_updated.xlsx`
 
 ## 📂 Project Structure
 
@@ -134,20 +129,25 @@ JWT_SECRET=your-secret-key-change-this
 
 **Frontend (.env file):**
 
-Create a file `frontend/.env`:
+Create `frontend/.env`:
 ```bash
-VITE_API_URL=http://localhost:5001
 VITE_API_BASE_URL=http://localhost:5001/api/v1
-VITE_WS_URL=ws://localhost:5001
+VITE_SOCKET_URL=http://localhost:5001
+# Optional: direct AI mock power calls (otherwise backend proxy)
+VITE_AI_BASE_URL=http://localhost:8000/api/v1
 ```
 
 **AI Service (.env file):**
 
-Create a file `ai-service/.env`:
+Create `ai-service/.env`:
 ```bash
 API_HOST=0.0.0.0
 API_PORT=8000
-DEBUG=True
+# Optional: override path to Excel data file
+POWER_DATA_FILE=./data/power_profile_one_month_updated.xlsx
+# Optional: OpenAI keys if using insights
+OPENAI_API_KEY=your-key
+SECRET_KEY=change-me
 ```
 
 #### Step 3: Initialize the Database
@@ -216,18 +216,21 @@ Your browser should automatically open to the dashboard!
 
 ### Terminal 3: Start AI Service (Python - Optional)
 
-The AI service provides machine learning predictions. The backend will work without it using mock data.
+Provides mock power data and AI insights. Backend can still run with built-in mock data if absent.
 
 ```bash
-# Navigate to ai-senpm rvice folder
+# Navigate to ai-service
 cd ai-service
 
-# Activate virtual environment
+# Create/activate virtual environment
+python3 -m venv venv
 source venv/bin/activate  # On macOS/Linux
 # Or on Windows: venv\Scripts\activate
 
+# Install dependencies (includes openpyxl for Excel)
+pip install -r requirements.txt
+
 # Start the FastAPI server
-cd app
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Expected output:
@@ -235,8 +238,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 # INFO:     Application startup complete.
 ```
 
-**AI Service will be available at:** http://localhost:8000
-
+**AI Service will be available at:** http://localhost:8000  
 **API Documentation:** http://localhost:8000/docs
 
 ## 🌐 Access URLs
@@ -248,8 +250,14 @@ Once all services are running:
 | **Frontend Dashboard** | http://localhost:5173 | Main dashboard interface |
 | **Backend API** | http://localhost:5001 | Node.js REST API |
 | **Backend Health** | http://localhost:5001/health | Health check endpoint |
-| **AI Service API** | http://localhost:8000 | Python ML API (optional) |
+| **AI Service API** | http://localhost:8000 | FastAPI mock power/insights |
 | **AI Service Docs** | http://localhost:8000/docs | Interactive API documentation |
+
+## 🚢 Deployment (current setup)
+
+- **Frontend:** Netlify (`netlify.toml`) — set `VITE_API_BASE_URL`, `VITE_SOCKET_URL`, and optionally `VITE_AI_BASE_URL`.
+- **Backend:** Render (`render.yaml` service `vidyutai-backend`) — set `AI_SERVICE_URL`, `FRONTEND_URL`, `CORS_ORIGIN`, `DATABASE_URL`, `JWT_SECRET`, `PORT` (Render provides), plus Redis/Timescale creds if used.
+- **AI Service:** Render (`vidyutai-ai-service`) — set `PORT` (Render provides), `POWER_DATA_FILE` optional override, `OPENAI_API_KEY`/`SECRET_KEY` if using insights.
 
 ## 📊 API Endpoints
 
@@ -399,27 +407,20 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Backend Connects to AI Service
+### Backend connects to AI Service
 
-The backend will automatically fall back to mock data if the AI service is not running. To enable AI features:
+- Set `AI_SERVICE_URL` in `backend/.env` (e.g., `http://localhost:8000` locally; Render injects `PORT`=10000).
+- Backend falls back to mock data if the AI service is unavailable.
 
-1. Start the AI service (Terminal 3)
-2. Ensure AI_SERVICE_URL in backend/.env points to http://localhost:8000
-3. Restart the backend
+### CORS issues
 
-### CORS Issues
+1. Ensure `FRONTEND_URL` and `CORS_ORIGIN` in `backend/.env` match your frontend origin.
+2. Start backend before frontend to avoid initial 401/CORS noise.
 
-If you encounter CORS errors:
-1. Check that FRONTEND_URL in backend/.env matches your frontend URL
-2. Ensure the backend is running before starting the frontend
+### Database
 
-### Database Connection (Future)
-
-Currently, the app uses in-memory mock data. To connect to MongoDB:
-
-1. Install MongoDB
-2. Update MONGODB_URI in backend/.env
-3. Uncomment database connection code in server.js
+- The repo ships Postgres/Timescale schemas (`backend/database/schema-postgres.sql`, `timescale-schema.sql`) and a redis client.
+- For local quickstart you can still use SQLite, but production deployments should use Postgres/Timescale.
 
 ## 📚 Features
 
@@ -609,5 +610,5 @@ sqlite3 backend/database/vidyutai.db "DELETE FROM timeseries_data WHERE timestam
 
 **Note:** This is a development setup. For production deployment, please configure proper environment variables, enable authentication, and use a production-grade database.
 
-**Last Updated:** October 29, 2025  
-**Version:** 1.0.0
+**Last Updated:** January 14, 2026  
+**Version:** 1.1.0
