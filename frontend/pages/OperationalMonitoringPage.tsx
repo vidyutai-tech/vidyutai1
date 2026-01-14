@@ -377,9 +377,8 @@ const OperationalMonitoringPage: React.FC = () => {
               <YAxis label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10 }} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="pv" stackId="pv" stroke={chartColors.solar} fill={chartColors.solar} fillOpacity={0.2} name="Solar PV (kW)" />
-              {/* Battery rendered unstacked so negative values show below baseline */}
-              <Area type="monotone" dataKey="battery" stroke={chartColors.battery} fill={chartColors.battery} fillOpacity={0.15} name="Battery (kW, +discharge/-charge)" />
+              <Line type="monotone" dataKey="pv" stroke={chartColors.solar} strokeWidth={2.4} dot={false} name="Solar PV (kW)" />
+              <Line type="monotone" dataKey="battery" stroke={chartColors.battery} strokeWidth={2.4} dot={false} name="Battery (kW, +discharge/-charge)" />
               <Line type="monotone" dataKey="grid" stroke={chartColors.grid} strokeWidth={2.4} dot={false} name="Grid (kW, +import/-export)" />
             </ComposedChart>
           </ResponsiveContainer>

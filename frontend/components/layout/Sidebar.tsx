@@ -130,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
             
             <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
             <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. Dashboards" items={dashboardNavItems} isActive={isDashboardActive} />
+            <NavSection title="3. Site Monitoring" items={dashboardNavItems} isActive={isDashboardActive} />
           </nav>
         </div>
       </aside>

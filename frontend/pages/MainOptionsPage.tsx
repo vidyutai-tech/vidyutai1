@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { ArrowRight, BarChart3, TrendingUp, UserCircle, LogOut } from 'lucide-react';
+import { ArrowRight, BarChart3, TrendingUp, UserCircle, LogOut, Activity } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { AppContext } from '../contexts/AppContext';
 
@@ -40,6 +40,15 @@ const MainOptionsPage: React.FC = () => {
       path: '/optimization-flow',
       color: 'from-green-500 to-green-600',
       steps: 'Configuration → Analysis'
+    },
+    {
+      id: 'monitoring',
+      title: 'Site Monitoring',
+      description: 'Jump into plant and residential dashboards with real-time PV, battery, grid, and load insights.',
+      icon: Activity,
+      path: '/operational-monitoring',
+      color: 'from-purple-500 to-purple-600',
+      steps: 'Dashboards'
     }
   ];
 
@@ -114,7 +123,7 @@ const MainOptionsPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {options.map((option) => {
               const Icon = option.icon;
               return (

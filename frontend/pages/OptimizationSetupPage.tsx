@@ -144,6 +144,14 @@ const OptimizationSetupPage: React.FC = () => {
     }
 
     setError('');
+
+    const avoidZero = (v: number) => (v === 0 ? 1e-9 : v);
+    const safeFormData = {
+      ...formData,
+      battery_capacity: avoidZero(formData.battery_capacity),
+      battery_voltage: avoidZero(formData.battery_voltage),
+      h2_tank_capacity: avoidZero(formData.h2_tank_capacity),
+    };
     
     // Navigate directly to the optimization page with common data
     // Note: We don't save the config here because:
@@ -152,8 +160,8 @@ const OptimizationSetupPage: React.FC = () => {
     // 3. Saving can be done later if needed after optimization results
     navigate(`/${optimizationType}-optimization`, {
       state: {
-        commonConfig: formData,
-        uploadedFile: formData.uploadedFile,
+        commonConfig: safeFormData,
+        uploadedFile: safeFormData.uploadedFile,
         loadProfileId: selectedLoadProfile,
         planningRecommendationId: selectedPlanningRecommendation
       }
