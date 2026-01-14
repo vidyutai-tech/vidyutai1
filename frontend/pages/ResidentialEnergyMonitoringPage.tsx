@@ -56,6 +56,22 @@ const getPowerApiBase = (): string => {
   return hasApiVersion ? trimmed : `${trimmed}/api/v1`;
 };
 
+const alphaPv = 0.35; // blend factor for PV accumulation
+const betaLoad = 0.35; // blend factor for load accumulation
+
+const smoothAccumulation = (raw: number, forecast: number, progress: number, blend: number) => {
+  const ideal = forecast * progress;
+  const blended = blend * raw + (1 - blend) * ideal;
+  const candidate = Math.max(raw, blended);
+  return Math.min(forecast, candidate);
+};
+
+const pvProgressForHour = (hour: number) =>
+  hour < 6 ? 0 : hour > 18 ? 1 : Math.sin(((hour - 6) / 12) * Math.PI);
+
+const loadProgressForHour = (hour: number) =>
+  Math.min(hour / 24 + (hour >= 18 && hour <= 22 ? 0.05 : 0), 1);
+
 const ResidentialEnergyMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -86,8 +102,7 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     return sum;
   }, [powerData]);
 
-  const kpis: Kpi[] = useMemo(() => {
-    // Seeded daily baseline to keep forecasts stable for the day
+  const { kpis, energyStats } = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 10);
     const seededDaily = (seed: string, min: number, spread: number) => {
       let hash = 0;
@@ -98,7 +113,6 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
       return min + rand * spread;
     };
 
-    // Accumulation only for today up to current hour
     const now = new Date();
     const currentHour = now.getHours();
     const todaysPoints = powerData.filter((p) => {
@@ -112,53 +126,37 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
     const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
 
-    // Forecasts stable per day, but not below current accumulated
+    // Forecasts are constant for the day (total expected daily energy)
     const forecastPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
     const forecastLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
 
-    // Safety clamp: accumulated cannot exceed forecast
-    const accumulatedPv = Math.min(accumulatedPvRaw, forecastPv);
-    const accumulatedLoad = Math.min(accumulatedLoadRaw, forecastLoad);
+    // Progress curves
+    const pvProgress = pvProgressForHour(currentHour);
+    const loadProgress = loadProgressForHour(currentHour);
 
-    return [
+    // Smoothed, monotonic, and clamped accumulations
+    const accumulatedPv = smoothAccumulation(accumulatedPvRaw, forecastPv, pvProgress, alphaPv);
+    const accumulatedLoad = smoothAccumulation(accumulatedLoadRaw, forecastLoad, loadProgress, betaLoad);
+
+    const kpisData: Kpi[] = [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 1)} kWh`, color: '#22c55e' },
       { label: "Today's Forecast (Load)", value: `${formatNumber(forecastLoad, 1)} kWh`, color: '#0ea5e9' },
       { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 1)} kWh`, color: '#f59e0b' },
       { label: "Today's Accumulated (Load)", value: `${formatNumber(accumulatedLoad, 1)} kWh`, color: '#a855f7' },
     ];
-  }, [powerData]);
-
-  const energyStats = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const seededDaily = (seed: string, min: number, spread: number) => {
-      let hash = 0;
-      for (let i = 0; i < seed.length; i++) {
-        hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-      }
-      const rand = Math.abs(Math.sin(hash));
-      return min + rand * spread;
-    };
-
-    const now = new Date();
-    const currentHour = now.getHours();
-    const todaysPoints = powerData.filter((p) => {
-      if (p.dateOnly !== todayStr) return false;
-      const hourStr = p.label.split(' ')[1]?.replace('h', '');
-      const hourNum = parseInt(hourStr, 10);
-      if (Number.isNaN(hourNum)) return false;
-      return hourNum <= currentHour;
-    });
-
-    const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
-    const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
-
-    const forecastTodayPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
-    const forecastTodayLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
 
     const expectedLoad = totals.load;
     const avg7 = 14 + Math.random() * 2;
     const avg30 = 13 + Math.random() * 3;
-    return { avg7, avg30, forecastTodayPv, forecastTodayLoad, expectedLoad };
+    const energyStatsData = {
+      avg7,
+      avg30,
+      forecastTodayPv: forecastPv,
+      forecastTodayLoad: forecastLoad,
+      expectedLoad,
+    };
+
+    return { kpis: kpisData, energyStats: energyStatsData };
   }, [powerData, totals.load, lastUpdated]);
 
   const batteryGauge: Gauge = useMemo(() => {

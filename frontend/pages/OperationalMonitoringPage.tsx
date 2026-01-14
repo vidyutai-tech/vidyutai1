@@ -93,6 +93,18 @@ const generateInverterSeries = (name: string, range: '24h' | '7d' | '30d') => {
   return { name, data: points.reverse() };
 };
 
+const alphaPv = 0.35;
+
+const smoothAccumulation = (raw: number, forecast: number, progress: number, blend: number) => {
+  const ideal = forecast * progress;
+  const blended = blend * raw + (1 - blend) * ideal;
+  const candidate = Math.max(raw, blended);
+  return Math.min(forecast, candidate);
+};
+
+const pvProgressForHour = (hour: number) =>
+  hour < 6 ? 0 : hour > 18 ? 1 : Math.sin(((hour - 6) / 12) * Math.PI);
+
 const OperationalMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [inverterSeries, setInverterSeries] = useState<{ name: string; data: InverterPoint[] }[]>(() => [
@@ -170,19 +182,16 @@ const OperationalMonitoringPage: React.FC = () => {
 
     const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
 
+    // Forecast is constant for the day (total expected daily energy)
     const forecastPv = Math.max(seededDaily(todayStr, 52000, 9000), accumulatedPvRaw * 1.15);
 
-    // Optional smoothing based on sun hours (kept small to avoid jumps)
-    const sunHours = todaysPoints.filter((p) => p.pv > 0).length;
-    const expectedSunHours = 10;
-    const progress = Math.min(sunHours / expectedSunHours, 1);
-
-    const accumulatedPv = Math.min(accumulatedPvRaw, forecastPv);
-    const smoothedAccumulated = Math.min(forecastPv * progress, accumulatedPv);
+    // PV accumulation follows a smooth solar curve and clamps to forecast
+    const pvProgress = pvProgressForHour(currentHour);
+    const accumulatedPv = smoothAccumulation(accumulatedPvRaw, forecastPv, pvProgress, alphaPv);
 
     return [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 0)} kWh`, color: '#22c55e' },
-      { label: "Today's Accumulated (PV)", value: `${formatNumber(smoothedAccumulated, 0)} kWh`, color: '#f59e0b' },
+      { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 0)} kWh`, color: '#f59e0b' },
     ];
   }, [powerData]);
 
@@ -348,7 +357,7 @@ const OperationalMonitoringPage: React.FC = () => {
               onChange={(e) => setSelectedRange(e.target.value as '24h' | '7d' | '30d')}
               className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1"
             >
-              <option value="24h">Last 24 hours</option>
+              <option value="24h">Yesterday (24h)</option>
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
             </select>

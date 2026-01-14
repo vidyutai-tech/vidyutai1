@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from typing import List, Dict, Any
 
 import pandas as pd
@@ -23,7 +24,8 @@ def remap_time(df: pd.DataFrame) -> List[Dict[str, Any]]:
     if df.empty:
         return []
 
-    now = datetime.now()
+    # Use fixed local timezone so frontend sees consistent solar hours in production
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
     total = len(df)
     out: List[Dict[str, Any]] = []
 
