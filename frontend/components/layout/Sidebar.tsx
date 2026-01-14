@@ -108,6 +108,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
           <nav className="mt-4">
             <div className="px-4 mb-4">
               <NavLink
+                to="/"
+                className="flex items-center px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                onClick={() => { if (window.innerWidth < 768) setSidebarOpen(false); }}
+              >
+                <Home className="w-5 h-5 mr-2" />
+                <span>Home</span>
+              </NavLink>
+            </div>
+
+            <div className="px-4 mb-4">
+              <NavLink
                 to="/main-options"
                 className="flex items-center px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 onClick={() => { if (window.innerWidth < 768) setSidebarOpen(false); }}

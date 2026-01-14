@@ -7,6 +7,8 @@ import PeakDemandForecasting from '../components/shared/PeakDemandForecasting';
 
 interface LandingPageProps {
   onGetStarted: () => void;
+  onEnterPortal: () => void;
+  isAuthenticated: boolean;
 }
 
 interface PowerFlow {
@@ -71,7 +73,7 @@ const PowerFlowLine: React.FC<{
   );
 };
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onEnterPortal, isAuthenticated }) => {
   const [activeTab, setActiveTab] = useState<'home' | 'impact' | 'case-studies'>('home');
   const [activeCaseStudy, setActiveCaseStudy] = useState<'aging-aware-pv' | 'community-microgrid' | 'peak-demand'>('aging-aware-pv');
 
@@ -101,10 +103,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             
             {/* Get Started Button */}
             <button
-              onClick={onGetStarted}
+              onClick={isAuthenticated ? onEnterPortal : onGetStarted}
               className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all hover:shadow-lg"
             >
-              <span>Get Started</span>
+              <span>{isAuthenticated ? 'Go to Portal' : 'Get Started'}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

@@ -456,8 +456,16 @@ const App: React.FC = () => {
   };
 
   const handleGetStarted = () => {
-    // Navigate to login page - this will be handled by routing
+    // If not authenticated, go to login. Authenticated users should stay in app.
+    if (isAuthenticated) {
+      handleEnterPortal();
+      return;
+    }
     window.location.hash = '#/login';
+  };
+
+  const handleEnterPortal = () => {
+    window.location.hash = '#/main-options';
   };
 
   const handleBackToLanding = () => {
@@ -540,7 +548,16 @@ const App: React.FC = () => {
       <HashRouter>
         <Routes>
           {/* Public routes - accessible without authentication */}
-          <Route path="/" element={<LandingPage onGetStarted={handleGetStarted} />} />
+          <Route
+            path="/"
+            element={
+              <LandingPage
+                onGetStarted={handleGetStarted}
+                onEnterPortal={handleEnterPortal}
+                isAuthenticated={isAuthenticated}
+              />
+            }
+          />
           <Route 
             path="/login" 
             element={
