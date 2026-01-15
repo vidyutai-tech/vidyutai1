@@ -81,6 +81,16 @@ const pvProgressForHour = (hour: number) =>
 const loadProgressForHour = (hour: number) =>
   Math.min(hour / 24 + (hour >= 18 && hour <= 22 ? 0.05 : 0), 1);
 
+const clampForecastToAvg = (forecast: number, avgDaily: number, minRaw: number) => {
+  if (avgDaily > 0) {
+    const upper = avgDaily * 1.1;
+    const lower = avgDaily * 0.9;
+    const clamped = Math.min(Math.max(forecast, lower), upper);
+    return Math.max(clamped, minRaw);
+  }
+  return Math.max(forecast, minRaw);
+};
+
 const ResidentialEnergyMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -138,8 +148,12 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
 
     // Forecasts are constant for the day (total expected daily energy)
-    const forecastPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
-    const forecastLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
+    const baseForecastPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
+    const baseForecastLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
+    const avg7DailyPv = (avg7Summary?.pv ?? 0) / 7;
+    const avg7DailyLoad = (avg7Summary?.load ?? 0) / 7;
+    const forecastPv = clampForecastToAvg(baseForecastPv, avg7DailyPv, accumulatedPvRaw);
+    const forecastLoad = clampForecastToAvg(baseForecastLoad, avg7DailyLoad, accumulatedLoadRaw);
 
     // Progress curves
     const pvProgress = pvProgressForHour(currentHour);
@@ -168,7 +182,7 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     };
 
     return { kpis: kpisData, energyStats: energyStatsData };
-  }, [powerData, totals.load, lastUpdated]);
+  }, [powerData, totals.load, lastUpdated, avg7Summary]);
 
   const batteryGauge: Gauge = useMemo(() => {
     const soc = 50 + Math.random() * 35;

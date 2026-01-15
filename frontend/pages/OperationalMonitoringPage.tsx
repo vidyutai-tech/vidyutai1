@@ -113,6 +113,16 @@ const smoothAccumulation = (raw: number, forecast: number, progress: number, ble
 const pvProgressForHour = (hour: number) =>
   hour < 6 ? 0 : hour > 18 ? 1 : Math.sin(((hour - 6) / 12) * Math.PI);
 
+const clampForecastToAvg = (forecast: number, avgDaily: number, minRaw: number) => {
+  if (avgDaily > 0) {
+    const upper = avgDaily * 1.1;
+    const lower = avgDaily * 0.9;
+    const clamped = Math.min(Math.max(forecast, lower), upper);
+    return Math.max(clamped, minRaw);
+  }
+  return Math.max(forecast, minRaw);
+};
+
 const OperationalMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [inverterSeries, setInverterSeries] = useState<{ name: string; data: InverterPoint[] }[]>(() => [
@@ -195,7 +205,9 @@ const OperationalMonitoringPage: React.FC = () => {
     const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
 
     // Forecast is constant for the day (total expected daily energy)
-    const forecastPv = Math.max(seededDaily(todayStr, 52000, 9000), accumulatedPvRaw * 1.15);
+    const baseForecastPv = Math.max(seededDaily(todayStr, 52000, 9000), accumulatedPvRaw * 1.15);
+    const avg7DailyPv = (avg7Summary?.pv ?? 0) / 7;
+    const forecastPv = clampForecastToAvg(baseForecastPv, avg7DailyPv, accumulatedPvRaw);
 
     // PV accumulation follows a smooth solar curve and clamps to forecast
     const pvProgress = pvProgressForHour(currentHour);
@@ -205,7 +217,7 @@ const OperationalMonitoringPage: React.FC = () => {
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 0)} kWh`, color: '#22c55e' },
       { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 0)} kWh`, color: '#f59e0b' },
     ];
-  }, [powerData]);
+  }, [powerData, avg7Summary]);
 
   const energyStats = useMemo(() => {
     const avg7 = 52000 + Math.random() * 5000; // kWh
