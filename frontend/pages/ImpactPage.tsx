@@ -30,21 +30,21 @@ const ImpactPage: React.FC = () => {
   const demandResponseCostData = [
     { case: 'Case 1', label: 'Conventional EMS', cost: 1.75 * timeMultiplier, color: '#10b981' },
     { case: 'Case 2', label: 'With Demand Mgmt', cost: 1.4 * timeMultiplier, savings: 20, color: '#3b82f6' },
-    { case: 'Case 3', label: 'Demand + DG Disabled', cost: 1.58 * timeMultiplier, savings: 10, color: '#8b5cf6' },
+    { case: 'Case 3', label: 'Demand Mgmt + DG Disabled', cost: 1.58 * timeMultiplier, savings: 10, color: '#8b5cf6' },
   ];
 
   // Load Shifting Cost Data (Dynamic based on timeRange)
   const loadShiftingCostData = [
     { case: 'Case 1', label: 'Conventional EMS', cost: 1.75 * timeMultiplier, color: '#10b981' },
     { case: 'Case 2', label: 'With Demand Mgmt', cost: 1.59 * timeMultiplier, savings: 9, color: '#3b82f6' },
-    { case: 'Case 3', label: 'Demand + DG Disabled', cost: 1.75 * timeMultiplier, savings: 0, color: '#8b5cf6' },
+    { case: 'Case 3', label: 'Demand Mgmt + DG Disabled', cost: 1.75 * timeMultiplier, savings: 0, color: '#8b5cf6' },
   ];
 
   // Carbon Emission Data - Three Cases (Dynamic based on timeRange)
   const emissionComparisonData = [
     { case: 'Case 1', label: 'Conventional EMS', emissions: 9500 * timeMultiplier, color: '#854d0e' },
     { case: 'Case 2', label: 'With Demand Mgmt', emissions: 8360 * timeMultiplier, savings: 12, color: '#92400e' },
-    { case: 'Case 3', label: 'Demand + DG Disabled', emissions: 6840 * timeMultiplier, savings: 28, color: '#a16207' },
+    { case: 'Case 3', label: 'Demand Mgmt + DG Disabled', emissions: 6840 * timeMultiplier, savings: 28, color: '#a16207' },
   ];
 
   // Component-Level Cost Breakdown (INR) - Monthly base from PPT, scaled to timeRange
@@ -629,7 +629,7 @@ const ImpactPage: React.FC = () => {
                   tickFormatter={(value) => Math.round(Number(value)).toString()}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+       
                 <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
                   {demandResponseCostData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -675,7 +675,7 @@ const ImpactPage: React.FC = () => {
                   tickFormatter={(value) => Math.round(Number(value)).toString()}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+        
                 <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
                   {loadShiftingCostData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -728,7 +728,7 @@ const ImpactPage: React.FC = () => {
                 tickMargin={10}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+          
               <Bar dataKey="emissions" name="Emissions" radius={[8, 8, 0, 0]}>
                 {emissionComparisonData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
