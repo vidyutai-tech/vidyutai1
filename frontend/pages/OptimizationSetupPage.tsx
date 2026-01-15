@@ -2,14 +2,22 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Upload, FileText, Settings, Zap, Battery, Grid, Sun, CheckCircle, Users, Download } from 'lucide-react';
 import { AppContext } from '../contexts/AppContext';
-import { getLoadProfiles, getPlanningRecommendations } from '../services/api';
+import { getLoadProfiles, getPlanningRecommendations, getOptimizationUploads, uploadOptimizationFile, OptimizationUpload, saveOptimizationConfig } from '../services/api';
 import Card from '../components/ui/Card';
 
-const OptimizationSetupPage: React.FC = () => {
+type OptimizationSetupMode = 'all' | 'customizations' | 'optimization';
+
+interface OptimizationSetupPageProps {
+  mode?: OptimizationSetupMode;
+}
+
+const OptimizationSetupPage: React.FC<OptimizationSetupPageProps> = ({ mode = 'all' }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selectedSite } = useContext(AppContext)!;
+  const { selectedSite, currentUser } = useContext(AppContext)!;
   const [isLoading, setIsLoading] = useState(false);
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   // Get planning recommendation from navigation state
@@ -61,7 +69,10 @@ const OptimizationSetupPage: React.FC = () => {
     
     // File upload
     uploadedFile: null as File | null,
+    upload_id: '' as string,
   });
+
+  const [savedUploads, setSavedUploads] = useState<OptimizationUpload[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -112,12 +123,131 @@ const OptimizationSetupPage: React.FC = () => {
     loadData();
   }, [selectedSite, planningRecommendation]);
 
+  useEffect(() => {
+    const loadUploads = async () => {
+      try {
+        const uploads = await getOptimizationUploads(selectedSite?.id);
+        if (uploads.length > 0 || !selectedSite?.id) {
+          setSavedUploads(uploads);
+          return;
+        }
+        const fallbackUploads = await getOptimizationUploads();
+        setSavedUploads(fallbackUploads);
+      } catch (e) {
+        console.warn('Failed to load saved uploads:', e);
+      }
+    };
+    loadUploads();
+  }, [selectedSite]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ems_common_config');
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed?.formData) {
+        setFormData(prev => ({
+          ...prev,
+          ...parsed.formData,
+          uploadedFile: null
+        }));
+      }
+      if (typeof parsed?.selectedLoadProfile === 'string') {
+        setSelectedLoadProfile(parsed.selectedLoadProfile);
+      }
+      if (typeof parsed?.selectedPlanningRecommendation === 'string') {
+        setSelectedPlanningRecommendation(parsed.selectedPlanningRecommendation);
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved configuration', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const { uploadedFile, ...serializable } = formData;
+    localStorage.setItem(
+      'ems_common_config',
+      JSON.stringify({
+        formData: serializable,
+        selectedLoadProfile,
+        selectedPlanningRecommendation
+      })
+    );
+    localStorage.setItem('optimizationConfig', JSON.stringify(serializable));
+  }, [formData, selectedLoadProfile, selectedPlanningRecommendation]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) || 0 : value
     }));
+  };
+
+  const handleSaveConfig = async () => {
+    setIsSavingConfig(true);
+    setSaveMessage('');
+    try {
+      await saveOptimizationConfig({
+        user_id: currentUser?.id || '',
+        site_id: selectedSite?.id || null,
+        load_profile_id: selectedLoadProfile || null,
+        planning_recommendation_id: selectedPlanningRecommendation || null,
+        load_data: [] as any[],
+        tariff_data: [] as any[],
+        pv_parameters: {
+          solar_connection: formData.solar_connection,
+          pv_energy_cost: formData.pv_energy_cost,
+          co2_pv_used: formData.co2_pv_used
+        },
+        battery_parameters: {
+          storage_type: formData.storage_type,
+          battery_capacity: formData.battery_capacity,
+          battery_voltage: formData.battery_voltage,
+          phes_capacity: formData.phes_capacity,
+          diesel_capacity: formData.diesel_capacity,
+          electrolyzer_capacity: formData.electrolyzer_capacity,
+          fuel_cell_capacity: formData.fuel_cell_capacity,
+          h2_tank_capacity: formData.h2_tank_capacity,
+          fuel_cell_efficiency_percent: formData.fuel_cell_efficiency_percent,
+          battery_om_cost: formData.battery_om_cost,
+          fuel_cell_om_cost: formData.fuel_cell_om_cost,
+          electrolyzer_om_cost: formData.electrolyzer_om_cost,
+          co2_battery_discharge: formData.co2_battery_discharge,
+          co2_fuel_cell: formData.co2_fuel_cell,
+          co2_electrolyzer: formData.co2_electrolyzer
+        },
+        grid_parameters: {
+          grid_connection: formData.grid_connection,
+          fuel_price: formData.fuel_price,
+          co2_grid_import: formData.co2_grid_import,
+          co2_diesel: formData.co2_diesel
+        },
+        objective: 'combination'
+      });
+      setSaveMessage('System customizations saved.');
+    } catch (e) {
+      console.error('Failed to save optimization config:', e);
+      setSaveMessage('Failed to save. Please try again.');
+    } finally {
+      setIsSavingConfig(false);
+    }
+  };
+
+  const handleProceedToOptimization = () => {
+    const avoidZero = (v: number) => (v === 0 ? 1e-9 : v);
+    const safeFormData = {
+      ...formData,
+      battery_capacity: avoidZero(formData.battery_capacity),
+      battery_voltage: avoidZero(formData.battery_voltage),
+      h2_tank_capacity: avoidZero(formData.h2_tank_capacity),
+    };
+    navigate('/optimization', {
+      state: {
+        commonConfig: safeFormData,
+        uploadedFile: safeFormData.uploadedFile,
+      },
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +257,18 @@ const OptimizationSetupPage: React.FC = () => {
         ...prev,
         uploadedFile: file
       }));
+      uploadOptimizationFile(file, selectedSite?.id)
+        .then((upload) => {
+          setSavedUploads((prev) => [upload, ...prev.filter((u) => u.id !== upload.id)]);
+          setFormData(prev => ({
+            ...prev,
+            upload_id: upload.id
+          }));
+        })
+        .catch((err) => {
+          console.error('Failed to save upload:', err);
+          setError('Failed to save uploaded file. Please try again.');
+        });
     }
   };
 
@@ -175,6 +317,15 @@ const OptimizationSetupPage: React.FC = () => {
   const fileInputClass = "file-input w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 shadow-sm hover:border-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20";
   const sectionPanelClass = "space-y-4 rounded-2xl border border-base-200/60 bg-base-100/70 p-5 shadow-sm";
 
+  const showCustomizations = mode === 'all' || mode === 'customizations';
+  const showOptimization = mode === 'all' || mode === 'optimization';
+  const pageTitle =
+    mode === 'customizations'
+      ? 'System Customizations'
+      : mode === 'optimization'
+        ? 'Optimization'
+        : 'Energy Management System';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
       <div className="max-w-6xl mx-auto">
@@ -187,10 +338,12 @@ const OptimizationSetupPage: React.FC = () => {
             Back to Main Options
           </button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Optimization Configuration
+            {pageTitle}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Configure common parameters for optimization. Choose Demand or Source Optimization to proceed.
+            {showCustomizations
+              ? 'Configure common parameters for your energy management system.'
+              : 'Choose Demand or Source Optimization to proceed.'}
           </p>
         </div>
 
@@ -217,6 +370,8 @@ const OptimizationSetupPage: React.FC = () => {
         )}
 
         <div className="space-y-8">
+          {showCustomizations && (
+          <>
           {/* Basic Parameters */}
           <Card>
             <div className={sectionPanelClass}>
@@ -690,10 +845,94 @@ const OptimizationSetupPage: React.FC = () => {
                     <p><strong>Demand Optimization:</strong> Time, Load1-Load5 (kW each), Price (Rs/kWh)</p>
                   </div>
                 </div>
+
+                {savedUploads.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Saved uploads</p>
+                    <div className="space-y-2">
+                      {savedUploads.map((upload) => (
+                        <div key={upload.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-900 dark:text-white">{upload.file_name}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {upload.size_bytes ? `${Math.round(upload.size_bytes / 1024)} KB` : 'File'} • {upload.created_at ? new Date(upload.created_at).toLocaleString() : 'Saved'}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setFormData(prev => ({ ...prev, upload_id: upload.id, uploadedFile: null }))}
+                            className={`px-3 py-1 rounded-md text-xs font-semibold ${
+                              formData.upload_id === upload.id
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            }`}
+                          >
+                            {formData.upload_id === upload.id ? 'Selected' : 'Use'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
 
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {saveMessage && (
+              <span className="text-sm text-gray-600 dark:text-gray-400">{saveMessage}</span>
+            )}
+            <button
+              onClick={handleSaveConfig}
+              disabled={isSavingConfig}
+              className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60"
+            >
+              {isSavingConfig ? 'Saving...' : 'Save System Customizations'}
+            </button>
+            <button
+              onClick={handleProceedToOptimization}
+              className="px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700"
+            >
+              Proceed to Optimization
+            </button>
+          </div>
+
+          </>
+          )}
+
+          {showOptimization && (
+          <>
+          {savedUploads.length > 0 && (
+            <Card>
+              <div className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Saved Uploads</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Select a previously uploaded file to use in optimization.
+                </p>
+                <div className="space-y-2">
+                  {savedUploads.map((upload) => (
+                    <div key={upload.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-gray-900 dark:text-white">{upload.file_name}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {upload.size_bytes ? `${Math.round(upload.size_bytes / 1024)} KB` : 'File'} • {upload.created_at ? new Date(upload.created_at).toLocaleString() : 'Saved'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setFormData(prev => ({ ...prev, upload_id: upload.id, uploadedFile: null }))}
+                        className={`px-3 py-1 rounded-md text-xs font-semibold ${
+                          formData.upload_id === upload.id
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {formData.upload_id === upload.id ? 'Selected' : 'Use'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          )}
           {/* Next Steps */}
           <Card>
             <div className="p-6">
@@ -732,6 +971,8 @@ const OptimizationSetupPage: React.FC = () => {
               </div>
             </div>
           </Card>
+          </>
+          )}
         </div>
       </div>
     </div>

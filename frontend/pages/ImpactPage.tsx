@@ -271,22 +271,13 @@ const ImpactPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Integrated System Configuration
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Our energy management system integrates several key components for optimal energy flow
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {systemComponents.map((component) => {
-              const Icon = component.icon;
-              return (
-                <div key={component.name} className="flex flex-col items-center text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${component.color} flex items-center justify-center mb-3`}>
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1">{component.name}</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{component.description}</p>
-                </div>
-              );
-            })}
+         
+          <div className="flex justify-center">
+            <img
+              src="/assets/EMS.png"
+              alt="Energy Management System components"
+              className="w-full max-w-5xl rounded-lg border border-gray-200 dark:border-gray-700 bg-white"
+            />
           </div>
         </div>
       </Card>

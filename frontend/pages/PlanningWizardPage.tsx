@@ -880,14 +880,6 @@ const PlanningWizardPage: React.FC = () => {
                     <Save className="w-5 h-5" />
                     <span>Save Plan</span>
                   </button>
-                  <button
-                    onClick={() => handleStep3Complete('proceed_to_optimization')}
-                    disabled={isLoading}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
-                  >
-                    <span>Proceed to Optimization</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
             ) : (

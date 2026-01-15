@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AppContext } from "../contexts/AppContext";
+import { getOptimizationUploads, OptimizationUpload } from "../services/api";
 import axios from "axios";
 import { Snackbar, Alert } from "@mui/material";
 import DemandOptimizationCharts from "../components/shared/DemandOptimizationCharts";
@@ -34,7 +35,7 @@ const DemandOptimizationPage = () => {
   if (!appContext) {
     return <div>Loading...</div>; // Safety check
   }
-  const { currentUser, theme } = appContext;
+  const { currentUser, theme, selectedSite } = appContext;
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -46,7 +47,13 @@ const DemandOptimizationPage = () => {
   const savedConfig = useMemo(() => {
     try {
       const saved = localStorage.getItem('optimizationConfig');
-      return saved ? JSON.parse(saved) : null;
+      if (saved) {
+        return JSON.parse(saved);
+      }
+      const emsSaved = localStorage.getItem('ems_common_config');
+      if (!emsSaved) return null;
+      const parsed = JSON.parse(emsSaved);
+      return parsed?.formData || null;
     } catch {
       return null;
     }
@@ -72,6 +79,8 @@ const DemandOptimizationPage = () => {
   const [open, setOpen] = useState(false);
   const [chartData, setChartData] = useState<any[]>([]);
   const [plotUrl, setPlotUrl] = useState<string | null>(null);
+  const [savedUploads, setSavedUploads] = useState<OptimizationUpload[]>([]);
+  const [savedUploadName, setSavedUploadName] = useState<string>("");
   const abortControllerRef = useRef<AbortController | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -195,6 +204,7 @@ const DemandOptimizationPage = () => {
         fuel_cell_om_cost: 1.5,
         electrolyzer_om_cost: 0.5,
         ...demandSpecificData,
+        upload_id: "",
       };
     }
   }, [commonConfig, demandSpecificData, uploadedFile]);
@@ -203,6 +213,35 @@ const DemandOptimizationPage = () => {
   useEffect(() => {
     setMergedFormData(getDefaultMergedData);
   }, [getDefaultMergedData]);
+
+  useEffect(() => {
+    const loadUploads = async () => {
+      try {
+        const uploads = await getOptimizationUploads(selectedSite?.id);
+        if (uploads.length > 0 || !selectedSite?.id) {
+          setSavedUploads(uploads);
+          return;
+        }
+        const fallbackUploads = await getOptimizationUploads();
+        setSavedUploads(fallbackUploads);
+      } catch (err) {
+        console.warn("Failed to load saved uploads:", err);
+      }
+    };
+    loadUploads();
+  }, [selectedSite]);
+
+  useEffect(() => {
+    if (!mergedFormData || mergedFormData.uploadedFile || mergedFormData.upload_id) return;
+    if (!savedUploads.length) return;
+    const latestUpload = savedUploads[0];
+    if (!latestUpload?.id) return;
+    setSavedUploadName(latestUpload.file_name || "Saved upload");
+    setMergedFormData((prev: any) => ({
+      ...prev,
+      upload_id: latestUpload.id,
+    }));
+  }, [mergedFormData, savedUploads]);
 
   useEffect(() => {
     const savedResponse = localStorage.getItem("demandOptimizationResponse");
@@ -705,7 +744,7 @@ const DemandOptimizationPage = () => {
                 </div>
               </div>
               <div className="mt-4 space-y-2">
-                {!mergedFormData.uploadedFile && !uploadedFile && (
+                {!mergedFormData.uploadedFile && !uploadedFile && !mergedFormData.upload_id && (
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Currently no data uploaded. If you want to upload,{' '}
                     <button
@@ -727,9 +766,9 @@ const DemandOptimizationPage = () => {
                     </button>
                   </p>
                 )}
-                {(mergedFormData.uploadedFile || uploadedFile) && (
+                {(mergedFormData.uploadedFile || uploadedFile || mergedFormData.upload_id) && (
                   <p className="text-sm text-green-600 dark:text-green-400">
-                    ✓ Custom data file uploaded: {(mergedFormData.uploadedFile || uploadedFile)?.name || 'File'}
+                    ✓ Custom data file uploaded: {(mergedFormData.uploadedFile || uploadedFile)?.name || savedUploadName || 'Saved upload'}
                   </p>
                 )}
                 <button

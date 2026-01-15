@@ -157,18 +157,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onEnterPortal, 
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-            Energy Management System
+            Energy Management System (EMS)
           </h1>
           <div className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto space-y-2">
-            <p>
-              Intelligent power flow optimization for renewable energy systems.
-            </p>
-            <p>
-              Real-time monitoring.
-            </p>
-            <p>
-              AI-powered decision making for maximum efficiency.
-            </p>
+           
+            
           </div>
         </div>
           </>
@@ -249,7 +242,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onEnterPortal, 
         {/* Power Flow Visualization - Both Modes Side by Side */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            Energy Management System (EMS) Modes
+            EMS Modes
           </h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">

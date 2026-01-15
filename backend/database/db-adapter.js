@@ -250,7 +250,17 @@ async function tableExists(tableName) {
 async function isInitialized() {
   try {
     await initializeDatabase();
-    const tables = ['users', 'sites', 'assets', 'load_profiles', 'user_profiles', 'planning_recommendations', 'optimization_configs'];
+    const tables = [
+      'users',
+      'sites',
+      'assets',
+      'load_profiles',
+      'user_profiles',
+      'planning_recommendations',
+      'optimization_configs',
+      'optimization_uploads',
+      'optimization_results'
+    ];
     
     // Check tables sequentially to avoid connection pool exhaustion
     // This is slower but more reliable for Neon's connection limits

@@ -1,10 +1,8 @@
-const { getDatabase } = require('../db');
+const db = require('../db-adapter');
 
 class OptimizationConfigModel {
-  static findById(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM optimization_configs WHERE id = ?');
-    const result = stmt.get(id);
+  static async findById(id) {
+    const result = await db.get('SELECT * FROM optimization_configs WHERE id = ?', [id]);
     if (result) {
       result.load_data = JSON.parse(result.load_data);
       result.tariff_data = JSON.parse(result.tariff_data);
@@ -15,10 +13,8 @@ class OptimizationConfigModel {
     return result;
   }
 
-  static findByUserId(userId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM optimization_configs WHERE user_id = ? ORDER BY created_at DESC');
-    const results = stmt.all(userId);
+  static async findByUserId(userId) {
+    const results = await db.all('SELECT * FROM optimization_configs WHERE user_id = ? ORDER BY created_at DESC', [userId]);
     return results.map(r => ({
       ...r,
       load_data: JSON.parse(r.load_data),
@@ -29,10 +25,8 @@ class OptimizationConfigModel {
     }));
   }
 
-  static findBySiteId(siteId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM optimization_configs WHERE site_id = ? ORDER BY created_at DESC');
-    const results = stmt.all(siteId);
+  static async findBySiteId(siteId) {
+    const results = await db.all('SELECT * FROM optimization_configs WHERE site_id = ? ORDER BY created_at DESC', [siteId]);
     return results.map(r => ({
       ...r,
       load_data: JSON.parse(r.load_data),
@@ -43,17 +37,16 @@ class OptimizationConfigModel {
     }));
   }
 
-  static create(config) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
+  static async create(config) {
+    const sql = `
       INSERT INTO optimization_configs (
         id, user_id, site_id, load_profile_id, planning_recommendation_id,
-        load_data, tariff_data, pv_parameters, battery_parameters, 
+        load_data, tariff_data, pv_parameters, battery_parameters,
         grid_parameters, objective
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
+    `;
+    return db.run(sql, [
       config.id,
       config.user_id,
       config.site_id || null,
@@ -65,10 +58,10 @@ class OptimizationConfigModel {
       config.battery_parameters ? JSON.stringify(config.battery_parameters) : null,
       config.grid_parameters ? JSON.stringify(config.grid_parameters) : null,
       config.objective || 'combination'
-    );
+    ]);
   }
 
-  static update(id, updates) {
+  static async update(id, updates) {
     const fields = [];
     const values = [];
 
@@ -104,19 +97,16 @@ class OptimizationConfigModel {
     fields.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
 
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      UPDATE optimization_configs 
+    const sql = `
+      UPDATE optimization_configs
       SET ${fields.join(', ')}
       WHERE id = ?
-    `);
-    return stmt.run(...values);
+    `;
+    return db.run(sql, values);
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('DELETE FROM optimization_configs WHERE id = ?');
-    return stmt.run(id);
+  static async delete(id) {
+    return db.run('DELETE FROM optimization_configs WHERE id = ?', [id]);
   }
 }
 

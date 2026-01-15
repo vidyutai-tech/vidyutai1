@@ -27,6 +27,9 @@ import AIExplanationsPage from './pages/AIExplanationsPage';
 import EnergyForecastingPage from './pages/EnergyForecastingPage';
 import OperationalMonitoringPage from './pages/OperationalMonitoringPage';
 import ResidentialEnergyMonitoringPage from './pages/ResidentialEnergyMonitoringPage';
+import InstitutionalMonitoringPage from './pages/InstitutionalMonitoringPage';
+import SystemCustomizationsPage from './pages/SystemCustomizationsPage';
+import OptimizationRunnerPage from './pages/OptimizationRunnerPage';
 import { AppContext } from './contexts/AppContext';
 import { Telemetry, Alert, RLSuggestion, HealthStatus, Site, RLStrategy } from './types';
 import { useWebSocket } from './hooks/useWebSocket';
@@ -624,7 +627,27 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <LayoutWrapper>
-                  <OptimizationSetupPage />
+                  <SystemCustomizationsPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/system-customizations"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <SystemCustomizationsPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/optimization"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <OptimizationRunnerPage />
                 </LayoutWrapper>
               </ProtectedRoute>
             }
@@ -675,6 +698,16 @@ const App: React.FC = () => {
               <ProtectedRoute>
                 <LayoutWrapper>
                   <ResidentialEnergyMonitoringPage />
+                </LayoutWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institutional-monitoring"
+            element={
+              <ProtectedRoute>
+                <LayoutWrapper>
+                  <InstitutionalMonitoringPage />
                 </LayoutWrapper>
               </ProtectedRoute>
             }
