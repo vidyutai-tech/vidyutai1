@@ -564,7 +564,7 @@ const OperationalMonitoringPage: React.FC = () => {
                       return '';
                     }}
                   />
-                  <YAxis yAxisId="left" label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10 }} />
+                  <YAxis yAxisId="left" label={{ value: 'Power (kW)', angle: -90, position: 'Left', offset: -5, dx: -20 }} />
                   <YAxis yAxisId="right" orientation="right" label={{ value: 'Eff / Freq', angle: 90, position: 'insideRight', offset: 10 }} />
                   <Tooltip />
                   <Legend />
