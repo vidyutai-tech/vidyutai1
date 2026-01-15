@@ -43,7 +43,7 @@ const MainOptionsPage: React.FC = () => {
     },
     {
       id: 'monitoring',
-      title: 'Site Monitoring',
+      title: 'System Monitor',
       description: 'Jump into plant and residential dashboards with real-time PV, battery, grid, and load insights.',
       icon: Activity,
       path: '/operational-monitoring',
@@ -171,7 +171,7 @@ const MainOptionsPage: React.FC = () => {
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
               </div>
               <div>
-                <p className="font-semibold mb-1">3. Site Monitoring</p>
+                <p className="font-semibold mb-1">3. System Monitor</p>
                 <p className="text-sm">View live PV, battery, grid, and load dashboards for plant and residential sites.</p>
               </div>
             </div>
