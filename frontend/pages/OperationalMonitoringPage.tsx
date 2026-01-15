@@ -113,7 +113,9 @@ const OperationalMonitoringPage: React.FC = () => {
     generateInverterSeries('INV-3', '7d'),
   ]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [selectedRange, setSelectedRange] = useState<'24h' | '7d' | '30d'>('7d');
+  const [selectedRange, setSelectedRange] = useState<'yesterday' | '7d' | '30d'>('7d');
+  const inverterRange: '24h' | '7d' | '30d' =
+    selectedRange === 'yesterday' ? '24h' : selectedRange;
 
   const arraysPerf = useMemo(
     () =>
@@ -252,9 +254,9 @@ const OperationalMonitoringPage: React.FC = () => {
       }
 
       setInverterSeries([
-        generateInverterSeries('INV-1', selectedRange),
-        generateInverterSeries('INV-2', selectedRange),
-        generateInverterSeries('INV-3', selectedRange),
+        generateInverterSeries('INV-1', inverterRange),
+        generateInverterSeries('INV-2', inverterRange),
+        generateInverterSeries('INV-3', inverterRange),
       ]);
       setLastUpdated(new Date());
     };
@@ -274,7 +276,7 @@ const OperationalMonitoringPage: React.FC = () => {
   const allowedDates = useMemo(() => {
     const midnights = powerData.filter((p) => p.isMidnight);
     const uniqueDates = Array.from(new Set(midnights.map((p) => p.dateOnly)));
-    if (selectedRange === '24h') {
+    if (selectedRange === 'yesterday') {
       return new Set<string>();
     }
     if (uniqueDates.length <= 7) return new Set(uniqueDates);
@@ -354,10 +356,10 @@ const OperationalMonitoringPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
             <select
               value={selectedRange}
-              onChange={(e) => setSelectedRange(e.target.value as '24h' | '7d' | '30d')}
+              onChange={(e) => setSelectedRange(e.target.value as 'yesterday' | '7d' | '30d')}
               className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1"
             >
-              <option value="24h">Yesterday (24h)</option>
+              <option value="yesterday">Yesterday (24h)</option>
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
             </select>
@@ -372,7 +374,7 @@ const OperationalMonitoringPage: React.FC = () => {
                 tickFormatter={(v, idx) => {
                   const point = powerData[idx];
                   if (!point) return '';
-                  if (selectedRange === '24h') {
+                  if (selectedRange === 'yesterday') {
                     const hour = parseInt(point.time.replace('h', ''), 10);
                     if (Number.isNaN(hour)) return '';
                     return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
@@ -469,7 +471,7 @@ const OperationalMonitoringPage: React.FC = () => {
         const inverterDateSet = (() => {
           const midnights = series.data.filter((p) => p.time === '0h');
           const dates = Array.from(new Set(midnights.map((p) => p.label.split(' ')[0])));
-          if (selectedRange === '24h') return new Set<string>();
+          if (selectedRange === 'yesterday') return new Set<string>();
           if (selectedRange === '7d') return new Set(dates);
           const target = 6;
           const step = Math.max(1, Math.ceil(dates.length / target));
@@ -484,7 +486,7 @@ const OperationalMonitoringPage: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-md font-semibold text-gray-900 dark:text-white">{series.name} – Power / Efficiency / Frequency</h4>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {selectedRange === '24h' ? 'Past 24 hours' : selectedRange === '7d' ? 'Past 7 days' : 'Past 30 days'}
+                  {selectedRange === 'yesterday' ? 'Past 24 hours' : selectedRange === '7d' ? 'Past 7 days' : 'Past 30 days'}
                 </span>
               </div>
               <ResponsiveContainer width="100%" height={240}>
@@ -497,7 +499,7 @@ const OperationalMonitoringPage: React.FC = () => {
                     tickFormatter={(v, idx) => {
                       const point = series.data[idx];
                       if (!point) return '';
-                      if (selectedRange === '24h') {
+                      if (selectedRange === 'yesterday') {
                         const hour = parseInt(point.time.replace('h', ''), 10);
                         if (Number.isNaN(hour)) return '';
                         return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';

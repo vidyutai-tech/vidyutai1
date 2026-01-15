@@ -695,7 +695,9 @@ const DemandOptimizationPage = () => {
                 </div>
                 <div>
                   <span className="text-base-content/60">Battery:</span>
-                  <span className="ml-2 font-semibold">{(mergedFormData.battery_capacity)*(mergedFormData.battery_voltage).toFixed(0)} kWh</span>
+                  <span className="ml-2 font-semibold">
+                    {(mergedFormData.battery_capacity * mergedFormData.battery_voltage).toFixed(2)} kWh
+                  </span>
                 </div>
                 <div>
                   <span className="text-base-content/60">Diesel:</span>
