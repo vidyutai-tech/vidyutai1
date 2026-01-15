@@ -21,7 +21,7 @@ def residential(range: str = Query("7d", description="24h | 7d | 30d | yesterday
     hours = hours_from_range(range)
     df = slice_hours(RESIDENTIAL_DF, hours)
     end_time = None
-    if range == "yesterday":
+    if range in {"yesterday", "7d", "30d"}:
         now = datetime.now(ZoneInfo("Asia/Kolkata"))
         end_time = now.replace(hour=23, minute=0, second=0, microsecond=0)
     data = remap_time(df, end_time=end_time)
@@ -33,7 +33,7 @@ def solar(range: str = Query("7d", description="24h | 7d | 30d | yesterday")):
     hours = hours_from_range(range)
     df = slice_hours(SOLAR_DF, hours)
     end_time = None
-    if range == "yesterday":
+    if range in {"yesterday", "7d", "30d"}:
         now = datetime.now(ZoneInfo("Asia/Kolkata"))
         end_time = now.replace(hour=23, minute=0, second=0, microsecond=0)
     data = remap_time(df, end_time=end_time)

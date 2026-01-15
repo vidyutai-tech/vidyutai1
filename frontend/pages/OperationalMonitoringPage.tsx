@@ -46,6 +46,14 @@ type InverterPoint = {
   frequency: number;
 };
 
+type EnergySummary = {
+  pv: number;
+  gridImport: number;
+  gridExport: number;
+  batteryCharge: number;
+  batteryDischarge: number;
+};
+
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
@@ -112,6 +120,8 @@ const OperationalMonitoringPage: React.FC = () => {
     generateInverterSeries('INV-2', '7d'),
     generateInverterSeries('INV-3', '7d'),
   ]);
+  const [yesterdaySummary, setYesterdaySummary] = useState<EnergySummary | null>(null);
+  const [avg7Summary, setAvg7Summary] = useState<EnergySummary | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [selectedRange, setSelectedRange] = useState<'yesterday' | '7d' | '30d'>('7d');
   const inverterRange: '24h' | '7d' | '30d' =
@@ -227,6 +237,20 @@ const OperationalMonitoringPage: React.FC = () => {
     ];
   }, [lastUpdated]);
 
+  const summarizeEnergy = (data: TimePoint[]): EnergySummary => {
+    return data.reduce(
+      (acc, p) => {
+        acc.pv += p.pv;
+        if (p.grid > 0) acc.gridImport += p.grid;
+        if (p.grid < 0) acc.gridExport += -p.grid;
+        if (p.battery > 0) acc.batteryDischarge += p.battery;
+        if (p.battery < 0) acc.batteryCharge += -p.battery;
+        return acc;
+      },
+      { pv: 0, gridImport: 0, gridExport: 0, batteryCharge: 0, batteryDischarge: 0 }
+    );
+  };
+
   // Refresh mock data every 15 minutes (and on mount)
   useEffect(() => {
     const refresh = async () => {
@@ -251,6 +275,24 @@ const OperationalMonitoringPage: React.FC = () => {
         setPowerData(normalized);
       } catch (e) {
         console.error('Failed to load solar power data', e);
+      }
+
+      try {
+        const [yesterdayRes, avg7Res] = await Promise.all([
+          fetch(`${getPowerApiBase()}/mock/power/solar?range=yesterday`),
+          fetch(`${getPowerApiBase()}/mock/power/solar?range=7d`)
+        ]);
+        if (!yesterdayRes.ok || !avg7Res.ok) throw new Error('Failed to load summary data');
+        const yesterdayData = await yesterdayRes.json();
+        const avg7Data = await avg7Res.json();
+        if (Array.isArray(yesterdayData)) {
+          setYesterdaySummary(summarizeEnergy(yesterdayData));
+        }
+        if (Array.isArray(avg7Data)) {
+          setAvg7Summary(summarizeEnergy(avg7Data));
+        }
+      } catch (e) {
+        console.error('Failed to load solar summary data', e);
       }
 
       setInverterSeries([
@@ -330,21 +372,21 @@ const OperationalMonitoringPage: React.FC = () => {
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Yesterday's Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(52000 + Math.random() * 5000, 0)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(15000 + Math.random() * 4000, 0)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(6000 + Math.random() * 2000, 0)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(8000 + Math.random() * 2000, 0)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(8200 + Math.random() * 2000, 0)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber(yesterdaySummary?.pv ?? 0, 0)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber(yesterdaySummary?.gridImport ?? 0, 0)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber(yesterdaySummary?.gridExport ?? 0, 0)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber(yesterdaySummary?.batteryCharge ?? 0, 0)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber(yesterdaySummary?.batteryDischarge ?? 0, 0)} kWh</li>
           </ul>
         </div>
         <div className="rounded-xl border border-gray-200 dark_border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Avg Last 7 Days' Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(50000 + Math.random() * 4000, 0)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(14000 + Math.random() * 3000, 0)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(5500 + Math.random() * 1500, 0)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(7600 + Math.random() * 1800, 0)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(7900 + Math.random() * 1800, 0)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber((avg7Summary?.pv ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber((avg7Summary?.gridImport ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber((avg7Summary?.gridExport ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber((avg7Summary?.batteryCharge ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber((avg7Summary?.batteryDischarge ?? 0) / 7, 0)} kWh</li>
           </ul>
         </div>
       </div>
@@ -353,7 +395,7 @@ const OperationalMonitoringPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Power profile of different components</h3>
             <select
               value={selectedRange}
               onChange={(e) => setSelectedRange(e.target.value as 'yesterday' | '7d' | '30d')}

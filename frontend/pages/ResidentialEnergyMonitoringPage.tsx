@@ -36,6 +36,15 @@ type TimePoint = {
   dateOnly: string; // "2026-01-11"
 };
 
+type EnergySummary = {
+  pv: number;
+  load: number;
+  gridImport: number;
+  gridExport: number;
+  batteryCharge: number;
+  batteryDischarge: number;
+};
+
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
@@ -75,6 +84,8 @@ const loadProgressForHour = (hour: number) =>
 const ResidentialEnergyMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [yesterdaySummary, setYesterdaySummary] = useState<EnergySummary | null>(null);
+  const [avg7Summary, setAvg7Summary] = useState<EnergySummary | null>(null);
   const [selectedRange, setSelectedRange] = useState<'yesterday' | '7d' | '30d'>('7d');
   const arraysPerf = useMemo(
     () =>
@@ -191,6 +202,21 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     ];
   }, [lastUpdated]);
 
+  const summarizeEnergy = (data: TimePoint[]): EnergySummary => {
+    return data.reduce(
+      (acc, p) => {
+        acc.pv += p.pv;
+        acc.load += p.load;
+        if (p.grid > 0) acc.gridImport += p.grid;
+        if (p.grid < 0) acc.gridExport += -p.grid;
+        if (p.battery > 0) acc.batteryDischarge += p.battery;
+        if (p.battery < 0) acc.batteryCharge += -p.battery;
+        return acc;
+      },
+      { pv: 0, load: 0, gridImport: 0, gridExport: 0, batteryCharge: 0, batteryDischarge: 0 }
+    );
+  };
+
   useEffect(() => {
     const refresh = async () => {
       try {
@@ -211,6 +237,24 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
         setLastUpdated(new Date());
       } catch (e) {
         console.error('Failed to load residential power data', e);
+      }
+
+      try {
+        const [yesterdayRes, avg7Res] = await Promise.all([
+          fetch(`${getPowerApiBase()}/mock/power/residential?range=yesterday`),
+          fetch(`${getPowerApiBase()}/mock/power/residential?range=7d`)
+        ]);
+        if (!yesterdayRes.ok || !avg7Res.ok) throw new Error('Failed to load summary data');
+        const yesterdayData = await yesterdayRes.json();
+        const avg7Data = await avg7Res.json();
+        if (Array.isArray(yesterdayData)) {
+          setYesterdaySummary(summarizeEnergy(yesterdayData));
+        }
+        if (Array.isArray(avg7Data)) {
+          setAvg7Summary(summarizeEnergy(avg7Data));
+        }
+      } catch (e) {
+        console.error('Failed to load residential summary data', e);
       }
     };
     refresh();
@@ -281,23 +325,23 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Yesterday's Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(11 + Math.random() * 3, 1)} kWh</li>
-            <li><strong>Load:</strong> {formatNumber(13 + Math.random() * 3, 1)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(4 + Math.random() * 2, 1)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(2 + Math.random() * 1.5, 1)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(3 + Math.random() * 1.5, 1)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(3.5 + Math.random() * 1.5, 1)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber(yesterdaySummary?.pv ?? 0, 1)} kWh</li>
+            <li><strong>Load:</strong> {formatNumber(yesterdaySummary?.load ?? 0, 1)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber(yesterdaySummary?.gridImport ?? 0, 1)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber(yesterdaySummary?.gridExport ?? 0, 1)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber(yesterdaySummary?.batteryCharge ?? 0, 1)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber(yesterdaySummary?.batteryDischarge ?? 0, 1)} kWh</li>
           </ul>
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Avg Last 7 Days' Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(12 + Math.random() * 2, 1)} kWh</li>
-            <li><strong>Load:</strong> {formatNumber(14 + Math.random() * 2, 1)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(4.5 + Math.random() * 1.5, 1)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(1.5 + Math.random() * 1.0, 1)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(3.2 + Math.random() * 1.2, 1)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(3.8 + Math.random() * 1.2, 1)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber((avg7Summary?.pv ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Load:</strong> {formatNumber((avg7Summary?.load ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber((avg7Summary?.gridImport ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber((avg7Summary?.gridExport ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber((avg7Summary?.batteryCharge ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber((avg7Summary?.batteryDischarge ?? 0) / 7, 1)} kWh</li>
           </ul>
         </div>
       </div>
@@ -306,7 +350,7 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Power profile of different components</h3>
             <select
               value={selectedRange}
               onChange={(e) => setSelectedRange(e.target.value as 'yesterday' | '7d' | '30d')}
@@ -327,6 +371,11 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
                 tickFormatter={(v, idx) => {
                   const point = powerData[idx];
                   if (!point) return '';
+                  if (selectedRange === 'yesterday') {
+                    const hour = parseInt(point.label.split(' ')[1]?.replace('h', ''), 10);
+                    if (Number.isNaN(hour)) return '';
+                    return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
+                  }
                   if (point.isMidnight && allowedDates.has(point.dateOnly)) {
                     return point.dateOnly;
                   }

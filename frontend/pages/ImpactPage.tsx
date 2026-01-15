@@ -403,7 +403,7 @@ const ImpactPage: React.FC = () => {
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">With Hydrogen Fuel Cell</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhHydrogen} / kWh</p>
                 <p className="text-xs text-green-600 mt-1">↓ {savingsWithHydrogenVsRuleBased.toFixed(2)}% vs Rule-based</p>
-                <p className="text-xs text-green-600 mt-1">Additional ↓ {additionalSavingsWithHydrogen.toFixed(2)}% vs Battery-only</p>
+                <p className="text-xs text-green-600 mt-1">↓ {additionalSavingsWithHydrogen.toFixed(2)}% vs Battery-only</p>
               </div>
             </div>
           )}
