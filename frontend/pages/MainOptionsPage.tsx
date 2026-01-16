@@ -53,7 +53,13 @@ const MainOptionsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
+    <div className="relative min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute -top-32 -left-32 h-80 w-80 rounded-full bg-blue-200 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-emerald-200 blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-sky-200 blur-3xl" />
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.08),_transparent_60%)]" />
       {/* Header with Logout and Profile */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
         <div className="flex items-center">

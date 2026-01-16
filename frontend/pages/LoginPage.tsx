@@ -32,7 +32,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, onSignupClick, s
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-emerald-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute -top-32 -left-32 h-80 w-80 rounded-full bg-blue-200 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-emerald-200 blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-sky-200 blur-3xl" />
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.12),_transparent_60%)]" />
       <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
         {/* Back Button */}
         {onBack && (

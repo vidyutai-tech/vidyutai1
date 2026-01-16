@@ -89,62 +89,64 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onEnterPortal, 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center mb-4">
+      <header className="bg-gradient-to-r from-sky-100 via-blue-100 to-emerald-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 border-b border-blue-100/70 dark:border-gray-700">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 py-3 md:flex-row md:items-center md:justify-between">
             {/* Logos */}
-            <div className="flex items-center space-x-4">
-              <img src="/Spel.png" alt="SPEL" className="h-12 w-auto" />
-              <span className="text-2xl text-gray-400 dark:text-gray-600">|</span>
-              <img src="/VidyutAI Logo.png" alt="VidyutAI" className="h-11 w-auto" />
+            <div className="flex items-center space-x-3">
+              <img src="/Spel.png" alt="SPEL" className="h-11 w-auto" />
+              <span className="text-xl text-gray-400 dark:text-gray-600">|</span>
+              <img src="/VidyutAI Logo.png" alt="VidyutAI" className="h-10 w-auto" />
             </div>
-            
+
+            {/* Tab Navigation */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center rounded-full border border-blue-200/70 bg-white/80 shadow-sm backdrop-blur dark:border-gray-700 dark:bg-gray-800/70 p-1">
+                <button
+                  onClick={() => setActiveTab('home')}
+                  className={`flex items-center space-x-2 px-5 py-2 text-sm font-semibold rounded-full transition-all ${
+                    activeTab === 'home'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white'
+                  }`}
+                >
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('impact')}
+                  className={`flex items-center space-x-2 px-5 py-2 text-sm font-semibold rounded-full transition-all ${
+                    activeTab === 'impact'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white'
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  <span>Impact</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('case-studies')}
+                  className={`flex items-center space-x-2 px-5 py-2 text-sm font-semibold rounded-full transition-all ${
+                    activeTab === 'case-studies'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white'
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Case Studies</span>
+                </button>
+              </div>
+            </div>
+
             {/* Get Started Button */}
             <button
               onClick={isAuthenticated ? onEnterPortal : onGetStarted}
-              className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all hover:shadow-lg"
+              className="flex items-center justify-center space-x-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-md transition-all hover:shadow-lg"
             >
               <span>{isAuthenticated ? 'Go to Portal' : 'Get Started'}</span>
               <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-          
-          {/* Tab Navigation */}
-          <div className="flex items-center space-x-1 border-b border-gray-200 dark:border-gray-700">
-            <button
-              onClick={() => setActiveTab('home')}
-              className={`flex items-center space-x-2 px-6 py-3 font-medium transition-all border-b-2 ${
-                activeTab === 'home'
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              <Home className="w-5 h-5" />
-              <span>Home</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('impact')}
-              className={`flex items-center space-x-2 px-6 py-3 font-medium transition-all border-b-2 ${
-                activeTab === 'impact'
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              <TrendingUp className="w-5 h-5" />
-              <span>Impact</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('case-studies')}
-              className={`flex items-center space-x-2 px-6 py-3 font-medium transition-all border-b-2 ${
-                activeTab === 'case-studies'
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              <FileText className="w-5 h-5" />
-              <span>Case Studies</span>
             </button>
           </div>
         </div>
