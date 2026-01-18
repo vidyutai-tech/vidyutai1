@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const UserModel = require('../database/models/users');
 const UserProfileModel = require('../database/models/userProfiles');
-const dbAdapter = require('../database/db-adapter');
+const LoadProfileModel = require('../database/models/loadProfiles');
+const PlanningRecommendationModel = require('../database/models/planningRecommendations');
+const ChatbotConversation = require('../database/schemas/ChatbotConversation');
 const { getUserId } = require('./wizard');
 
 /**
@@ -27,45 +29,32 @@ router.get('/my-data', async (req, res) => {
       });
     }
 
-    // Collect all user data
+    // Collect all user data using Mongoose models
     const user = await UserModel.findById(userId);
     const profile = await UserProfileModel.findByUserId(userId);
-    
-    // Get user's sites
-    const sites = await dbAdapter.all(
-      'SELECT * FROM sites WHERE id IN (SELECT site_id FROM user_sites WHERE user_id = ?)',
-      [userId]
-    );
-    
+
     // Get user's load profiles
-    const loadProfiles = await dbAdapter.all(
-      'SELECT * FROM load_profiles WHERE user_id = ?',
-      [userId]
-    );
-    
+    const loadProfiles = await LoadProfileModel.findByUserId(userId);
+
     // Get user's planning recommendations
-    const planningRecs = await dbAdapter.all(
-      'SELECT * FROM planning_recommendations WHERE user_id = ?',
-      [userId]
-    );
-    
+    const planningRecs = await PlanningRecommendationModel.findByUserId(userId);
+
     // Get chatbot conversations
-    const conversations = await dbAdapter.all(
-      'SELECT * FROM chatbot_conversations WHERE user_id = ? ORDER BY created_at DESC',
-      [userId]
-    );
+    const conversations = await ChatbotConversation.find({ user_id: userId })
+      .sort({ created_at: -1 })
+      .lean();
 
     const userData = {
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        created_at: user.created_at,
-        updated_at: user.updated_at
+        id: user?._id || user?.id,
+        email: user?.email,
+        name: user?.name,
+        role: user?.role,
+        created_at: user?.created_at,
+        updated_at: user?.updated_at
       },
       profile: profile || null,
-      sites: sites || [],
+      sites: [], // Sites relationship not directly available
       load_profiles: loadProfiles || [],
       planning_recommendations: planningRecs || [],
       chatbot_conversations: conversations || [],
@@ -107,21 +96,12 @@ router.get('/export', async (req, res) => {
       });
     }
 
-    // Get all user data (same as /my-data)
+    // Get all user data using Mongoose models
     const user = await UserModel.findById(userId);
     const profile = await UserProfileModel.findByUserId(userId);
-    const loadProfiles = await dbAdapter.all(
-      'SELECT * FROM load_profiles WHERE user_id = ?',
-      [userId]
-    );
-    const planningRecs = await dbAdapter.all(
-      'SELECT * FROM planning_recommendations WHERE user_id = ?',
-      [userId]
-    );
-    const conversations = await dbAdapter.all(
-      'SELECT * FROM chatbot_conversations WHERE user_id = ?',
-      [userId]
-    );
+    const loadProfiles = await LoadProfileModel.findByUserId(userId);
+    const planningRecs = await PlanningRecommendationModel.findByUserId(userId);
+    const conversations = await ChatbotConversation.find({ user_id: userId }).lean();
 
     const exportData = {
       format_version: '1.0',
@@ -129,10 +109,10 @@ router.get('/export', async (req, res) => {
       user_id: userId,
       personal_data: {
         account: {
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          account_created: user.created_at
+          email: user?.email,
+          name: user?.name,
+          role: user?.role,
+          account_created: user?.created_at
         },
         preferences: profile || {},
         load_profiles: loadProfiles || [],
@@ -144,7 +124,7 @@ router.get('/export', async (req, res) => {
     // Set headers for file download
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="vidyutai-data-export-${userId}-${Date.now()}.json"`);
-    
+
     res.json(exportData);
   } catch (error) {
     console.error('Error exporting data:', error);
@@ -178,22 +158,25 @@ router.delete('/delete-account', async (req, res) => {
       });
     }
 
-    // Delete user (CASCADE will handle related data)
-    // But we should also explicitly clean up:
-    
+    // Delete user data from MongoDB using Mongoose models
+    const LoadProfile = require('../database/schemas/LoadProfile');
+    const PlanningRecommendation = require('../database/schemas/PlanningRecommendation');
+    const UserProfile = require('../database/schemas/UserProfile');
+    const User = require('../database/schemas/User');
+
     // 1. Delete chatbot conversations
-    await dbAdapter.run('DELETE FROM chatbot_conversations WHERE user_id = ?', [userId]);
-    
+    await ChatbotConversation.deleteMany({ user_id: userId });
+
     // 2. Delete load profiles
-    await dbAdapter.run('DELETE FROM load_profiles WHERE user_id = ?', [userId]);
-    
+    await LoadProfile.deleteMany({ user_id: userId });
+
     // 3. Delete planning recommendations
-    await dbAdapter.run('DELETE FROM planning_recommendations WHERE user_id = ?', [userId]);
-    
+    await PlanningRecommendation.deleteMany({ user_id: userId });
+
     // 4. Delete user profile
-    await dbAdapter.run('DELETE FROM user_profiles WHERE user_id = ?', [userId]);
-    
-    // 5. Delete user account (this should cascade to user_sites if that table exists)
+    await UserProfile.deleteMany({ user_id: userId });
+
+    // 5. Delete user account
     await UserModel.delete(userId);
 
     res.json({
@@ -240,7 +223,7 @@ router.put('/update-data', async (req, res) => {
     // Check if email is already taken by another user
     if (email) {
       const existingUser = await UserModel.findByEmail(email);
-      if (existingUser && existingUser.id !== userId) {
+      if (existingUser && (existingUser._id !== userId && existingUser.id !== userId)) {
         return res.status(400).json({
           success: false,
           error: 'Email already in use',
@@ -267,4 +250,3 @@ router.put('/update-data', async (req, res) => {
 });
 
 module.exports = router;
-

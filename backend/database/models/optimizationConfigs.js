@@ -1,124 +1,80 @@
-const { getDatabase } = require('../db');
+/**
+ * OptimizationConfig Model - MongoDB/Mongoose version
+ */
+const OptimizationConfig = require('../schemas/OptimizationConfig');
 
 class OptimizationConfigModel {
-  static findById(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM optimization_configs WHERE id = ?');
-    const result = stmt.get(id);
-    if (result) {
-      result.load_data = JSON.parse(result.load_data);
-      result.tariff_data = JSON.parse(result.tariff_data);
-      result.pv_parameters = result.pv_parameters ? JSON.parse(result.pv_parameters) : null;
-      result.battery_parameters = result.battery_parameters ? JSON.parse(result.battery_parameters) : null;
-      result.grid_parameters = result.grid_parameters ? JSON.parse(result.grid_parameters) : null;
-    }
-    return result;
+  static async findById(id) {
+    return await OptimizationConfig.findById(id).lean();
   }
 
-  static findByUserId(userId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM optimization_configs WHERE user_id = ? ORDER BY created_at DESC');
-    const results = stmt.all(userId);
-    return results.map(r => ({
-      ...r,
-      load_data: JSON.parse(r.load_data),
-      tariff_data: JSON.parse(r.tariff_data),
-      pv_parameters: r.pv_parameters ? JSON.parse(r.pv_parameters) : null,
-      battery_parameters: r.battery_parameters ? JSON.parse(r.battery_parameters) : null,
-      grid_parameters: r.grid_parameters ? JSON.parse(r.grid_parameters) : null
-    }));
+  static async findByUserId(userId) {
+    return await OptimizationConfig.find({ user_id: userId })
+      .sort({ created_at: -1 })
+      .lean();
   }
 
-  static findBySiteId(siteId) {
-    const db = getDatabase();
-    const stmt = db.prepare('SELECT * FROM optimization_configs WHERE site_id = ? ORDER BY created_at DESC');
-    const results = stmt.all(siteId);
-    return results.map(r => ({
-      ...r,
-      load_data: JSON.parse(r.load_data),
-      tariff_data: JSON.parse(r.tariff_data),
-      pv_parameters: r.pv_parameters ? JSON.parse(r.pv_parameters) : null,
-      battery_parameters: r.battery_parameters ? JSON.parse(r.battery_parameters) : null,
-      grid_parameters: r.grid_parameters ? JSON.parse(r.grid_parameters) : null
-    }));
+  static async findBySiteId(siteId) {
+    return await OptimizationConfig.find({ site_id: siteId })
+      .sort({ created_at: -1 })
+      .lean();
   }
 
-  static create(config) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      INSERT INTO optimization_configs (
-        id, user_id, site_id, load_profile_id, planning_recommendation_id,
-        load_data, tariff_data, pv_parameters, battery_parameters, 
-        grid_parameters, objective
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
-      config.id,
-      config.user_id,
-      config.site_id || null,
-      config.load_profile_id || null,
-      config.planning_recommendation_id || null,
-      JSON.stringify(config.load_data),
-      JSON.stringify(config.tariff_data),
-      config.pv_parameters ? JSON.stringify(config.pv_parameters) : null,
-      config.battery_parameters ? JSON.stringify(config.battery_parameters) : null,
-      config.grid_parameters ? JSON.stringify(config.grid_parameters) : null,
-      config.objective || 'combination'
-    );
+  static async create(config) {
+    const newConfig = new OptimizationConfig({
+      _id: config.id,
+      user_id: config.user_id,
+      site_id: config.site_id || null,
+      load_profile_id: config.load_profile_id || null,
+      planning_recommendation_id: config.planning_recommendation_id || null,
+      load_data: config.load_data,
+      tariff_data: config.tariff_data,
+      pv_parameters: config.pv_parameters || null,
+      battery_parameters: config.battery_parameters || null,
+      grid_parameters: config.grid_parameters || null,
+      objective: config.objective || 'combination'
+    });
+    await newConfig.save();
+    return { changes: 1 };
   }
 
-  static update(id, updates) {
-    const fields = [];
-    const values = [];
+  static async update(id, updates) {
+    const updateFields = {};
 
     if (updates.load_data !== undefined) {
-      fields.push('load_data = ?');
-      values.push(JSON.stringify(updates.load_data));
+      updateFields.load_data = updates.load_data;
     }
     if (updates.tariff_data !== undefined) {
-      fields.push('tariff_data = ?');
-      values.push(JSON.stringify(updates.tariff_data));
+      updateFields.tariff_data = updates.tariff_data;
     }
     if (updates.pv_parameters !== undefined) {
-      fields.push('pv_parameters = ?');
-      values.push(updates.pv_parameters ? JSON.stringify(updates.pv_parameters) : null);
+      updateFields.pv_parameters = updates.pv_parameters;
     }
     if (updates.battery_parameters !== undefined) {
-      fields.push('battery_parameters = ?');
-      values.push(updates.battery_parameters ? JSON.stringify(updates.battery_parameters) : null);
+      updateFields.battery_parameters = updates.battery_parameters;
     }
     if (updates.grid_parameters !== undefined) {
-      fields.push('grid_parameters = ?');
-      values.push(updates.grid_parameters ? JSON.stringify(updates.grid_parameters) : null);
+      updateFields.grid_parameters = updates.grid_parameters;
     }
     if (updates.objective !== undefined) {
-      fields.push('objective = ?');
-      values.push(updates.objective);
+      updateFields.objective = updates.objective;
     }
 
-    if (fields.length === 0) {
+    if (Object.keys(updateFields).length === 0) {
       return { changes: 0 };
     }
 
-    fields.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(id);
-
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      UPDATE optimization_configs 
-      SET ${fields.join(', ')}
-      WHERE id = ?
-    `);
-    return stmt.run(...values);
+    const result = await OptimizationConfig.updateOne(
+      { _id: id },
+      { $set: updateFields }
+    );
+    return { changes: result.modifiedCount };
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    const stmt = db.prepare('DELETE FROM optimization_configs WHERE id = ?');
-    return stmt.run(id);
+  static async delete(id) {
+    const result = await OptimizationConfig.deleteOne({ _id: id });
+    return { changes: result.deletedCount };
   }
 }
 
 module.exports = OptimizationConfigModel;
-

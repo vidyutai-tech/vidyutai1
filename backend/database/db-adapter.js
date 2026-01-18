@@ -1,246 +1,33 @@
 /**
  * Unified Database Adapter
- * Supports both SQLite (local development) and PostgreSQL (production)
- * Automatically selects based on DATABASE_URL environment variable
+ * MongoDB-based implementation using Mongoose
+ * 
+ * This adapter maintains backward compatibility by exposing similar methods
+ * while internally using MongoDB. Models now use Mongoose schemas directly.
  */
 
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
-const postgresDb = require('./postgres-db');
+const { connectMongo, isMongoConnected, closeMongo } = require('./mongodb-connection');
 
-// Determine which database to use
-const USE_POSTGRES = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
-const DB_TYPE = USE_POSTGRES ? 'postgresql' : 'sqlite';
-
-let sqliteDb = null;
 let dbType = null;
 
 /**
- * Initialize the appropriate database
+ * Initialize the database (MongoDB)
  */
 async function initializeDatabase() {
   if (dbType) {
     return; // Already initialized
   }
 
-  if (USE_POSTGRES) {
-    console.log('🗄️ Using PostgreSQL database');
-    console.log('Environment check:', {
-      DATABASE_URL: !!process.env.DATABASE_URL,
-      POSTGRES_URL: !!process.env.POSTGRES_URL,
-      STORAGE_URL: !!process.env.STORAGE_URL,
-      POSTGRES_HOST: !!process.env.POSTGRES_HOST,
-      VERCEL: !!process.env.VERCEL
-    });
-    try {
-      postgresDb.initializePostgres();
-      dbType = 'postgresql';
-      console.log('✅ PostgreSQL initialized');
-    } catch (error) {
-      console.error('❌ Failed to initialize PostgreSQL:', error.message);
-      console.error('Error stack:', error.stack);
-      // Fallback to SQLite if PostgreSQL fails (for development)
-      if (!process.env.VERCEL && !process.env.DATABASE_URL) {
-        console.log('⚠️ Falling back to SQLite');
-        initializeSQLite();
-      } else {
-        throw error;
-      }
-    }
-  } else {
-    console.log('🗄️ Using SQLite database');
-    initializeSQLite();
-  }
-}
+  console.log('🗄️ Using MongoDB database');
 
-function initializeSQLite() {
-  const DB_PATH = process.env.VERCEL ? ':memory:' : path.join(__dirname, 'vidyutai.db');
-  
   try {
-    sqliteDb = new Database(DB_PATH);
-    sqliteDb.pragma('foreign_keys = ON');
-    dbType = 'sqlite';
-    console.log('✅ SQLite database connection established');
+    await connectMongo();
+    dbType = 'mongodb';
+    console.log('✅ MongoDB initialized');
   } catch (error) {
-    console.error('❌ Failed to initialize SQLite:', error);
+    console.error('❌ Failed to initialize MongoDB:', error.message);
+    console.error('Error stack:', error.stack);
     throw error;
-  }
-}
-
-/**
- * Get database instance (for SQLite) or pool (for PostgreSQL)
- */
-function getDatabase() {
-  if (dbType === 'postgresql') {
-    return postgresDb.getPostgresPool();
-  } else if (dbType === 'sqlite') {
-    if (!sqliteDb) {
-      initializeSQLite();
-    }
-    return sqliteDb;
-  } else {
-    // Auto-initialize if not already done
-    if (USE_POSTGRES) {
-      postgresDb.initializePostgres();
-      dbType = 'postgresql';
-      return postgresDb.getPostgresPool();
-    } else {
-      initializeSQLite();
-      return sqliteDb;
-    }
-  }
-}
-
-/**
- * Execute a query (unified interface)
- */
-async function query(sql, params = []) {
-  await initializeDatabase();
-  
-  if (dbType === 'postgresql') {
-    // PostgreSQL uses parameterized queries with $1, $2, etc.
-    // Convert ? placeholders to $1, $2 format if needed
-    let pgSql = sql;
-    if (sql.includes('?')) {
-      let paramIndex = 1;
-      pgSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
-    }
-    const result = await postgresDb.query(pgSql, params);
-    return {
-      rows: result.rows,
-      changes: result.rowCount || 0
-    };
-  } else {
-    // SQLite - query is typically for SELECT, use all() instead
-    const db = getDatabase();
-    const stmt = db.prepare(sql);
-    const rows = stmt.all(...params);
-    return {
-      rows: rows,
-      changes: 0
-    };
-  }
-}
-
-/**
- * Convert SQLite ? placeholders to PostgreSQL $1, $2 format
- */
-function convertToPostgresParams(sql) {
-  if (!sql.includes('?')) {
-    return sql; // Already in PostgreSQL format or no params
-  }
-  let paramIndex = 1;
-  return sql.replace(/\?/g, () => `$${paramIndex++}`);
-}
-
-/**
- * Get a single row
- */
-async function get(sql, params = []) {
-  try {
-    await initializeDatabase();
-    
-    if (dbType === 'postgresql') {
-      const pgSql = convertToPostgresParams(sql);
-      const result = await postgresDb.query(pgSql, params);
-      return result.rows[0] || null;
-    } else {
-      const db = getDatabase();
-      const stmt = db.prepare(sql);
-      return stmt.get(...params) || null;
-    }
-  } catch (error) {
-    console.error('Database get() error:', error);
-    console.error('SQL:', sql);
-    console.error('Params:', params);
-    throw error;
-  }
-}
-
-/**
- * Get all rows
- */
-async function all(sql, params = []) {
-  await initializeDatabase();
-  
-  if (dbType === 'postgresql') {
-    const pgSql = convertToPostgresParams(sql);
-    const result = await postgresDb.query(pgSql, params);
-    return result.rows;
-  } else {
-    const db = getDatabase();
-    const stmt = db.prepare(sql);
-    return stmt.all(...params);
-  }
-}
-
-/**
- * Execute a statement (INSERT, UPDATE, DELETE)
- */
-async function run(sql, params = []) {
-  try {
-    await initializeDatabase();
-    
-    if (dbType === 'postgresql') {
-      const pgSql = convertToPostgresParams(sql);
-      const result = await postgresDb.query(pgSql, params);
-      return {
-        lastInsertRowid: null, // PostgreSQL doesn't have this concept
-        changes: result.rowCount || 0
-      };
-    } else {
-      const db = getDatabase();
-      const stmt = db.prepare(sql);
-      return stmt.run(...params);
-    }
-  } catch (error) {
-    console.error('Database run() error:', error);
-    console.error('SQL:', sql);
-    console.error('Params:', params);
-    throw error;
-  }
-}
-
-/**
- * Execute raw SQL (for schema creation)
- */
-async function exec(sql) {
-  await initializeDatabase();
-  
-  if (dbType === 'postgresql') {
-    // Split by semicolon and execute each statement
-    const statements = sql.split(';').filter(s => s.trim().length > 0);
-    for (const statement of statements) {
-      if (statement.trim()) {
-        try {
-          await postgresDb.query(statement.trim());
-        } catch (error) {
-          // Ignore "already exists" errors for CREATE TABLE IF NOT EXISTS
-          if (!error.message.includes('already exists')) {
-            throw error;
-          }
-        }
-      }
-    }
-  } else {
-    const db = getDatabase();
-    db.exec(sql);
-  }
-}
-
-/**
- * Check if a table exists
- */
-async function tableExists(tableName) {
-  await initializeDatabase();
-  
-  if (dbType === 'postgresql') {
-    return await postgresDb.tableExists(tableName);
-  } else {
-    const db = getDatabase();
-    const row = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = ?").get(tableName);
-    return !!row;
   }
 }
 
@@ -250,24 +37,8 @@ async function tableExists(tableName) {
 async function isInitialized() {
   try {
     await initializeDatabase();
-    const tables = ['users', 'sites', 'assets', 'load_profiles', 'user_profiles', 'planning_recommendations', 'optimization_configs'];
-    
-    // Check tables sequentially to avoid connection pool exhaustion
-    // This is slower but more reliable for Neon's connection limits
-    const checks = [];
-    for (const table of tables) {
-      try {
-        const exists = await tableExists(table);
-        checks.push(exists);
-        // Small delay between checks to avoid overwhelming the connection
-        await new Promise(resolve => setTimeout(resolve, 50));
-      } catch (error) {
-        console.error(`Error checking table ${table}:`, error.message);
-        checks.push(false);
-      }
-    }
-    
-    return checks.every(exists => exists);
+    // For MongoDB, if we're connected, we're initialized
+    return isMongoConnected();
   } catch (error) {
     console.error('Error checking database initialization:', error);
     return false;
@@ -278,27 +49,20 @@ async function isInitialized() {
  * Close database connections
  */
 async function closeDatabase() {
-  if (dbType === 'postgresql') {
-    await postgresDb.closePool();
-  } else if (sqliteDb) {
-    sqliteDb.close();
-    sqliteDb = null;
-    console.log('✅ SQLite database connection closed');
-  }
+  await closeMongo();
   dbType = null;
+}
+
+/**
+ * Get database type
+ */
+function getDbType() {
+  return dbType || 'mongodb';
 }
 
 module.exports = {
   initializeDatabase,
-  getDatabase,
-  query,
-  get,
-  all,
-  run,
-  exec,
-  tableExists,
   isInitialized,
   closeDatabase,
-  getDbType: () => dbType
+  getDbType
 };
-

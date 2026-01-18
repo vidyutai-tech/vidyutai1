@@ -1,50 +1,52 @@
-const { getDatabase } = require('../db');
-const dbAdapter = require('../db-adapter');
+/**
+ * Site Model - MongoDB/Mongoose version
+ */
+const Site = require('../schemas/Site');
+const TimeseriesData = require('../schemas/TimeseriesData');
+const Asset = require('../schemas/Asset');
 
 class SiteModel {
-  static getAll() {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM sites ORDER BY created_at DESC').all();
+  static async getAll() {
+    return await Site.find({}).sort({ created_at: -1 }).lean();
   }
 
-  static findById(id) {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM sites WHERE id = ?').get(id);
+  static async findById(id) {
+    return await Site.findById(id).lean();
   }
 
-  static create(site) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      INSERT INTO sites (id, name, location, latitude, longitude, capacity, status, energy_saved, cost_reduced)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
-      site.id, site.name, site.location, site.latitude, site.longitude,
-      site.capacity, site.status, site.energy_saved || 0, site.cost_reduced || 0
+  static async create(site) {
+    const newSite = new Site({
+      _id: site.id,
+      name: site.name,
+      location: site.location,
+      latitude: site.latitude,
+      longitude: site.longitude,
+      capacity: site.capacity,
+      status: site.status,
+      energy_saved: site.energy_saved || 0,
+      cost_reduced: site.cost_reduced || 0
+    });
+    await newSite.save();
+    return { changes: 1 };
+  }
+
+  static async update(id, updates) {
+    const result = await Site.updateOne(
+      { _id: id },
+      { $set: updates }
     );
+    return { changes: result.modifiedCount };
   }
 
-  static update(id, updates) {
-    const db = getDatabase();
-    const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
-    const values = Object.values(updates);
-    const stmt = db.prepare(`
-      UPDATE sites SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `);
-    return stmt.run(...values, id);
+  static async delete(id) {
+    const result = await Site.deleteOne({ _id: id });
+    return { changes: result.deletedCount };
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    return db.prepare('DELETE FROM sites WHERE id = ?').run(id);
-  }
-
-  static getHealthStatus(siteId) {
-    const db = getDatabase();
-    
+  static async getHealthStatus(siteId) {
     // Get assets health for this site
-    const assets = db.prepare('SELECT type, health_score FROM assets WHERE site_id = ?').all(siteId);
-    
+    const assets = await Asset.find({ site_id: siteId }, 'type health_score').lean();
+
     const healthStatus = {
       siteId,
       timestamp: new Date().toISOString(),
@@ -78,30 +80,27 @@ class SiteModel {
     let hoursBack = 6;
     if (range === 'last_24h') hoursBack = 24;
     if (range === 'last_7d') hoursBack = 24 * 7;
-    
-    const startTime = new Date(now - hoursBack * 60 * 60 * 1000).toISOString();
-    
-    // Use db-adapter's all() method which works for both SQLite and PostgreSQL
-    // The adapter will convert ? placeholders to $1, $2 for PostgreSQL
-    const data = await dbAdapter.all(`
-      SELECT timestamp, metric_type, metric_value
-      FROM timeseries_data
-      WHERE site_id = ? AND timestamp >= ?
-      ORDER BY timestamp ASC
-    `, [siteId, startTime]);
-    
+
+    const startTime = new Date(now - hoursBack * 60 * 60 * 1000);
+
+    // Query timeseries data from MongoDB
+    const data = await TimeseriesData.find({
+      site_id: siteId,
+      timestamp: { $gte: startTime }
+    }).sort({ timestamp: 1 }).lean();
+
     // Group by timestamp
     const grouped = {};
     data.forEach(row => {
-      if (!grouped[row.timestamp]) {
-        grouped[row.timestamp] = { timestamp: row.timestamp, metrics: {} };
+      const ts = row.timestamp.toISOString();
+      if (!grouped[ts]) {
+        grouped[ts] = { timestamp: ts, metrics: {} };
       }
-      grouped[row.timestamp].metrics[row.metric_type] = row.metric_value;
+      grouped[ts].metrics[row.metric_type] = row.metric_value;
     });
-    
+
     return Object.values(grouped);
   }
 }
 
 module.exports = SiteModel;
-

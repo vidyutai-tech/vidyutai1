@@ -1,53 +1,55 @@
-const { getDatabase } = require('../db');
+/**
+ * Asset Model - MongoDB/Mongoose version
+ */
+const Asset = require('../schemas/Asset');
 
 class AssetModel {
-  static getAll() {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM assets ORDER BY created_at DESC').all();
+  static async getAll() {
+    return await Asset.find({}).sort({ created_at: -1 }).lean();
   }
 
-  static findById(id) {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM assets WHERE id = ?').get(id);
+  static async findById(id) {
+    return await Asset.findById(id).lean();
   }
 
-  static findBySiteId(siteId) {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM assets WHERE site_id = ? ORDER BY name').all(siteId);
+  static async findBySiteId(siteId) {
+    return await Asset.find({ site_id: siteId }).sort({ name: 1 }).lean();
   }
 
-  static create(asset) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      INSERT INTO assets (id, site_id, name, type, status, health_score, manufacturer, model, capacity, installed_date, last_maintenance)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
-      asset.id, asset.site_id, asset.name, asset.type, asset.status,
-      asset.health_score || 100, asset.manufacturer, asset.model,
-      asset.capacity, asset.installed_date, asset.last_maintenance
+  static async create(asset) {
+    const newAsset = new Asset({
+      _id: asset.id,
+      site_id: asset.site_id,
+      name: asset.name,
+      type: asset.type,
+      status: asset.status,
+      health_score: asset.health_score || 100,
+      manufacturer: asset.manufacturer,
+      model: asset.model,
+      capacity: asset.capacity,
+      installed_date: asset.installed_date,
+      last_maintenance: asset.last_maintenance
+    });
+    await newAsset.save();
+    return { changes: 1 };
+  }
+
+  static async update(id, updates) {
+    const result = await Asset.updateOne(
+      { _id: id },
+      { $set: updates }
     );
+    return { changes: result.modifiedCount };
   }
 
-  static update(id, updates) {
-    const db = getDatabase();
-    const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
-    const values = Object.values(updates);
-    const stmt = db.prepare(`
-      UPDATE assets SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `);
-    return stmt.run(...values, id);
+  static async delete(id) {
+    const result = await Asset.deleteOne({ _id: id });
+    return { changes: result.deletedCount };
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    return db.prepare('DELETE FROM assets WHERE id = ?').run(id);
-  }
+  static async getDigitalTwinData(assetId) {
+    const asset = await this.findById(assetId);
 
-  static getDigitalTwinData(assetId) {
-    const db = getDatabase();
-    const asset = this.findById(assetId);
-    
     if (!asset) return null;
 
     // Generate mock digital twin data points
@@ -123,4 +125,3 @@ class AssetModel {
 }
 
 module.exports = AssetModel;
-

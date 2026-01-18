@@ -88,6 +88,7 @@ const io = socketIo(server, {
     origin: [
       process.env.FRONTEND_URL || "http://localhost:5173",
       process.env.CORS_ORIGIN || "http://localhost:5173",
+      process.env.ngrok_frontend_url,
       "http://localhost:5173",
       "http://localhost:3000"
     ].filter(Boolean), // Remove undefined values
@@ -104,10 +105,11 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       process.env.CORS_ORIGIN,
+      process.env.ngrok_frontend_url,
       "http://localhost:5173",
       "http://localhost:3000"
     ].filter(Boolean);
-    
+
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -133,17 +135,16 @@ app.get('/', (req, res) => {
 
 app.get('/health', async (req, res) => {
   try {
-    const { ensureInitialized, getDbType } = require('./database/db');
+    const { ensureInitialized, getDbType, isInitialized } = require('./database/db');
     await ensureInitialized();
-    
-  res.json({
-    status: 'healthy',
+
+    res.json({
+      status: 'healthy',
       timestamp: new Date().toISOString(),
-      database: getDbType ? getDbType() : 'unknown',
+      database: getDbType ? getDbType() : 'mongodb',
+      connected: isInitialized ? isInitialized() : false,
       env: {
-        hasDatabaseUrl: !!process.env.DATABASE_URL,
-        hasPostgresUrl: !!process.env.POSTGRES_URL,
-        hasStorageUrl: !!process.env.STORAGE_URL,
+        hasMongoUri: !!process.env.MONGODB_URI,
         vercel: !!process.env.VERCEL
       }
     });
@@ -151,8 +152,8 @@ app.get('/health', async (req, res) => {
     res.status(500).json({
       status: 'unhealthy',
       error: error.message,
-    timestamp: new Date().toISOString()
-  });
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -179,11 +180,11 @@ app.use('/api/v1/case-studies', caseStudiesRoutes); // Case studies routes
 // It has the same caching and retry logic as the case-studies route
 app.post('/api/v1/solar-panel-degradation', async (req, res) => {
   const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-  
+
   try {
     // Create cache key from request body
     const cacheKey = `solar-degradation-legacy-${JSON.stringify(req.body)}`;
-    
+
     // Check cache first
     const cached = getLegacyCached(cacheKey);
     if (cached) {
@@ -204,11 +205,11 @@ app.post('/api/v1/solar-panel-degradation', async (req, res) => {
 
     // Cache successful response
     setLegacyCache(cacheKey, response.data);
-    
+
     return res.json(response.data);
   } catch (error) {
     console.error('Error in legacy solar panel degradation route:', error.message);
-    
+
     // If 429 error, return cached data if available (even if expired)
     if (error.response?.status === 429) {
       const cacheKey = `solar-degradation-legacy-${JSON.stringify(req.body)}`;
@@ -218,11 +219,11 @@ app.post('/api/v1/solar-panel-degradation', async (req, res) => {
         return res.json(cached.data);
       }
     }
-    
+
     res.status(error.response?.status || 500).json({
       success: false,
       error: 'Failed to calculate solar panel degradation',
-      message: error.response?.status === 429 
+      message: error.response?.status === 429
         ? 'Rate limit exceeded. Please try again in a few moments.'
         : error.message,
       details: error.response?.data || null
@@ -271,7 +272,8 @@ app.post('/api/v1/simulate', async (req, res) => {
 
 // Import real-time simulator
 const { getSimulator } = require('./services/realtime-simulator');
-const { getDatabase } = require('./database/db');
+const TimeseriesData = require('./database/schemas/TimeseriesData');
+const Site = require('./database/schemas/Site');
 
 // Socket.IO real-time updates
 io.on('connection', (socket) => {
@@ -281,33 +283,29 @@ io.on('connection', (socket) => {
     socket.join(`site_${siteId}`);
     console.log(`Client ${socket.id} subscribed to site ${siteId}`);
 
-    // Send initial data from database (latest available, not necessarily from last minute)
+    // Send initial data from database (latest available)
     try {
-      const dbAdapter = require('./database/db-adapter');
-      const latestData = await dbAdapter.all(`
-      SELECT metric_type, metric_value, unit
-      FROM timeseries_data
-      WHERE site_id = ?
-      ORDER BY timestamp DESC
-      LIMIT 20
-      `, [siteId]);
+      const latestData = await TimeseriesData.find({ site_id: siteId })
+        .sort({ timestamp: -1 })
+        .limit(20)
+        .lean();
 
-    const metrics = {};
-    latestData.forEach(row => {
-      metrics[row.metric_type] = {
-        value: row.metric_value,
-        unit: row.unit
-      };
-    });
-
-    // Only send initial data if we have metrics, otherwise will be updated by broadcast interval
-    if (Object.keys(metrics).length > 0) {
-      socket.emit('site_data', {
-        siteId,
-        timestamp: new Date().toISOString(),
-        metrics,
-        message: 'Connected to site updates - updates every 10 minutes'
+      const metrics = {};
+      latestData.forEach(row => {
+        metrics[row.metric_type] = {
+          value: row.metric_value,
+          unit: row.unit
+        };
       });
+
+      // Only send initial data if we have metrics
+      if (Object.keys(metrics).length > 0) {
+        socket.emit('site_data', {
+          siteId,
+          timestamp: new Date().toISOString(),
+          metrics,
+          message: 'Connected to site updates - updates every 10 minutes'
+        });
       }
     } catch (error) {
       console.error('Error fetching initial site data:', error);
@@ -319,7 +317,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Real-time data updates from SQLite database
+// Real-time data updates from MongoDB
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SIMULATOR === 'true') {
   // Start the real-time simulator
   const simulator = getSimulator(600000); // 10 minute intervals
@@ -328,66 +326,64 @@ if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SIMULATOR === 't
   // Broadcast latest data from database every 10 minutes
   setInterval(async () => {
     try {
-      const dbAdapter = require('./database/db-adapter');
-      const sites = await dbAdapter.all('SELECT id FROM sites WHERE status = ?', ['online']);
+      const sites = await Site.find({ status: 'online' }, '_id').lean();
 
       for (const site of sites) {
-      const siteId = site.id;
+        const siteId = site._id;
 
-      // Get latest metrics from database
-        // Calculate time 10 minutes ago
-        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-        const latestData = await dbAdapter.all(`
-        SELECT metric_type, metric_value, unit
-        FROM timeseries_data
-        WHERE site_id = ? AND timestamp >= ?
-        ORDER BY timestamp DESC
-        LIMIT 10
-        `, [siteId, tenMinutesAgo]);
+        // Get latest metrics from database (last 10 minutes)
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        const latestData = await TimeseriesData.find({
+          site_id: siteId,
+          timestamp: { $gte: tenMinutesAgo }
+        })
+          .sort({ timestamp: -1 })
+          .limit(10)
+          .lean();
 
-      if (latestData.length > 0) {
-        const metrics = {};
-        latestData.forEach(row => {
-          metrics[row.metric_type] = {
-            value: row.metric_value,
-            unit: row.unit
-          };
-        });
-
-        // Calculate derived metrics
-        const pvGen = metrics.pv_generation?.value || 0;
-        const netLoad = metrics.net_load?.value || 0;
-        const gridDraw = metrics.grid_draw?.value || 0;
-        const batteryDischarge = metrics.battery_discharge?.value || 0;
-
-        const realtimeData = {
-          timestamp: new Date().toISOString(),
-          siteId,
-          power: (pvGen + gridDraw + batteryDischarge).toFixed(2),
-          energy: (netLoad * 0.5).toFixed(2), // Approximate energy
-          efficiency: metrics.soc?.value ? (85 + (metrics.soc.value / 100) * 10).toFixed(2) : '85.00',
-          cost: ((gridDraw * 0.1) + (batteryDischarge * 0.05)).toFixed(2),
-          metrics: metrics
-        };
-
-        // Broadcast to site-specific room
-        io.to(`site_${siteId}`).emit('metrics_update', realtimeData);
-
-        // Also broadcast globally
-        io.emit('metrics_update', realtimeData);
-        
-        // Check for power quality alerts and emit them
-        try {
-          const { checkPowerQualityForAlerts } = require('./services/power-quality-monitor');
-          const alerts = checkPowerQualityForAlerts(siteId, metrics);
-          alerts.forEach(alert => {
-            io.to(`site_${siteId}`).emit('alert', alert);
-            io.emit('alert', alert);
+        if (latestData.length > 0) {
+          const metrics = {};
+          latestData.forEach(row => {
+            metrics[row.metric_type] = {
+              value: row.metric_value,
+              unit: row.unit
+            };
           });
-        } catch (error) {
-          console.error('Error checking power quality alerts:', error);
+
+          // Calculate derived metrics
+          const pvGen = metrics.pv_generation?.value || 0;
+          const netLoad = metrics.net_load?.value || 0;
+          const gridDraw = metrics.grid_draw?.value || 0;
+          const batteryDischarge = metrics.battery_discharge?.value || 0;
+
+          const realtimeData = {
+            timestamp: new Date().toISOString(),
+            siteId,
+            power: (pvGen + gridDraw + batteryDischarge).toFixed(2),
+            energy: (netLoad * 0.5).toFixed(2),
+            efficiency: metrics.soc?.value ? (85 + (metrics.soc.value / 100) * 10).toFixed(2) : '85.00',
+            cost: ((gridDraw * 0.1) + (batteryDischarge * 0.05)).toFixed(2),
+            metrics: metrics
+          };
+
+          // Broadcast to site-specific room
+          io.to(`site_${siteId}`).emit('metrics_update', realtimeData);
+
+          // Also broadcast globally
+          io.emit('metrics_update', realtimeData);
+
+          // Check for power quality alerts and emit them
+          try {
+            const { checkPowerQualityForAlerts } = require('./services/power-quality-monitor');
+            const alerts = checkPowerQualityForAlerts(siteId, metrics);
+            alerts.forEach(alert => {
+              io.to(`site_${siteId}`).emit('alert', alert);
+              io.emit('alert', alert);
+            });
+          } catch (error) {
+            console.error('Error checking power quality alerts:', error);
+          }
         }
-      }
       }
     } catch (error) {
       console.error('Error broadcasting site data:', error);
@@ -405,11 +401,11 @@ app.use((err, req, res, next) => {
   console.error('Error middleware:', err.stack);
   // Ensure we always return JSON, even for errors
   if (!res.headersSent) {
-  res.status(500).json({
+    res.status(500).json({
       success: false,
       error: 'Internal server error',
       message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
-  });
+    });
   }
 });
 

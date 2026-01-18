@@ -1,55 +1,43 @@
-const dbAdapter = require('../db-adapter');
+/**
+ * UserProfile Model - MongoDB/Mongoose version
+ */
+const UserProfile = require('../schemas/UserProfile');
 
 class UserProfileModel {
   static async findByUserId(userId) {
-    const result = await dbAdapter.get(
-      'SELECT * FROM user_profiles WHERE user_id = ?',
-      [userId]
-    );
-    return result;
+    return await UserProfile.findOne({ user_id: userId }).lean();
   }
 
   static async create(profile) {
-    const result = await dbAdapter.run(
-      `INSERT INTO user_profiles (id, user_id, site_type, workflow_preference)
-       VALUES (?, ?, ?, ?)`,
-      [
-      profile.id,
-      profile.user_id,
-      profile.site_type || null,
-      profile.workflow_preference || null
-      ]
-    );
-    return result;
+    const newProfile = new UserProfile({
+      _id: profile.id,
+      user_id: profile.user_id,
+      site_type: profile.site_type || null,
+      workflow_preference: profile.workflow_preference || null
+    });
+    await newProfile.save();
+    return { changes: 1 };
   }
 
   static async update(userId, updates) {
-    const fields = [];
-    const values = [];
+    const updateFields = {};
 
     if (updates.site_type !== undefined) {
-      fields.push('site_type = ?');
-      values.push(updates.site_type);
+      updateFields.site_type = updates.site_type;
     }
     if (updates.workflow_preference !== undefined) {
-      fields.push('workflow_preference = ?');
-      values.push(updates.workflow_preference);
+      updateFields.workflow_preference = updates.workflow_preference;
     }
 
-    if (fields.length === 0) {
+    if (Object.keys(updateFields).length === 0) {
       return { changes: 0 };
     }
 
-    fields.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(userId);
-
-    const result = await dbAdapter.run(
-      `UPDATE user_profiles 
-      SET ${fields.join(', ')}
-       WHERE user_id = ?`,
-      values
+    const result = await UserProfile.updateOne(
+      { user_id: userId },
+      { $set: updateFields }
     );
-    return result;
+    return { changes: result.modifiedCount };
   }
 
   static async upsert(profile) {
@@ -63,4 +51,3 @@ class UserProfileModel {
 }
 
 module.exports = UserProfileModel;
-

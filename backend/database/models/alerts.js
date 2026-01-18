@@ -1,107 +1,104 @@
-const { getDatabase } = require('../db');
+/**
+ * Alert Model - MongoDB/Mongoose version
+ */
+const Alert = require('../schemas/Alert');
 
 class AlertModel {
-  static getAll() {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM alerts ORDER BY created_at DESC').all();
+  static async getAll() {
+    return await Alert.find({}).sort({ created_at: -1 }).lean();
   }
 
-  static findById(id) {
-    const db = getDatabase();
-    return db.prepare('SELECT * FROM alerts WHERE id = ?').get(id);
+  static async findById(id) {
+    return await Alert.findById(id).lean();
   }
 
-  static findBySiteId(siteId) {
-    const db = getDatabase();
-    return db.prepare(`
-      SELECT * FROM alerts 
-      WHERE site_id = ? 
-      ORDER BY 
-        CASE severity 
-          WHEN 'critical' THEN 1
-          WHEN 'high' THEN 2
-          WHEN 'medium' THEN 3
-          WHEN 'low' THEN 4
-        END,
-        created_at DESC
-    `).all(siteId);
+  static async findBySiteId(siteId) {
+    // Sort by severity priority, then by created_at desc
+    const severityOrder = { critical: 1, high: 2, medium: 3, low: 4 };
+    const alerts = await Alert.find({ site_id: siteId }).lean();
+
+    return alerts.sort((a, b) => {
+      const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
+      if (severityDiff !== 0) return severityDiff;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
   }
 
-  static getActive() {
-    const db = getDatabase();
-    return db.prepare(`
-      SELECT * FROM alerts 
-      WHERE status = 'active' 
-      ORDER BY 
-        CASE severity 
-          WHEN 'critical' THEN 1
-          WHEN 'high' THEN 2
-          WHEN 'medium' THEN 3
-          WHEN 'low' THEN 4
-        END,
-        created_at DESC
-    `).all();
+  static async getActive() {
+    const severityOrder = { critical: 1, high: 2, medium: 3, low: 4 };
+    const alerts = await Alert.find({ status: 'active' }).lean();
+
+    return alerts.sort((a, b) => {
+      const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
+      if (severityDiff !== 0) return severityDiff;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
   }
 
-  static create(alert) {
-    const db = getDatabase();
-    const stmt = db.prepare(`
-      INSERT INTO alerts (id, site_id, asset_id, severity, type, title, message, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    return stmt.run(
-      alert.id, alert.site_id, alert.asset_id, alert.severity,
-      alert.type, alert.title, alert.message, alert.status || 'active'
+  static async create(alert) {
+    const newAlert = new Alert({
+      _id: alert.id,
+      site_id: alert.site_id,
+      asset_id: alert.asset_id,
+      severity: alert.severity,
+      type: alert.type,
+      title: alert.title,
+      message: alert.message,
+      status: alert.status || 'active'
+    });
+    await newAlert.save();
+    return { changes: 1 };
+  }
+
+  static async update(id, updates) {
+    const result = await Alert.updateOne(
+      { _id: id },
+      { $set: updates }
     );
+    return { changes: result.modifiedCount };
   }
 
-  static update(id, updates) {
-    const db = getDatabase();
-    const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
-    const values = Object.values(updates);
-    const stmt = db.prepare(`
-      UPDATE alerts SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `);
-    return stmt.run(...values, id);
+  static async acknowledge(id) {
+    const result = await Alert.updateOne(
+      { _id: id },
+      { $set: { status: 'acknowledged' } }
+    );
+    return { changes: result.modifiedCount };
   }
 
-  static acknowledge(id) {
-    const db = getDatabase();
-    return db.prepare(`
-      UPDATE alerts SET status = 'acknowledged', updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `).run(id);
+  static async resolve(id) {
+    const result = await Alert.updateOne(
+      { _id: id },
+      { $set: { status: 'resolved', resolved_at: new Date() } }
+    );
+    return { changes: result.modifiedCount };
   }
 
-  static resolve(id) {
-    const db = getDatabase();
-    return db.prepare(`
-      UPDATE alerts SET status = 'resolved', resolved_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `).run(id);
+  static async delete(id) {
+    const result = await Alert.deleteOne({ _id: id });
+    return { changes: result.deletedCount };
   }
 
-  static delete(id) {
-    const db = getDatabase();
-    return db.prepare('DELETE FROM alerts WHERE id = ?').run(id);
-  }
+  static async getStats() {
+    const stats = await Alert.aggregate([
+      {
+        $match: { status: { $in: ['active', 'acknowledged'] } }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          active: { $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } },
+          critical: { $sum: { $cond: [{ $eq: ['$severity', 'critical'] }, 1, 0] } },
+          high: { $sum: { $cond: [{ $eq: ['$severity', 'high'] }, 1, 0] } },
+          medium: { $sum: { $cond: [{ $eq: ['$severity', 'medium'] }, 1, 0] } },
+          low: { $sum: { $cond: [{ $eq: ['$severity', 'low'] }, 1, 0] } }
+        }
+      }
+    ]);
 
-  static getStats() {
-    const db = getDatabase();
-    
-    const stats = db.prepare(`
-      SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-        SUM(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END) as critical,
-        SUM(CASE WHEN severity = 'high' THEN 1 ELSE 0 END) as high,
-        SUM(CASE WHEN severity = 'medium' THEN 1 ELSE 0 END) as medium,
-        SUM(CASE WHEN severity = 'low' THEN 1 ELSE 0 END) as low
-      FROM alerts
-      WHERE status IN ('active', 'acknowledged')
-    `).get();
-    
-    return stats;
+    return stats[0] || { total: 0, active: 0, critical: 0, high: 0, medium: 0, low: 0 };
   }
 }
 
 module.exports = AlertModel;
-
