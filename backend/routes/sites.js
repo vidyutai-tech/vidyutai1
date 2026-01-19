@@ -37,14 +37,14 @@ router.get('/', (req, res) => {
 // GET single site by ID
 router.get('/:id', (req, res) => {
   const site = mockSites.find(s => s.id === req.params.id);
-  
+
   if (!site) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   res.json({
     success: true,
     data: site
@@ -59,9 +59,9 @@ router.post('/', (req, res) => {
     status: 'online',
     installedDate: new Date().toISOString().split('T')[0]
   };
-  
+
   mockSites.push(newSite);
-  
+
   res.status(201).json({
     success: true,
     data: newSite
@@ -71,16 +71,16 @@ router.post('/', (req, res) => {
 // PUT update site
 router.put('/:id', (req, res) => {
   const index = mockSites.findIndex(s => s.id === req.params.id);
-  
+
   if (index === -1) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   mockSites[index] = { ...mockSites[index], ...req.body };
-  
+
   res.json({
     success: true,
     data: mockSites[index]
@@ -90,16 +90,16 @@ router.put('/:id', (req, res) => {
 // DELETE site
 router.delete('/:id', (req, res) => {
   const index = mockSites.findIndex(s => s.id === req.params.id);
-  
+
   if (index === -1) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   mockSites.splice(index, 1);
-  
+
   res.json({
     success: true,
     message: 'Site deleted successfully'
@@ -109,14 +109,14 @@ router.delete('/:id', (req, res) => {
 // GET health status for a site
 router.get('/:id/health-status', (req, res) => {
   const site = mockSites.find(s => s.id === req.params.id);
-  
+
   if (!site) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   // Return mock health status
   const healthStatus = {
     siteId: req.params.id,
@@ -132,21 +132,21 @@ router.get('/:id/health-status', (req, res) => {
     pv_generation_today: 850 + Math.random() * 200,
     overall_health: 90 + Math.random() * 8
   };
-  
+
   res.json(healthStatus);
 });
 
 // GET alerts for a site
 router.get('/:id/alerts', (req, res) => {
   const site = mockSites.find(s => s.id === req.params.id);
-  
+
   if (!site) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   // Return mock alerts
   const alerts = [
     {
@@ -160,21 +160,21 @@ router.get('/:id/alerts', (req, res) => {
       status: 'active'
     }
   ];
-  
+
   res.json(alerts);
 });
 
 // GET assets for a site
 router.get('/:id/assets', (req, res) => {
   const site = mockSites.find(s => s.id === req.params.id);
-  
+
   if (!site) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   // Return mock assets
   const assets = [
     {
@@ -200,36 +200,37 @@ router.get('/:id/assets', (req, res) => {
       rank: 2
     }
   ];
-  
+
   res.json(assets);
 });
 
 // GET timeseries data for a site
 router.get('/:id/timeseries', async (req, res) => {
   const siteId = req.params.id;
-  const dbAdapter = require('../database/db-adapter');
-  
+  const Site = require('../database/schemas/Site');
+  const TimeseriesData = require('../database/schemas/TimeseriesData');
+
   // Check both mockSites and database sites
   const site = mockSites.find(s => s.id === siteId);
-  
-  // Also check database for site (if using database)
+
+  // Also check database for site
   try {
-    const dbSite = await dbAdapter.get('SELECT id FROM sites WHERE id = ?', [siteId]);
-  
-  if (!site && !dbSite) {
-    console.warn(`Site not found in mock data or database: ${siteId}`);
-    // Still return data even if site not found (for demo purposes)
+    const dbSite = await Site.findById(siteId).lean();
+
+    if (!site && !dbSite) {
+      console.warn(`Site not found in mock data or database: ${siteId}`);
+      // Still return data even if site not found (for demo purposes)
     }
   } catch (checkError) {
     console.warn('Error checking site existence:', checkError.message);
   }
-  
+
   const { range = 'last_6h' } = req.query;
   // Calculate points for 10-minute intervals
   // last_6h = 36 points, last_24h = 144 points
   const points = range === 'last_6h' ? 36 : range === 'last_24h' ? 144 : 36;
   const timeseries = [];
-  
+
   // Try to get data from database first
   try {
     // Calculate time range
@@ -237,17 +238,15 @@ router.get('/:id/timeseries', async (req, res) => {
     let hoursBack = 6;
     if (range === 'last_24h') hoursBack = 24;
     if (range === 'last_7d') hoursBack = 24 * 7;
-    
-    const startTime = new Date(now - hoursBack * 60 * 60 * 1000).toISOString();
-    
-    // Use db-adapter which works for both SQLite and PostgreSQL
-    const dbData = await dbAdapter.all(`
-      SELECT timestamp, metric_type, metric_value
-      FROM timeseries_data
-      WHERE site_id = ? AND timestamp >= ?
-      ORDER BY timestamp ASC
-    `, [siteId, startTime]);
-    
+
+    const startTime = new Date(now - hoursBack * 60 * 60 * 1000);
+
+    // Use Mongoose to query MongoDB
+    const dbData = await TimeseriesData.find({
+      site_id: siteId,
+      timestamp: { $gte: startTime }
+    }).sort({ timestamp: 1 }).lean();
+
     if (dbData && dbData.length > 0) {
       // Group by timestamp and build metrics object
       const groupedByTime = {};
@@ -258,7 +257,7 @@ router.get('/:id/timeseries', async (req, res) => {
         }
         groupedByTime[timeKey].metrics[row.metric_type] = row.metric_value;
       });
-      
+
       const dbTimeseries = Object.values(groupedByTime).slice(-points);
       if (dbTimeseries.length > 0) {
         // Fill in missing metrics with defaults
@@ -283,14 +282,14 @@ router.get('/:id/timeseries', async (req, res) => {
     console.error('Database query failed, using generated data:', dbError.message);
     console.error('Error stack:', dbError.stack);
   }
-  
+
   // Fallback: Generate synthetic data
   const now = new Date();
   for (let i = points; i >= 0; i--) {
     const timestamp = new Date(now.getTime() - i * 10 * 60 * 1000); // 10-minute intervals
     const hour = timestamp.getHours();
     const solarMultiplier = Math.max(0, Math.sin((hour - 6) * Math.PI / 12)) * (hour >= 6 && hour <= 18 ? 1 : 0);
-    
+
     timeseries.push({
       timestamp: timestamp.toISOString(),
       metrics: {
@@ -305,7 +304,7 @@ router.get('/:id/timeseries', async (req, res) => {
       }
     });
   }
-  
+
   console.log(`✅ Returning ${timeseries.length} generated data points for site ${siteId}`);
   res.json(timeseries);
 });
@@ -313,14 +312,14 @@ router.get('/:id/timeseries', async (req, res) => {
 // GET RL suggestions for a site
 router.get('/:id/suggestions', (req, res) => {
   const site = mockSites.find(s => s.id === req.params.id);
-  
+
   if (!site) {
     return res.status(404).json({
       success: false,
       error: 'Site not found'
     });
   }
-  
+
   // Return mock RL suggestions with proper structure
   const suggestions = [
     {
@@ -354,7 +353,7 @@ router.get('/:id/suggestions', (req, res) => {
       }
     }
   ];
-  
+
   res.json(suggestions);
 });
 

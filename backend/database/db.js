@@ -1,205 +1,26 @@
 /**
- * Database Module - Unified Interface
- * Supports both SQLite (local) and PostgreSQL (production)
- * Automatically selects based on DATABASE_URL environment variable
+ * Database Module - MongoDB Implementation
+ * Uses Mongoose for MongoDB connection and operations
  */
 
-const dbAdapter = require('./db-adapter');
-const path = require('path');
-const fs = require('fs');
-
-const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
-const SCHEMA_POSTGRES_PATH = path.join(__dirname, 'schema-postgres.sql');
-const SEED_PATH = path.join(__dirname, 'seed.sql');
+const { connectMongo, isMongoConnected, closeMongo } = require('./mongodb-connection');
 
 /**
- * Create tables from schema
- */
-async function createTables() {
-  try {
-    let schema;
-    
-    // Determine which schema to use
-    const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
-    const schemaPath = usePostgres ? SCHEMA_POSTGRES_PATH : SCHEMA_PATH;
-    
-    try {
-      schema = fs.readFileSync(schemaPath, 'utf8');
-    } catch (readError) {
-      if (process.env.VERCEL) {
-        console.log('⚠️ Cannot read schema file on Vercel, using inline schema');
-        schema = getInlineSchema(usePostgres);
-      } else {
-        throw readError;
-      }
-    }
-    
-    await dbAdapter.exec(schema);
-    console.log('✅ Database tables created successfully');
-  } catch (error) {
-    console.error('❌ Failed to create tables:', error);
-    throw error;
-  }
-}
-
-/**
- * Get inline schema (fallback for Vercel)
- */
-function getInlineSchema(usePostgres = false) {
-  if (usePostgres) {
-    // Minimal PostgreSQL schema
-    return `
-      CREATE TABLE IF NOT EXISTS users (
-        id VARCHAR(255) PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL CHECK(role IN ('admin', 'operator', 'viewer')),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-  } else {
-    // Minimal SQLite schema
-    return `
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        name TEXT NOT NULL,
-        role TEXT NOT NULL CHECK(role IN ('admin', 'operator', 'viewer')),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-  }
-}
-
-/**
- * Seed database with initial data
- */
-async function seedDatabase() {
-  try {
-    let seed;
-    try {
-      seed = fs.readFileSync(SEED_PATH, 'utf8');
-    } catch (readError) {
-      if (process.env.VERCEL) {
-        console.log('⚠️ Cannot read seed file on Vercel, creating default user');
-        // Create at least one default user for testing
-        try {
-          const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_HOST);
-          if (usePostgres) {
-            await dbAdapter.run(
-              `INSERT INTO users (id, email, password, name, role)
-               VALUES ($1, $2, $3, $4, $5)
-               ON CONFLICT (email) DO NOTHING`,
-              ['user-1', 'admin@vidyutai.com', 'admin123', 'Admin User', 'admin']
-            );
-          } else {
-            await dbAdapter.run(
-              `INSERT OR IGNORE INTO users (id, email, password, name, role)
-               VALUES (?, ?, ?, ?, ?)`,
-              ['user-1', 'admin@vidyutai.com', 'admin123', 'Admin User', 'admin']
-            );
-          }
-          console.log('✅ Default admin user created');
-        } catch (userError) {
-          console.error('⚠️ Could not create default user:', userError.message);
-        }
-        return; // Skip full seed
-      } else {
-        throw readError;
-      }
-    }
-    
-    // Convert SQLite syntax to PostgreSQL if needed
-    const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
-    if (usePostgres) {
-      // Convert SQLite datetime() to PostgreSQL NOW() + INTERVAL
-      seed = seed.replace(/datetime\('now', '([+-]\d+) (day|days|hour|hours|minute|minutes)'\)/gi, (match, num, unit) => {
-        const interval = unit.endsWith('s') ? unit : unit + 's';
-        return `NOW() + INTERVAL '${num} ${interval}'`;
-      });
-      seed = seed.replace(/datetime\('now'\)/gi, 'NOW()');
-      
-      // Convert INSERT OR IGNORE to INSERT ... ON CONFLICT (id) DO NOTHING
-      // Most tables use 'id' as primary key
-      seed = seed.replace(/INSERT OR IGNORE INTO (\w+) \(([^)]+)\) VALUES/gi, (match, table, cols) => {
-        // Special case for users table - use email as conflict target
-        if (table === 'users' && cols.includes('email')) {
-          return `INSERT INTO ${table} (${cols}) VALUES`;
-        }
-        // For all other tables, use id as conflict target
-        return `INSERT INTO ${table} (${cols}) VALUES`;
-      });
-      
-      // Add ON CONFLICT clause after VALUES for each INSERT statement
-      seed = seed.replace(/INSERT INTO (\w+) \(([^)]+)\) VALUES([^;]+);/gi, (match, table, cols, values) => {
-        if (match.includes('ON CONFLICT')) {
-          return match; // Already has ON CONFLICT
-        }
-        // For users table, conflict on email
-        if (table === 'users' && cols.includes('email')) {
-          return `INSERT INTO ${table} (${cols}) VALUES${values} ON CONFLICT (email) DO NOTHING;`;
-        }
-        // For system_settings table, conflict on key (primary key)
-        if (table === 'system_settings' && cols.includes('key')) {
-          return `INSERT INTO ${table} (${cols}) VALUES${values} ON CONFLICT (key) DO NOTHING;`;
-        }
-        // For all other tables, conflict on id
-        if (cols.includes('id')) {
-          return `INSERT INTO ${table} (${cols}) VALUES${values} ON CONFLICT (id) DO NOTHING;`;
-        }
-        return match;
-      });
-    }
-    
-    await dbAdapter.exec(seed);
-    console.log('✅ Database seeded successfully');
-  } catch (error) {
-    console.error('❌ Failed to seed database:', error);
-    // Don't throw on Vercel - allow app to continue
-    if (!process.env.VERCEL) {
-    throw error;
-  }
-}
-}
-
-/**
- * Ensure database is initialized
+ * Ensure database is initialized (MongoDB connected)
  */
 async function ensureInitialized() {
   try {
-    await dbAdapter.initializeDatabase();
-    
-    if (!(await dbAdapter.isInitialized())) {
-      console.log('🗄️ Database not initialized. Running setup...');
-      try {
-        await createTables();
-        await seedDatabase();
-        console.log('🗄️ Database initialization finished.');
-      } catch (setupError) {
-        console.error('⚠️ Warning: Error during database setup:', setupError.message);
-        // On Vercel, try to continue with minimal schema
-        if (process.env.VERCEL) {
-          console.log('⚠️ Vercel environment detected. Using minimal schema.');
-          try {
-            const usePostgres = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || process.env.POSTGRES_HOST);
-            const minimalSchema = getInlineSchema(usePostgres);
-            await dbAdapter.exec(minimalSchema);
-            console.log('✅ Minimal schema created for Vercel');
-          } catch (minimalError) {
-            console.error('❌ Failed to create minimal schema:', minimalError.message);
-          }
-      }
-      }
-    } else {
-      console.log('🗄️ Database already initialized.');
+    if (isMongoConnected()) {
+      console.log('🗄️ MongoDB already connected.');
+      return;
     }
+
+    console.log('🗄️ Initializing MongoDB connection...');
+    await connectMongo();
+    console.log('🗄️ MongoDB initialization finished.');
   } catch (error) {
     console.error('❌ Critical error in ensureInitialized:', error.message);
-    // Don't throw - allow the app to continue
+    // Don't throw - allow the app to continue (for Vercel compatibility)
   }
 }
 
@@ -208,30 +29,27 @@ async function ensureInitialized() {
  */
 async function setupDatabase() {
   try {
-    console.log('🔧 Setting up database...');
-    await dbAdapter.initializeDatabase();
-    await createTables();
-    await seedDatabase();
-    console.log('✅ Database setup complete!');
+    console.log('🔧 Setting up MongoDB...');
+    await connectMongo();
+    console.log('✅ MongoDB setup complete!');
   } catch (error) {
-    console.error('❌ Database setup failed:', error);
+    console.error('❌ MongoDB setup failed:', error);
     throw error;
   }
 }
 
 /**
- * Get database instance (for backward compatibility)
- * Note: This now returns the adapter, not the raw database
+ * Get database type
  */
-function getDatabase() {
-  return dbAdapter.getDatabase();
+function getDbType() {
+  return 'mongodb';
 }
 
 /**
  * Close database connections
  */
 async function closeDatabase() {
-  await dbAdapter.closeDatabase();
+  await closeMongo();
 }
 
 // Graceful shutdown
@@ -247,16 +65,13 @@ process.on('SIGTERM', async () => {
 
 module.exports = {
   setupDatabase,
-  getDatabase,
   closeDatabase,
-  initializeDatabase: dbAdapter.initializeDatabase,
   ensureInitialized,
-  isInitialized: dbAdapter.isInitialized,
-  getDbType: dbAdapter.getDbType,
-  // Export adapter methods for direct use
-  query: dbAdapter.query,
-  get: dbAdapter.get,
-  all: dbAdapter.all,
-  run: dbAdapter.run,
-  exec: dbAdapter.exec
+  isInitialized: isMongoConnected,
+  getDbType,
+  // Note: getDatabase is deprecated for MongoDB - use models directly
+  getDatabase: () => {
+    console.warn('⚠️ getDatabase() is deprecated. Use Mongoose models directly.');
+    return null;
+  }
 };
