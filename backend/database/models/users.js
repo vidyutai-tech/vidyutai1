@@ -9,7 +9,8 @@ class UserModel {
   }
 
   static async findById(id) {
-    return await User.findById(id).lean();
+    // Use findOne with _id to properly query by custom string IDs
+    return await User.findOne({ _id: id }).lean();
   }
 
   static async getAll() {

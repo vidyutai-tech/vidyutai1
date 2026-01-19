@@ -5,7 +5,8 @@ const LoadProfile = require('../schemas/LoadProfile');
 
 class LoadProfileModel {
   static async findById(id) {
-    return await LoadProfile.findById(id).lean();
+    // Use findOne with _id to properly query by custom string IDs
+    return await LoadProfile.findOne({ _id: id }).lean();
   }
 
   static async findByUserId(userId) {
