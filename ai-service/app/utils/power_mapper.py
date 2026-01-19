@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from zoneinfo import ZoneInfo
+from typing import List, Dict, Any, Optional
 
 import pandas as pd
 
@@ -15,7 +16,7 @@ def _has(row: pd.Series, name: str) -> bool:
     return name in row and pd.notnull(row[name])
 
 
-def remap_time(df: pd.DataFrame) -> List[Dict[str, Any]]:
+def remap_time(df: pd.DataFrame, end_time: Optional[datetime] = None) -> List[Dict[str, Any]]:
     """
     Remap rows into frontend-friendly time series with a shifted timeline ending 'now'.
     Handles both residential and plant sheets with normalized column names.
@@ -23,7 +24,8 @@ def remap_time(df: pd.DataFrame) -> List[Dict[str, Any]]:
     if df.empty:
         return []
 
-    now = datetime.now()
+    # Use fixed local timezone so frontend sees consistent solar hours in production
+    now = end_time or datetime.now(ZoneInfo("Asia/Kolkata"))
     total = len(df)
     out: List[Dict[str, Any]] = []
 

@@ -3,8 +3,11 @@ const router = express.Router();
 const axios = require('axios');
 const FormData = require('form-data');
 const multer = require('multer');
+const crypto = require('crypto');
 const { getUserId } = require('./wizard');
 const OptimizationResultsModel = require('../database/models/optimizationResults');
+const OptimizationUploadsModel = require('../database/models/optimizationUploads');
+const db = require('../database/db-adapter');
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
@@ -68,6 +71,147 @@ const forwardToAIService = async (req, endpoint) => {
 // Health check for optimization routes
 router.get('/optimization-health', (req, res) => {
   res.json({ status: 'ok', service: 'optimization', timestamp: new Date().toISOString() });
+});
+
+// POST /api/v1/optimization/uploads - Save a user-uploaded CSV/Excel for reuse
+router.post('/uploads', upload.single('file'), async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No file',
+        message: 'Please upload a CSV or Excel file.'
+      });
+    }
+
+    if (!isValidCsvOrExcel(req.file) || isHtmlContent(req.file)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid file type',
+        message: htmlUploadMessage
+      });
+    }
+
+    let resolvedSiteId = req.body.site_id || null;
+    if (resolvedSiteId) {
+      const existingSite = await db.get('SELECT id FROM sites WHERE id = ?', [resolvedSiteId]);
+      if (!existingSite) {
+        resolvedSiteId = null;
+      }
+    }
+
+    const uploadId = crypto.randomUUID();
+    await OptimizationUploadsModel.create({
+      id: uploadId,
+      user_id: userId,
+      site_id: resolvedSiteId,
+      file_name: req.file.originalname || 'file',
+      mime_type: req.file.mimetype || 'application/octet-stream',
+      size_bytes: req.file.size || req.file.buffer?.length || null,
+      content_base64: req.file.buffer.toString('base64')
+    });
+
+    res.json({
+      success: true,
+      upload: {
+        id: uploadId,
+        file_name: req.file.originalname || 'file',
+        mime_type: req.file.mimetype || 'application/octet-stream',
+        size_bytes: req.file.size || req.file.buffer?.length || null,
+        site_id: resolvedSiteId
+      }
+    });
+  } catch (error) {
+    console.error('Error saving optimization upload:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save upload',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/v1/optimization/uploads - List saved uploads for current user
+router.get('/uploads', async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    const uploads = await OptimizationUploadsModel.getByUserId(userId, req.query.site_id);
+    res.json({ success: true, uploads });
+  } catch (error) {
+    console.error('Error listing optimization uploads:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to list uploads',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/v1/optimization/uploads/:id - Fetch a saved upload
+router.get('/uploads/:id', async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    const upload = await OptimizationUploadsModel.getById(req.params.id);
+    if (!upload) {
+      return res.status(404).json({
+        success: false,
+        error: 'Not found',
+        message: 'Upload not found'
+      });
+    }
+
+    if (upload.user_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden',
+        message: 'You do not have access to this upload'
+      });
+    }
+
+    res.json({
+      success: true,
+      upload: {
+        id: upload.id,
+        file_name: upload.file_name,
+        mime_type: upload.mime_type,
+        size_bytes: upload.size_bytes,
+        content_base64: upload.content_base64,
+        created_at: upload.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching optimization upload:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch upload',
+      message: error.message
+    });
+  }
 });
 
 // GET /api/v1/optimization/results - Get saved optimization results for current user
@@ -244,6 +388,30 @@ router.delete('/results/:id', async (req, res) => {
 // Proxy route for source optimization
 router.post('/optimize', upload.single('file'), async (req, res) => {
   try {
+    const userId = getUserId(req);
+    if (!req.file && req.body.upload_id) {
+      const stored = await OptimizationUploadsModel.getById(req.body.upload_id);
+      if (!stored) {
+        return res.status(404).json({
+          success: false,
+          error: 'Not found',
+          message: 'Saved upload not found'
+        });
+      }
+      if (userId && stored.user_id !== userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden',
+          message: 'You do not have access to this upload'
+        });
+      }
+      req.file = {
+        buffer: Buffer.from(stored.content_base64, 'base64'),
+        originalname: stored.file_name || 'file',
+        mimetype: stored.mime_type || 'text/csv'
+      };
+    }
+
     if (!isValidCsvOrExcel(req.file) || isHtmlContent(req.file)) {
       return res.status(400).json({
         success: false,
@@ -255,7 +423,6 @@ router.post('/optimize', upload.single('file'), async (req, res) => {
     const data = await forwardToAIService(req, '/optimize');
     
     // Save results to database if user is authenticated
-    const userId = getUserId(req);
     if (userId && data.summary && data.chart_data) {
       try {
         // Extract input parameters from request body
@@ -312,6 +479,30 @@ router.post('/optimize', upload.single('file'), async (req, res) => {
 // Use upload.any() to handle both file and non-file requests
 router.post('/demand-optimize', upload.any(), async (req, res) => {
   try {
+    const userId = getUserId(req);
+    if ((!req.files || req.files.length === 0) && req.body.upload_id) {
+      const stored = await OptimizationUploadsModel.getById(req.body.upload_id);
+      if (!stored) {
+        return res.status(404).json({
+          success: false,
+          error: 'Not found',
+          message: 'Saved upload not found'
+        });
+      }
+      if (userId && stored.user_id !== userId) {
+        return res.status(403).json({
+          success: false,
+          error: 'Forbidden',
+          message: 'You do not have access to this upload'
+        });
+      }
+      req.files = [{
+        buffer: Buffer.from(stored.content_base64, 'base64'),
+        originalname: stored.file_name || 'file',
+        mimetype: stored.mime_type || 'text/csv'
+      }];
+    }
+
     if (req.files && req.files.length > 0 && (!isValidCsvOrExcel(req.files[0]) || isHtmlContent(req.files[0]))) {
       return res.status(400).json({
         status: 'error',
@@ -342,7 +533,6 @@ router.post('/demand-optimize', upload.any(), async (req, res) => {
       console.log('✅ Demand optimization completed successfully');
       
       // Save results to database if user is authenticated
-      const userId = getUserId(req);
       if (userId && data.summary && data.chart_data) {
         try {
           // Extract input parameters from request body

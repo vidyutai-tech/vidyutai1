@@ -13,12 +13,14 @@ const planningNavItems = [
 ];
 
 const optimizationNavItems = [
-  { name: 'Optimization Configuration', path: '/optimization-setup', icon: Settings },
+  { name: 'System Customizations', path: '/system-customizations', icon: Settings },
+  { name: 'Optimization', path: '/optimization', icon: SlidersHorizontal },
 ];
 
 const dashboardNavItems = [
-  { name: 'Solar Plant Energy Monitoring', path: '/operational-monitoring', icon: Activity },
-  { name: 'Residential Energy Monitoring', path: '/residential-monitoring', icon: Home },
+  { name: 'Commercial System', path: '/operational-monitoring', icon: Activity },
+  { name: 'Residential System', path: '/residential-monitoring', icon: Home },
+  { name: 'Institutional System', path: '/institutional-monitoring', icon: Building },
 ];
 
 // AI/ML Insights items - moved to dashboard section as they're navigation utilities
@@ -129,8 +131,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setSidebarOpen }) => {
             </div>
             
             <NavSection title="1. Energy Advisory Assistance" items={planningNavItems} isActive={isPlanningActive} />
-            <NavSection title="2. Energy Optimization" items={optimizationNavItems} isActive={isOptimizationActive} />
-            <NavSection title="3. Dashboards" items={dashboardNavItems} isActive={isDashboardActive} />
+            <NavSection title="2. Energy Management System" items={optimizationNavItems} isActive={isOptimizationActive} />
+            <NavSection title="3. System Monitor" items={dashboardNavItems} isActive={isDashboardActive} />
           </nav>
         </div>
       </aside>

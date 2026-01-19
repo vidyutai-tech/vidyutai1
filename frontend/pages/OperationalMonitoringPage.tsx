@@ -46,6 +46,14 @@ type InverterPoint = {
   frequency: number;
 };
 
+type EnergySummary = {
+  pv: number;
+  gridImport: number;
+  gridExport: number;
+  batteryCharge: number;
+  batteryDischarge: number;
+};
+
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
@@ -93,6 +101,28 @@ const generateInverterSeries = (name: string, range: '24h' | '7d' | '30d') => {
   return { name, data: points.reverse() };
 };
 
+const alphaPv = 0.35;
+
+const smoothAccumulation = (raw: number, forecast: number, progress: number, blend: number) => {
+  const ideal = forecast * progress;
+  const blended = blend * raw + (1 - blend) * ideal;
+  const candidate = Math.max(raw, blended);
+  return Math.min(forecast, candidate);
+};
+
+const pvProgressForHour = (hour: number) =>
+  hour < 6 ? 0 : hour > 18 ? 1 : Math.sin(((hour - 6) / 12) * Math.PI);
+
+const clampForecastToAvg = (forecast: number, avgDaily: number, minRaw: number) => {
+  if (avgDaily > 0) {
+    const upper = avgDaily * 1.1;
+    const lower = avgDaily * 0.9;
+    const clamped = Math.min(Math.max(forecast, lower), upper);
+    return Math.max(clamped, minRaw);
+  }
+  return Math.max(forecast, minRaw);
+};
+
 const OperationalMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [inverterSeries, setInverterSeries] = useState<{ name: string; data: InverterPoint[] }[]>(() => [
@@ -100,8 +130,12 @@ const OperationalMonitoringPage: React.FC = () => {
     generateInverterSeries('INV-2', '7d'),
     generateInverterSeries('INV-3', '7d'),
   ]);
+  const [yesterdaySummary, setYesterdaySummary] = useState<EnergySummary | null>(null);
+  const [avg7Summary, setAvg7Summary] = useState<EnergySummary | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [selectedRange, setSelectedRange] = useState<'24h' | '7d' | '30d'>('7d');
+  const [selectedRange, setSelectedRange] = useState<'yesterday' | '7d' | '30d'>('7d');
+  const inverterRange: '24h' | '7d' | '30d' =
+    selectedRange === 'yesterday' ? '24h' : selectedRange;
 
   const arraysPerf = useMemo(
     () =>
@@ -170,21 +204,20 @@ const OperationalMonitoringPage: React.FC = () => {
 
     const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
 
-    const forecastPv = Math.max(seededDaily(todayStr, 52000, 9000), accumulatedPvRaw * 1.15);
+    // Forecast is constant for the day (total expected daily energy)
+    const baseForecastPv = Math.max(seededDaily(todayStr, 52000, 9000), accumulatedPvRaw * 1.15);
+    const avg7DailyPv = (avg7Summary?.pv ?? 0) / 7;
+    const forecastPv = clampForecastToAvg(baseForecastPv, avg7DailyPv, accumulatedPvRaw);
 
-    // Optional smoothing based on sun hours (kept small to avoid jumps)
-    const sunHours = todaysPoints.filter((p) => p.pv > 0).length;
-    const expectedSunHours = 10;
-    const progress = Math.min(sunHours / expectedSunHours, 1);
-
-    const accumulatedPv = Math.min(accumulatedPvRaw, forecastPv);
-    const smoothedAccumulated = Math.min(forecastPv * progress, accumulatedPv);
+    // PV accumulation follows a smooth solar curve and clamps to forecast
+    const pvProgress = pvProgressForHour(currentHour);
+    const accumulatedPv = smoothAccumulation(accumulatedPvRaw, forecastPv, pvProgress, alphaPv);
 
     return [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 0)} kWh`, color: '#22c55e' },
-      { label: "Today's Accumulated (PV)", value: `${formatNumber(smoothedAccumulated, 0)} kWh`, color: '#f59e0b' },
+      { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 0)} kWh`, color: '#f59e0b' },
     ];
-  }, [powerData]);
+  }, [powerData, avg7Summary]);
 
   const energyStats = useMemo(() => {
     const avg7 = 52000 + Math.random() * 5000; // kWh
@@ -216,6 +249,20 @@ const OperationalMonitoringPage: React.FC = () => {
     ];
   }, [lastUpdated]);
 
+  const summarizeEnergy = (data: TimePoint[]): EnergySummary => {
+    return data.reduce(
+      (acc, p) => {
+        acc.pv += p.pv;
+        if (p.grid > 0) acc.gridImport += p.grid;
+        if (p.grid < 0) acc.gridExport += -p.grid;
+        if (p.battery > 0) acc.batteryDischarge += p.battery;
+        if (p.battery < 0) acc.batteryCharge += -p.battery;
+        return acc;
+      },
+      { pv: 0, gridImport: 0, gridExport: 0, batteryCharge: 0, batteryDischarge: 0 }
+    );
+  };
+
   // Refresh mock data every 15 minutes (and on mount)
   useEffect(() => {
     const refresh = async () => {
@@ -242,10 +289,28 @@ const OperationalMonitoringPage: React.FC = () => {
         console.error('Failed to load solar power data', e);
       }
 
+      try {
+        const [yesterdayRes, avg7Res] = await Promise.all([
+          fetch(`${getPowerApiBase()}/mock/power/solar?range=yesterday`),
+          fetch(`${getPowerApiBase()}/mock/power/solar?range=7d`)
+        ]);
+        if (!yesterdayRes.ok || !avg7Res.ok) throw new Error('Failed to load summary data');
+        const yesterdayData = await yesterdayRes.json();
+        const avg7Data = await avg7Res.json();
+        if (Array.isArray(yesterdayData)) {
+          setYesterdaySummary(summarizeEnergy(yesterdayData));
+        }
+        if (Array.isArray(avg7Data)) {
+          setAvg7Summary(summarizeEnergy(avg7Data));
+        }
+      } catch (e) {
+        console.error('Failed to load solar summary data', e);
+      }
+
       setInverterSeries([
-        generateInverterSeries('INV-1', selectedRange),
-        generateInverterSeries('INV-2', selectedRange),
-        generateInverterSeries('INV-3', selectedRange),
+        generateInverterSeries('INV-1', inverterRange),
+        generateInverterSeries('INV-2', inverterRange),
+        generateInverterSeries('INV-3', inverterRange),
       ]);
       setLastUpdated(new Date());
     };
@@ -265,7 +330,7 @@ const OperationalMonitoringPage: React.FC = () => {
   const allowedDates = useMemo(() => {
     const midnights = powerData.filter((p) => p.isMidnight);
     const uniqueDates = Array.from(new Set(midnights.map((p) => p.dateOnly)));
-    if (selectedRange === '24h') {
+    if (selectedRange === 'yesterday') {
       return new Set<string>();
     }
     if (uniqueDates.length <= 7) return new Set(uniqueDates);
@@ -285,7 +350,7 @@ const OperationalMonitoringPage: React.FC = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Solar Plant Energy Monitoring Dashboard</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Commercial System</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Last updated: {lastUpdated.toLocaleString()}
           </p>
@@ -319,21 +384,21 @@ const OperationalMonitoringPage: React.FC = () => {
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Yesterday's Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(52000 + Math.random() * 5000, 0)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(15000 + Math.random() * 4000, 0)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(6000 + Math.random() * 2000, 0)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(8000 + Math.random() * 2000, 0)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(8200 + Math.random() * 2000, 0)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber(yesterdaySummary?.pv ?? 0, 0)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber(yesterdaySummary?.gridImport ?? 0, 0)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber(yesterdaySummary?.gridExport ?? 0, 0)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber(yesterdaySummary?.batteryCharge ?? 0, 0)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber(yesterdaySummary?.batteryDischarge ?? 0, 0)} kWh</li>
           </ul>
         </div>
         <div className="rounded-xl border border-gray-200 dark_border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Avg Last 7 Days' Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(50000 + Math.random() * 4000, 0)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(14000 + Math.random() * 3000, 0)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(5500 + Math.random() * 1500, 0)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(7600 + Math.random() * 1800, 0)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(7900 + Math.random() * 1800, 0)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber((avg7Summary?.pv ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber((avg7Summary?.gridImport ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber((avg7Summary?.gridExport ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber((avg7Summary?.batteryCharge ?? 0) / 7, 0)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber((avg7Summary?.batteryDischarge ?? 0) / 7, 0)} kWh</li>
           </ul>
         </div>
       </div>
@@ -342,13 +407,13 @@ const OperationalMonitoringPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Power profile of different components</h3>
             <select
               value={selectedRange}
-              onChange={(e) => setSelectedRange(e.target.value as '24h' | '7d' | '30d')}
+              onChange={(e) => setSelectedRange(e.target.value as 'yesterday' | '7d' | '30d')}
               className="text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1"
             >
-              <option value="24h">Last 24 hours</option>
+              <option value="yesterday">Yesterday (24h)</option>
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
             </select>
@@ -363,7 +428,7 @@ const OperationalMonitoringPage: React.FC = () => {
                 tickFormatter={(v, idx) => {
                   const point = powerData[idx];
                   if (!point) return '';
-                  if (selectedRange === '24h') {
+                  if (selectedRange === 'yesterday') {
                     const hour = parseInt(point.time.replace('h', ''), 10);
                     if (Number.isNaN(hour)) return '';
                     return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
@@ -377,8 +442,8 @@ const OperationalMonitoringPage: React.FC = () => {
               <YAxis label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10 }} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="pv" stackId="1" stroke={chartColors.solar} fill={chartColors.solar} fillOpacity={0.2} name="Solar PV (kW)" />
-              <Area type="monotone" dataKey="battery" stackId="1" stroke={chartColors.battery} fill={chartColors.battery} fillOpacity={0.15} name="Battery (kW, +discharge/-charge)" />
+              <Line type="monotone" dataKey="pv" stroke={chartColors.solar} strokeWidth={2.4} dot={false} name="Solar PV (kW)" />
+              <Line type="monotone" dataKey="battery" stroke={chartColors.battery} strokeWidth={2.4} dot={false} name="Battery (kW, +discharge/-charge)" />
               <Line type="monotone" dataKey="grid" stroke={chartColors.grid} strokeWidth={2.4} dot={false} name="Grid (kW, +import/-export)" />
             </ComposedChart>
           </ResponsiveContainer>
@@ -460,7 +525,7 @@ const OperationalMonitoringPage: React.FC = () => {
         const inverterDateSet = (() => {
           const midnights = series.data.filter((p) => p.time === '0h');
           const dates = Array.from(new Set(midnights.map((p) => p.label.split(' ')[0])));
-          if (selectedRange === '24h') return new Set<string>();
+          if (selectedRange === 'yesterday') return new Set<string>();
           if (selectedRange === '7d') return new Set(dates);
           const target = 6;
           const step = Math.max(1, Math.ceil(dates.length / target));
@@ -475,7 +540,7 @@ const OperationalMonitoringPage: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-md font-semibold text-gray-900 dark:text-white">{series.name} – Power / Efficiency / Frequency</h4>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {selectedRange === '24h' ? 'Past 24 hours' : selectedRange === '7d' ? 'Past 7 days' : 'Past 30 days'}
+                  {selectedRange === 'yesterday' ? 'Past 24 hours' : selectedRange === '7d' ? 'Past 7 days' : 'Past 30 days'}
                 </span>
               </div>
               <ResponsiveContainer width="100%" height={240}>
@@ -488,7 +553,7 @@ const OperationalMonitoringPage: React.FC = () => {
                     tickFormatter={(v, idx) => {
                       const point = series.data[idx];
                       if (!point) return '';
-                      if (selectedRange === '24h') {
+                      if (selectedRange === 'yesterday') {
                         const hour = parseInt(point.time.replace('h', ''), 10);
                         if (Number.isNaN(hour)) return '';
                         return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
@@ -499,7 +564,7 @@ const OperationalMonitoringPage: React.FC = () => {
                       return '';
                     }}
                   />
-                  <YAxis yAxisId="left" label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10 }} />
+                  <YAxis yAxisId="left" label={{ value: 'Power (kW)', angle: -90, position: 'Left', offset: -5, dx: -20 }} />
                   <YAxis yAxisId="right" orientation="right" label={{ value: 'Eff / Freq', angle: 90, position: 'insideRight', offset: 10 }} />
                   <Tooltip />
                   <Legend />

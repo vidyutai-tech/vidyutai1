@@ -642,3 +642,41 @@ export const getOptimizationConfigs = async (siteId?: string): Promise<Optimizat
   const result = await response.json();
   return result.configs || [];
 };
+
+export type OptimizationUpload = {
+  id: string;
+  file_name: string;
+  mime_type?: string;
+  size_bytes?: number;
+  site_id?: string | null;
+  created_at?: string;
+};
+
+export const uploadOptimizationFile = async (file: File, siteId?: string): Promise<OptimizationUpload> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (siteId) {
+    formData.append('site_id', siteId);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/uploads`, {
+    method: 'POST',
+    headers: {
+      'Authorization': localStorage.getItem('jwt') ? `Bearer ${localStorage.getItem('jwt')}` : ''
+    },
+    body: formData
+  });
+  if (!response.ok) throw new Error('Failed to save uploaded file');
+  const result = await response.json();
+  return result.upload;
+};
+
+export const getOptimizationUploads = async (siteId?: string): Promise<OptimizationUpload[]> => {
+  const url = siteId
+    ? `${API_BASE_URL}/uploads?site_id=${siteId}`
+    : `${API_BASE_URL}/uploads`;
+  const response = await fetch(url, { headers: getAuthHeaders() });
+  if (!response.ok) throw new Error('Failed to fetch saved uploads');
+  const result = await response.json();
+  return result.uploads || [];
+};

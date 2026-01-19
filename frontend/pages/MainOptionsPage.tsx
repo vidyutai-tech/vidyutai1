@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { ArrowRight, BarChart3, TrendingUp, UserCircle, LogOut } from 'lucide-react';
+import { ArrowRight, BarChart3, TrendingUp, UserCircle, LogOut, Activity } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { AppContext } from '../contexts/AppContext';
 
@@ -40,11 +40,26 @@ const MainOptionsPage: React.FC = () => {
       path: '/optimization-flow',
       color: 'from-green-500 to-green-600',
       steps: 'Configuration → Analysis'
+    },
+    {
+      id: 'monitoring',
+      title: 'System Monitor',
+      description: 'Jump into plant and residential dashboards with real-time PV, battery, grid, and load insights.',
+      icon: Activity,
+      path: '/operational-monitoring',
+      color: 'from-purple-500 to-purple-600',
+      steps: 'Dashboards'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
+    <div className="relative min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute -top-32 -left-32 h-80 w-80 rounded-full bg-blue-200 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-emerald-200 blur-3xl" />
+        <div className="absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-sky-200 blur-3xl" />
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.08),_transparent_60%)]" />
       {/* Header with Logout and Profile */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
         <div className="flex items-center">
@@ -114,7 +129,7 @@ const MainOptionsPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {options.map((option) => {
               const Icon = option.icon;
               return (
@@ -152,7 +167,7 @@ const MainOptionsPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               💡 How It Works
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-700 dark:text-gray-300">
               <div>
                 <p className="font-semibold mb-1">1. Energy Advisory Assistance</p>
                 <p className="text-sm">Design your energy system from scratch with step-by-step guidance and AI recommendations.</p>
@@ -160,6 +175,10 @@ const MainOptionsPage: React.FC = () => {
               <div>
                 <p className="font-semibold mb-1">2. Energy Optimization</p>
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">3. System Monitor</p>
+                <p className="text-sm">View live PV, battery, grid, and load dashboards for plant and residential sites.</p>
               </div>
             </div>
           </div>

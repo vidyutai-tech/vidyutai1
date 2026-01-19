@@ -1305,6 +1305,23 @@ const PlanningWizardContent: React.FC = () => {
                   </div>
                 </Card>
 
+                <Card title="System Mode Overview">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-700 dark:text-gray-300">
+                      <div className="space-y-2">
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white">Dual-Mode PV System</h4>
+                        <p>Operates in both grid-connected and without grid connection (off-grid) modes with battery backup.</p>
+                        <p>Ensures continuous power generation and supply during grid outages and improves energy reliability.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white">On-Grid PV System</h4>
+                        <p>Directly connected to the grid without any backup battery storage.</p>
+                        <p>Reduces electricity bills by supplying solar power and exporting surplus energy to the grid.</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
                 {/* Economic Analysis */}
                 <Card title="Economic Analysis">
                   <div className="p-6">
@@ -1426,19 +1443,20 @@ const PlanningWizardContent: React.FC = () => {
                                             borderRadius: '6px'
                                           }}
                                           formatter={(value: any) => {
+                                            const num = Number(value);
                                             if (key.includes('Capital Cost')) {
                                               // Check yLabel to determine unit (Thousands or Cr)
                                               const yLabel = plotData.yLabel || '';
                                               if (yLabel.includes('Thousands')) {
-                                                return `₹${Number(value).toFixed(2)}K`;
+                                                return `₹${num.toFixed(2)}K`;
                                               } else if (yLabel.includes('Cr')) {
-                                                return `₹${value} Cr`;
+                                                return `₹${num.toFixed(2)} Cr`;
                                               }
-                                              return `₹${Number(value).toFixed(2)}K`; // Default to thousands
+                                              return `₹${num.toFixed(2)}K`; // Default to thousands
                                             }
-                                            if (key.includes('Payback')) return `${value} years`;
-                                            if (key.includes('Carbon')) return `${value} Kiloton`;
-                                            return `₹${value}/kWh`;
+                                            if (key.includes('Payback')) return `${num.toFixed(2)} years`;
+                                            if (key.includes('Carbon')) return `${num.toFixed(2)} Kiloton`;
+                                            return `₹${num.toFixed(2)}/kWh`;
                                           }}
                                         />
                                         <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]}>
@@ -1486,19 +1504,20 @@ const PlanningWizardContent: React.FC = () => {
                                             borderRadius: '6px'
                                           }}
                                           formatter={(value: any) => {
+                                            const num = Number(value);
                                             if (key.includes('Capital Cost')) {
                                               // Check yLabel to determine unit (Thousands or Cr)
                                               const yLabel = plotData.yLabel || '';
                                               if (yLabel.includes('Thousands')) {
-                                                return `₹${Number(value).toFixed(2)}K`;
+                                                return `₹${num.toFixed(2)}K`;
                                               } else if (yLabel.includes('Cr')) {
-                                                return `₹${value} Cr`;
+                                                return `₹${num.toFixed(2)} Cr`;
                                               }
-                                              return `₹${Number(value).toFixed(2)}K`; // Default to thousands
+                                              return `₹${num.toFixed(2)}K`; // Default to thousands
                                             }
-                                            if (key.includes('Payback')) return `${value} years`;
-                                            if (key.includes('Carbon')) return `${value} Kiloton`;
-                                            return `₹${value}/kWh`;
+                                            if (key.includes('Payback')) return `${num.toFixed(2)} years`;
+                                            if (key.includes('Carbon')) return `${num.toFixed(2)} Kiloton`;
+                                            return `₹${num.toFixed(2)}/kWh`;
                                           }}
                                         />
                                         <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]}>
@@ -1612,13 +1631,6 @@ const PlanningWizardContent: React.FC = () => {
                   >
                     <Save className="w-5 h-5" />
                     <span>Save Plan</span>
-                  </button>
-                  <button
-                    onClick={handleProceedToOptimization}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center space-x-2"
-                  >
-                    <span>Proceed to Optimization</span>
-                    <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
             )}

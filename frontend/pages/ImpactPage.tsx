@@ -30,21 +30,21 @@ const ImpactPage: React.FC = () => {
   const demandResponseCostData = [
     { case: 'Case 1', label: 'Conventional EMS', cost: 1.75 * timeMultiplier, color: '#10b981' },
     { case: 'Case 2', label: 'With Demand Mgmt', cost: 1.4 * timeMultiplier, savings: 20, color: '#3b82f6' },
-    { case: 'Case 3', label: 'Demand + DG Disabled', cost: 1.58 * timeMultiplier, savings: 10, color: '#8b5cf6' },
+    { case: 'Case 3', label: 'Demand Mgmt + DG Disabled', cost: 1.58 * timeMultiplier, savings: 10, color: '#8b5cf6' },
   ];
 
   // Load Shifting Cost Data (Dynamic based on timeRange)
   const loadShiftingCostData = [
     { case: 'Case 1', label: 'Conventional EMS', cost: 1.75 * timeMultiplier, color: '#10b981' },
     { case: 'Case 2', label: 'With Demand Mgmt', cost: 1.59 * timeMultiplier, savings: 9, color: '#3b82f6' },
-    { case: 'Case 3', label: 'Demand + DG Disabled', cost: 1.75 * timeMultiplier, savings: 0, color: '#8b5cf6' },
+    { case: 'Case 3', label: 'Demand Mgmt + DG Disabled', cost: 1.75 * timeMultiplier, savings: 0, color: '#8b5cf6' },
   ];
 
   // Carbon Emission Data - Three Cases (Dynamic based on timeRange)
   const emissionComparisonData = [
     { case: 'Case 1', label: 'Conventional EMS', emissions: 9500 * timeMultiplier, color: '#854d0e' },
     { case: 'Case 2', label: 'With Demand Mgmt', emissions: 8360 * timeMultiplier, savings: 12, color: '#92400e' },
-    { case: 'Case 3', label: 'Demand + DG Disabled', emissions: 6840 * timeMultiplier, savings: 28, color: '#a16207' },
+    { case: 'Case 3', label: 'Demand Mgmt + DG Disabled', emissions: 6840 * timeMultiplier, savings: 28, color: '#a16207' },
   ];
 
   // Component-Level Cost Breakdown (INR) - Monthly base from PPT, scaled to timeRange
@@ -271,22 +271,13 @@ const ImpactPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Integrated System Configuration
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Our energy management system integrates several key components for optimal energy flow
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {systemComponents.map((component) => {
-              const Icon = component.icon;
-              return (
-                <div key={component.name} className="flex flex-col items-center text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${component.color} flex items-center justify-center mb-3`}>
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1">{component.name}</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{component.description}</p>
-                </div>
-              );
-            })}
+         
+          <div className="flex justify-center">
+            <img
+              src="/assets/EMS.png"
+              alt="Energy Management System components"
+              className="w-full max-w-5xl rounded-lg border border-gray-200 dark:border-gray-700 bg-white"
+            />
           </div>
         </div>
       </Card>
@@ -312,7 +303,7 @@ const ImpactPage: React.FC = () => {
               ₹{currentCostPerKwh.toFixed(2)}
             </p>
             <p className="text-sm text-green-600 mt-1">
-              ↓ {costSavingsVsRuleBased.toFixed(2)}% vs rule-based
+              ↓ {(includeHydrogen ? savingsWithHydrogenVsRuleBased : costSavingsVsRuleBased).toFixed(2)}% vs rule-based
             </p>
           </div>
         </Card>
@@ -392,19 +383,18 @@ const ImpactPage: React.FC = () => {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Rule-Based Cost</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhRuleBased}</p>
-                <p className="text-xs text-gray-500 mt-1">per kWh</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhRuleBased} / kWh</p>
               </div>
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Optimized (Battery Only)</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhOptimized}</p>
-                <p className="text-xs text-green-600 mt-1">-{costSavingsVsRuleBased.toFixed(2)}%</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhOptimized} / kWh</p>
+                <p className="text-xs text-green-600 mt-1">↓ {costSavingsVsRuleBased.toFixed(2)}% vs Rule-based</p>
               </div>
               <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">With Hydrogen Fuel Cell</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhHydrogen}</p>
-                <p className="text-xs text-green-600 mt-1">-{savingsWithHydrogenVsRuleBased.toFixed(2)}%</p>
-                <p className="text-xs text-green-600 mt-1">Additional -{additionalSavingsWithHydrogen.toFixed(2)}%</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{costPerKwhHydrogen} / kWh</p>
+                <p className="text-xs text-green-600 mt-1">↓ {savingsWithHydrogenVsRuleBased.toFixed(2)}% vs Rule-based</p>
+                <p className="text-xs text-green-600 mt-1">↓ {additionalSavingsWithHydrogen.toFixed(2)}% vs Battery-only</p>
               </div>
             </div>
           )}
@@ -630,7 +620,7 @@ const ImpactPage: React.FC = () => {
                   tickFormatter={(value) => Math.round(Number(value)).toString()}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+       
                 <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
                   {demandResponseCostData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -676,7 +666,7 @@ const ImpactPage: React.FC = () => {
                   tickFormatter={(value) => Math.round(Number(value)).toString()}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+        
                 <Bar dataKey="cost" name="Cost" radius={[8, 8, 0, 0]}>
                   {loadShiftingCostData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -725,15 +715,11 @@ const ImpactPage: React.FC = () => {
                   offset: 25,
                   dx: -10
                 }}
-                tick={{
-                  angle: -90,
-                  textAnchor: 'middle',
-                  fill: 'currentColor'
-                }}
+                tick={{ fill: 'currentColor' }}
                 tickMargin={10}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
+          
               <Bar dataKey="emissions" name="Emissions" radius={[8, 8, 0, 0]}>
                 {emissionComparisonData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

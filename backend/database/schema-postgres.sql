@@ -236,6 +236,20 @@ CREATE TABLE IF NOT EXISTS optimization_configs (
     FOREIGN KEY (planning_recommendation_id) REFERENCES planning_recommendations(id) ON DELETE SET NULL
 );
 
+-- Optimization Uploads (user-provided CSV/Excel)
+CREATE TABLE IF NOT EXISTS optimization_uploads (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    site_id VARCHAR(255),
+    file_name TEXT NOT NULL,
+    mime_type TEXT,
+    size_bytes INTEGER,
+    content_base64 TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL
+);
+
 -- Optimization Results table (stores results from source and demand optimization)
 CREATE TABLE IF NOT EXISTS optimization_results (
     id VARCHAR(255) PRIMARY KEY,

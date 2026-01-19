@@ -36,6 +36,15 @@ type TimePoint = {
   dateOnly: string; // "2026-01-11"
 };
 
+type EnergySummary = {
+  pv: number;
+  load: number;
+  gridImport: number;
+  gridExport: number;
+  batteryCharge: number;
+  batteryDischarge: number;
+};
+
 const formatNumber = (n: number, digits = 1) =>
   n.toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
@@ -56,9 +65,37 @@ const getPowerApiBase = (): string => {
   return hasApiVersion ? trimmed : `${trimmed}/api/v1`;
 };
 
+const alphaPv = 0.35; // blend factor for PV accumulation
+const betaLoad = 0.35; // blend factor for load accumulation
+
+const smoothAccumulation = (raw: number, forecast: number, progress: number, blend: number) => {
+  const ideal = forecast * progress;
+  const blended = blend * raw + (1 - blend) * ideal;
+  const candidate = Math.max(raw, blended);
+  return Math.min(forecast, candidate);
+};
+
+const pvProgressForHour = (hour: number) =>
+  hour < 6 ? 0 : hour > 18 ? 1 : Math.sin(((hour - 6) / 12) * Math.PI);
+
+const loadProgressForHour = (hour: number) =>
+  Math.min(hour / 24 + (hour >= 18 && hour <= 22 ? 0.05 : 0), 1);
+
+const clampForecastToAvg = (forecast: number, avgDaily: number, minRaw: number) => {
+  if (avgDaily > 0) {
+    const upper = avgDaily * 1.1;
+    const lower = avgDaily * 0.9;
+    const clamped = Math.min(Math.max(forecast, lower), upper);
+    return Math.max(clamped, minRaw);
+  }
+  return Math.max(forecast, minRaw);
+};
+
 const ResidentialEnergyMonitoringPage: React.FC = () => {
   const [powerData, setPowerData] = useState<TimePoint[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [yesterdaySummary, setYesterdaySummary] = useState<EnergySummary | null>(null);
+  const [avg7Summary, setAvg7Summary] = useState<EnergySummary | null>(null);
   const [selectedRange, setSelectedRange] = useState<'yesterday' | '7d' | '30d'>('7d');
   const arraysPerf = useMemo(
     () =>
@@ -86,8 +123,7 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     return sum;
   }, [powerData]);
 
-  const kpis: Kpi[] = useMemo(() => {
-    // Seeded daily baseline to keep forecasts stable for the day
+  const { kpis, energyStats } = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 10);
     const seededDaily = (seed: string, min: number, spread: number) => {
       let hash = 0;
@@ -98,7 +134,6 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
       return min + rand * spread;
     };
 
-    // Accumulation only for today up to current hour
     const now = new Date();
     const currentHour = now.getHours();
     const todaysPoints = powerData.filter((p) => {
@@ -112,54 +147,42 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
     const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
 
-    // Forecasts stable per day, but not below current accumulated
-    const forecastPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
-    const forecastLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
+    // Forecasts are constant for the day (total expected daily energy)
+    const baseForecastPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
+    const baseForecastLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
+    const avg7DailyPv = (avg7Summary?.pv ?? 0) / 7;
+    const avg7DailyLoad = (avg7Summary?.load ?? 0) / 7;
+    const forecastPv = clampForecastToAvg(baseForecastPv, avg7DailyPv, accumulatedPvRaw);
+    const forecastLoad = clampForecastToAvg(baseForecastLoad, avg7DailyLoad, accumulatedLoadRaw);
 
-    // Safety clamp: accumulated cannot exceed forecast
-    const accumulatedPv = Math.min(accumulatedPvRaw, forecastPv);
-    const accumulatedLoad = Math.min(accumulatedLoadRaw, forecastLoad);
+    // Progress curves
+    const pvProgress = pvProgressForHour(currentHour);
+    const loadProgress = loadProgressForHour(currentHour);
 
-    return [
+    // Smoothed, monotonic, and clamped accumulations
+    const accumulatedPv = smoothAccumulation(accumulatedPvRaw, forecastPv, pvProgress, alphaPv);
+    const accumulatedLoad = smoothAccumulation(accumulatedLoadRaw, forecastLoad, loadProgress, betaLoad);
+
+    const kpisData: Kpi[] = [
       { label: "Today's Forecast (PV)", value: `${formatNumber(forecastPv, 1)} kWh`, color: '#22c55e' },
       { label: "Today's Forecast (Load)", value: `${formatNumber(forecastLoad, 1)} kWh`, color: '#0ea5e9' },
       { label: "Today's Accumulated (PV)", value: `${formatNumber(accumulatedPv, 1)} kWh`, color: '#f59e0b' },
       { label: "Today's Accumulated (Load)", value: `${formatNumber(accumulatedLoad, 1)} kWh`, color: '#a855f7' },
     ];
-  }, [powerData]);
-
-  const energyStats = useMemo(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const seededDaily = (seed: string, min: number, spread: number) => {
-      let hash = 0;
-      for (let i = 0; i < seed.length; i++) {
-        hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-      }
-      const rand = Math.abs(Math.sin(hash));
-      return min + rand * spread;
-    };
-
-    const now = new Date();
-    const currentHour = now.getHours();
-    const todaysPoints = powerData.filter((p) => {
-      if (p.dateOnly !== todayStr) return false;
-      const hourStr = p.label.split(' ')[1]?.replace('h', '');
-      const hourNum = parseInt(hourStr, 10);
-      if (Number.isNaN(hourNum)) return false;
-      return hourNum <= currentHour;
-    });
-
-    const accumulatedPvRaw = todaysPoints.reduce((s, p) => s + p.pv, 0);
-    const accumulatedLoadRaw = todaysPoints.reduce((s, p) => s + p.load, 0);
-
-    const forecastTodayPv = Math.max(seededDaily(todayStr, 14, 3), accumulatedPvRaw * 1.2);
-    const forecastTodayLoad = Math.max(seededDaily(`${todayStr}-load`, 16, 3), accumulatedLoadRaw * 1.15);
 
     const expectedLoad = totals.load;
     const avg7 = 14 + Math.random() * 2;
     const avg30 = 13 + Math.random() * 3;
-    return { avg7, avg30, forecastTodayPv, forecastTodayLoad, expectedLoad };
-  }, [powerData, totals.load, lastUpdated]);
+    const energyStatsData = {
+      avg7,
+      avg30,
+      forecastTodayPv: forecastPv,
+      forecastTodayLoad: forecastLoad,
+      expectedLoad,
+    };
+
+    return { kpis: kpisData, energyStats: energyStatsData };
+  }, [powerData, totals.load, lastUpdated, avg7Summary]);
 
   const batteryGauge: Gauge = useMemo(() => {
     const soc = 50 + Math.random() * 35;
@@ -193,6 +216,21 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     ];
   }, [lastUpdated]);
 
+  const summarizeEnergy = (data: TimePoint[]): EnergySummary => {
+    return data.reduce(
+      (acc, p) => {
+        acc.pv += p.pv;
+        acc.load += p.load;
+        if (p.grid > 0) acc.gridImport += p.grid;
+        if (p.grid < 0) acc.gridExport += -p.grid;
+        if (p.battery > 0) acc.batteryDischarge += p.battery;
+        if (p.battery < 0) acc.batteryCharge += -p.battery;
+        return acc;
+      },
+      { pv: 0, load: 0, gridImport: 0, gridExport: 0, batteryCharge: 0, batteryDischarge: 0 }
+    );
+  };
+
   useEffect(() => {
     const refresh = async () => {
       try {
@@ -213,6 +251,24 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
         setLastUpdated(new Date());
       } catch (e) {
         console.error('Failed to load residential power data', e);
+      }
+
+      try {
+        const [yesterdayRes, avg7Res] = await Promise.all([
+          fetch(`${getPowerApiBase()}/mock/power/residential?range=yesterday`),
+          fetch(`${getPowerApiBase()}/mock/power/residential?range=7d`)
+        ]);
+        if (!yesterdayRes.ok || !avg7Res.ok) throw new Error('Failed to load summary data');
+        const yesterdayData = await yesterdayRes.json();
+        const avg7Data = await avg7Res.json();
+        if (Array.isArray(yesterdayData)) {
+          setYesterdaySummary(summarizeEnergy(yesterdayData));
+        }
+        if (Array.isArray(avg7Data)) {
+          setAvg7Summary(summarizeEnergy(avg7Data));
+        }
+      } catch (e) {
+        console.error('Failed to load residential summary data', e);
       }
     };
     refresh();
@@ -249,7 +305,7 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Residential Energy Monitoring Dashboard</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Residential System</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Last updated: {lastUpdated.toLocaleString()}
           </p>
@@ -283,23 +339,23 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Yesterday's Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(11 + Math.random() * 3, 1)} kWh</li>
-            <li><strong>Load:</strong> {formatNumber(13 + Math.random() * 3, 1)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(4 + Math.random() * 2, 1)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(2 + Math.random() * 1.5, 1)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(3 + Math.random() * 1.5, 1)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(3.5 + Math.random() * 1.5, 1)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber(yesterdaySummary?.pv ?? 0, 1)} kWh</li>
+            <li><strong>Load:</strong> {formatNumber(yesterdaySummary?.load ?? 0, 1)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber(yesterdaySummary?.gridImport ?? 0, 1)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber(yesterdaySummary?.gridExport ?? 0, 1)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber(yesterdaySummary?.batteryCharge ?? 0, 1)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber(yesterdaySummary?.batteryDischarge ?? 0, 1)} kWh</li>
           </ul>
         </div>
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <h4 className="text-md font-semibold mb-3 text-gray-900 dark:text-white">Avg Last 7 Days' Energy</h4>
           <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
-            <li><strong>PV:</strong> {formatNumber(12 + Math.random() * 2, 1)} kWh</li>
-            <li><strong>Load:</strong> {formatNumber(14 + Math.random() * 2, 1)} kWh</li>
-            <li><strong>Grid Import:</strong> {formatNumber(4.5 + Math.random() * 1.5, 1)} kWh</li>
-            <li><strong>Grid Export:</strong> {formatNumber(1.5 + Math.random() * 1.0, 1)} kWh</li>
-            <li><strong>Battery Charge:</strong> {formatNumber(3.2 + Math.random() * 1.2, 1)} kWh</li>
-            <li><strong>Battery Discharge:</strong> {formatNumber(3.8 + Math.random() * 1.2, 1)} kWh</li>
+            <li><strong>PV:</strong> {formatNumber((avg7Summary?.pv ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Load:</strong> {formatNumber((avg7Summary?.load ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Grid Import:</strong> {formatNumber((avg7Summary?.gridImport ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Grid Export:</strong> {formatNumber((avg7Summary?.gridExport ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Battery Charge:</strong> {formatNumber((avg7Summary?.batteryCharge ?? 0) / 7, 1)} kWh</li>
+            <li><strong>Battery Discharge:</strong> {formatNumber((avg7Summary?.batteryDischarge ?? 0) / 7, 1)} kWh</li>
           </ul>
         </div>
       </div>
@@ -308,7 +364,7 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
       <div className="grid grid-cols-1 gap-6">
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Realtime power profile of different components</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Power profile of different components</h3>
             <select
               value={selectedRange}
               onChange={(e) => setSelectedRange(e.target.value as 'yesterday' | '7d' | '30d')}
@@ -329,6 +385,11 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
                 tickFormatter={(v, idx) => {
                   const point = powerData[idx];
                   if (!point) return '';
+                  if (selectedRange === 'yesterday') {
+                    const hour = parseInt(point.label.split(' ')[1]?.replace('h', ''), 10);
+                    if (Number.isNaN(hour)) return '';
+                    return hour % 4 === 0 || hour === 23 ? `${hour}:00` : '';
+                  }
                   if (point.isMidnight && allowedDates.has(point.dateOnly)) {
                     return point.dateOnly;
                   }
@@ -338,10 +399,10 @@ const ResidentialEnergyMonitoringPage: React.FC = () => {
               <YAxis label={{ value: 'Power (kW)', angle: -90, position: 'insideLeft', offset: 10 }} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="pv" stackId="1" stroke={chartColors.solar} fill={chartColors.solar} fillOpacity={0.2} name="Solar PV (kW)" />
-              <Area type="monotone" dataKey="battery" stackId="1" stroke={chartColors.battery} fill={chartColors.battery} fillOpacity={0.15} name="Battery (kW, +discharge/-charge)" />
-              <Line type="monotone" dataKey="grid" stroke={chartColors.grid} strokeWidth={2.2} dot={false} name="Grid (kW, +import/-export)" />
-              <Line type="monotone" dataKey="load" stroke={chartColors.load} strokeWidth={2.6} dot={false} name="Total Load (kW)" />
+              <Line type="monotone" dataKey="pv" stroke={chartColors.solar} strokeWidth={2.4} dot={false} name="Solar PV (kW)" />
+              <Line type="monotone" dataKey="battery" stroke={chartColors.battery} strokeWidth={2.4} dot={false} name="Battery (kW, +discharge/-charge)" />
+              <Line type="monotone" dataKey="grid" stroke={chartColors.grid} strokeWidth={2.4} dot={false} name="Grid (kW, +import/-export)" />
+              <Line type="monotone" dataKey="load" stroke={chartColors.load} strokeWidth={2.4} dot={false} name="Total Load (kW)" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

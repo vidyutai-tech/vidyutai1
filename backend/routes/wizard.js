@@ -6,6 +6,7 @@ const UserProfileModel = require('../database/models/userProfiles');
 const LoadProfileModel = require('../database/models/loadProfiles');
 const PlanningRecommendationModel = require('../database/models/planningRecommendations');
 const OptimizationConfigModel = require('../database/models/optimizationConfigs');
+const db = require('../database/db-adapter');
 
 // Helper to extract user ID from token (simplified - in production use proper JWT)
 const getUserId = (req) => {
@@ -631,7 +632,7 @@ router.get('/planning-recommendations', async (req, res) => {
 });
 
 // POST /api/v1/wizard/optimization/setup - O1: Optimization Setup
-router.post('/optimization/setup', (req, res) => {
+router.post('/optimization/setup', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
@@ -657,10 +658,18 @@ router.post('/optimization/setup', (req, res) => {
       });
     }
 
+    let resolvedSiteId = site_id || null;
+    if (site_id) {
+      const existingSite = await db.get('SELECT id FROM sites WHERE id = ?', [site_id]);
+      if (!existingSite) {
+        resolvedSiteId = null;
+      }
+    }
+
     const config = {
       id: uuidv4(),
       user_id: userId,
-      site_id: site_id || null,
+      site_id: resolvedSiteId,
       load_profile_id: load_profile_id || null,
       planning_recommendation_id: planning_recommendation_id || null,
       load_data,
@@ -671,7 +680,7 @@ router.post('/optimization/setup', (req, res) => {
       objective: objective || 'combination'
     };
 
-    OptimizationConfigModel.create(config);
+    await OptimizationConfigModel.create(config);
 
     res.json({
       success: true,
@@ -688,7 +697,7 @@ router.post('/optimization/setup', (req, res) => {
 });
 
 // GET /api/v1/wizard/optimization/configs - Get user's optimization configs
-router.get('/optimization/configs', (req, res) => {
+router.get('/optimization/configs', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
@@ -697,8 +706,8 @@ router.get('/optimization/configs', (req, res) => {
 
     const { site_id } = req.query;
     const configs = site_id
-      ? OptimizationConfigModel.findBySiteId(site_id)
-      : OptimizationConfigModel.findByUserId(userId);
+      ? await OptimizationConfigModel.findBySiteId(site_id)
+      : await OptimizationConfigModel.findByUserId(userId);
 
     res.json({
       success: true,
