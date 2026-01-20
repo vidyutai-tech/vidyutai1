@@ -34,7 +34,7 @@ const MainOptionsPage: React.FC = () => {
     },
     {
       id: 'optimization',
-      title: 'Energy Optimization',
+      title: 'Energy Management System',
       description: 'Optimize your existing energy system for cost, CO2 emissions, or both. Configure optimization parameters and run analysis',
       icon: TrendingUp,
       path: '/optimization-flow',
