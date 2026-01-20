@@ -173,7 +173,7 @@ const MainOptionsPage: React.FC = () => {
                 <p className="text-sm">Design your energy system from scratch with step-by-step guidance and AI recommendations.</p>
               </div>
               <div>
-                <p className="font-semibold mb-1">2. Energy Optimization</p>
+                <p className="font-semibold mb-1">2. Energy Management System</p>
                 <p className="text-sm">Optimize existing systems by configuring parameters and running cost/CO2 analysis.</p>
               </div>
               <div>
