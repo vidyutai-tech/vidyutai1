@@ -63,8 +63,8 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
   const gridColor = theme === 'dark' ? '#374151' : '#E5E7EB';
   const bgColor = theme === 'dark' ? '#1F2937' : '#FFFFFF';
 
-  // Colors matching the Python matplotlib charts
-  const colors = {
+  // Use lighter palette for light theme
+  const colors = theme === 'dark' ? {
     load: '#010103',
     grid: '#0863D1',
     diesel: '#72394F',
@@ -74,6 +74,16 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
     served: '#2ca02c',
     curt: '#d62728',
     price: '#CA3510'
+  } : {
+    load: '#4B5563',
+    grid: '#60A5FA',
+    diesel: '#F0ABFC',
+    battery: '#A78BFA',
+    solar: '#A3E635',
+    h2: '#67E8F9',
+    served: '#86EFAC',
+    curt: '#FCA5A5',
+    price: '#FB923C'
   };
 
   const formatTime = (hours: number) => {

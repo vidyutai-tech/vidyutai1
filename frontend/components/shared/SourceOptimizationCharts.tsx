@@ -50,8 +50,8 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
   const gridColor = theme === 'dark' ? '#374151' : '#E5E7EB';
   const bgColor = theme === 'dark' ? '#1F2937' : '#FFFFFF';
 
-  // Colors matching the Python matplotlib charts
-  const colors = {
+  // Use lighter palette for light theme
+  const colors = theme === 'dark' ? {
     load: '#010103',
     grid: '#0863D1',
     diesel: '#72394F',
@@ -59,6 +59,14 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
     solar: '#6BF520',
     h2: '#17becf',
     price: '#CA3510'
+  } : {
+    load: '#4B5563',
+    grid: '#60A5FA',
+    diesel: '#F0ABFC',
+    battery: '#A78BFA',
+    solar: '#A3E635',
+    h2: '#67E8F9',
+    price: '#FB923C'
   };
 
   const formatTime = (hours: number) => {
