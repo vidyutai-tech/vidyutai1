@@ -63,27 +63,18 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
   const gridColor = theme === 'dark' ? '#374151' : '#E5E7EB';
   const bgColor = theme === 'dark' ? '#1F2937' : '#FFFFFF';
 
-  // Use lighter palette for light theme
-  const colors = theme === 'dark' ? {
-    load: '#010103',
-    grid: '#0863D1',
-    diesel: '#72394F',
-    battery: '#8938F3',
-    solar: '#6BF520',
-    h2: '#17becf',
-    served: '#2ca02c',
-    curt: '#d62728',
-    price: '#CA3510'
-  } : {
-    load: '#4B5563',
-    grid: '#60A5FA',
-    diesel: '#F0ABFC',
-    battery: '#A78BFA',
-    solar: '#A3E635',
-    h2: '#67E8F9',
-    served: '#86EFAC',
-    curt: '#FCA5A5',
-    price: '#FB923C'
+  // Dark, high-contrast palette for easy differentiation
+  const colors = {
+    load: '#111827',
+    grid: '#0f4c81',
+    diesel: '#7f1d1d',
+    battery: '#4c1d95',
+    solar: '#1b5e20',
+    h2: '#0f766e',
+    served: '#14532d',
+    curt: '#9f1239',
+    price: '#92400e',
+    electrolyzer: '#4338ca'
   };
 
   const formatTime = (hours: number) => {
@@ -258,7 +249,7 @@ const DemandOptimizationCharts: React.FC<DemandOptimizationChartsProps> = ({
             <Line
               type="monotone"
               dataKey="electrolyzer_om_cost"
-              stroke="#6b7280"
+              stroke={colors.electrolyzer}
               strokeDasharray="5 5"
               strokeWidth={1.8}
               dot={false}
