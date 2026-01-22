@@ -52,12 +52,12 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
 
   // Dark, high-contrast palette for easy differentiation
   const colors = {
-    load: '#111827',
-    grid: '#0f4c81',
-    diesel: '#7f1d1d',
-    battery: '#4c1d95',
-    solar: '#1b5e20',
-    h2: '#0f766e',
+    load: '#1F2937',
+    grid: '#2563EB',
+    diesel: '#DC2626',
+    battery: '#7C3AED',
+    solar: '#F5A623',
+    h2: '#059669',
     price: '#92400e'
   };
 
