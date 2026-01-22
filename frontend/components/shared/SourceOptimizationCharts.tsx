@@ -56,7 +56,7 @@ const SourceOptimizationCharts: React.FC<SourceOptimizationChartsProps> = ({
     grid: '#2563EB',
     diesel: '#DC2626',
     battery: '#7C3AED',
-    solar: '#F5A623',
+    solar: '#F97316',
     h2: '#059669',
     price: '#92400e'
   };
