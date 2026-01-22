@@ -435,6 +435,37 @@ const SourceOptimizationPage = () => {
     return [];
   }, [response]);
 
+  const derivedEnergy = useMemo(() => {
+    const timeSeries = response?.chart_data?.time_series;
+    const resolutionMinutes = response?.chart_data?.metadata?.time_resolution_minutes;
+    if (!Array.isArray(timeSeries) || !timeSeries.length || !resolutionMinutes) {
+      return null;
+    }
+    const stepHours = resolutionMinutes / 60;
+    let gridExportKWh = 0;
+    let batteryChargeKWh = 0;
+    let batteryDischargeKWh = 0;
+    timeSeries.forEach((point: any) => {
+      const gridPower = Number(point.grid_power);
+      if (!Number.isNaN(gridPower) && gridPower < 0) {
+        gridExportKWh += -gridPower * stepHours;
+      }
+      const netBatteryPower = Number(point.net_battery_power);
+      if (!Number.isNaN(netBatteryPower)) {
+        if (netBatteryPower < 0) {
+          batteryChargeKWh += -netBatteryPower * stepHours;
+        } else {
+          batteryDischargeKWh += netBatteryPower * stepHours;
+        }
+      }
+    });
+    return {
+      gridExportKWh,
+      batteryChargeKWh,
+      batteryDischargeKWh,
+    };
+  }, [response?.chart_data]);
+
   const keyMetrics = useMemo(() => {
     if (!summary) {
       return [
@@ -497,14 +528,14 @@ const SourceOptimizationPage = () => {
       },
       {
         title: "Grid Exports",
-        value: formatKWh(summary.Grid?.Export_kWh, 0),
-        subtext: summary.Grid?.Export_kWh != null && summary.Grid.Export_kWh > 0 ? "Energy exported to grid" : "No exports",
+        value: formatKWh(derivedEnergy?.gridExportKWh, 0),
+        subtext: derivedEnergy ? (derivedEnergy.gridExportKWh > 0 ? "Energy exported to grid" : "No exports") : "-",
         accent: "from-green-500 to-emerald-500",
         icon: ArrowUp,
       },
       {
         title: "Battery Cycling (Charging & Discharging)",
-        value: `${formatKWh(summary.Battery?.Charged_kWh, 0)} / ${formatKWh(summary.Battery?.Discharged_kWh, 0)}`,
+        value: `${formatKWh(derivedEnergy?.batteryChargeKWh, 0)} / ${formatKWh(derivedEnergy?.batteryDischargeKWh, 0)}`,
         subtext: `${formatNumber(summary.Battery?.Capacity_kWh, 0)} kWh • ${formatNumber(summary.Battery?.Voltage_V, 0)} V`,
         accent: "from-violet-500 to-purple-500",
         icon: BatteryCharging,
@@ -517,7 +548,7 @@ const SourceOptimizationPage = () => {
         icon: Leaf,
       },
     ];
-  }, [summary, displayWeather, displayDays, displayResolution, displayProfile]);
+  }, [summary, displayWeather, displayDays, displayResolution, displayProfile, derivedEnergy]);
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-6 pb-12">
       <div className="rounded-3xl border border-base-200/60 bg-base-100/95 shadow-xl shadow-sky-100/30">
@@ -955,15 +986,15 @@ const SourceOptimizationPage = () => {
                       {response.summary.Grid?.Import_kWh} kWh imported from the
                       grid.
                     </p>
-                    {response.summary.Battery && (
+                    {derivedEnergy && (
                       <p className="mt-2">
                         Battery cycled{" "}
                         <span className="font-semibold">
-                          {response.summary.Battery?.Charged_kWh} kWh
+                          {formatNumber(derivedEnergy.batteryChargeKWh, 2)} kWh
                         </span>{" "}
                         charging /{" "}
                         <span className="font-semibold">
-                          {response.summary.Battery?.Discharged_kWh} kWh
+                          {formatNumber(derivedEnergy.batteryDischargeKWh, 2)} kWh
                         </span>{" "}
                         discharging.
                       </p>
