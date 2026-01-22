@@ -323,7 +323,7 @@ const OperationalMonitoringPage: React.FC = () => {
     load: '#010103',
     grid: '#0863D1',
     battery: '#8938F3',
-    solar: '#6BF520',
+    solar: '#F5A623',
   };
 
   // Limit X-axis tick dates to keep it readable (max ~6-7 labels)
