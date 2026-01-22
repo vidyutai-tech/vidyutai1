@@ -740,11 +740,11 @@ const SourceOptimizationPage = () => {
                 </div>
                 <div>
                   <span className="text-base-content/60">Grid:</span>
-                  <span className="ml-2 font-semibold">{mergedFormData.grid_connection} kW</span>
+                  <span className="ml-2 font-semibold">{Number(mergedFormData.grid_connection).toFixed(2)} kW</span>
                 </div>
                 <div>
                   <span className="text-base-content/60">Solar:</span>
-                  <span className="ml-2 font-semibold">{mergedFormData.solar_connection} kW</span>
+                  <span className="ml-2 font-semibold">{Number(mergedFormData.solar_connection).toFixed(2)} kW</span>
                 </div>
                 <div>
                   <span className="text-base-content/60">Battery:</span>
@@ -754,7 +754,7 @@ const SourceOptimizationPage = () => {
                 </div>
                 <div>
                   <span className="text-base-content/60">Diesel:</span>
-                  <span className="ml-2 font-semibold">{mergedFormData.diesel_capacity} kW</span>
+                  <span className="ml-2 font-semibold">{Number(mergedFormData.diesel_capacity).toFixed(2)} kW</span>
                 </div>
               </div>
               <div className="mt-4 space-y-2">
