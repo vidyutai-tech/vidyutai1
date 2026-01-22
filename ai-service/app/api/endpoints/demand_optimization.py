@@ -713,15 +713,17 @@ async def optimize_demand(
             inferred_days = max(1, round(total_minutes / (24 * 60)))
             print(f"📂 Using uploaded file with inferred {inferred_days} day(s) and {time_resolution_minutes}-minute resolution")
 
-        # Extract load profiles (case-insensitive, look for Load1, Load2, etc. or Load_1, Load_2, etc.)
+        # Extract load profiles (case-insensitive, support "Load 1", "Load-1", "Load_1", "L1", etc.)
+        data_columns = [col for col in df.columns if col != datetime_col]
         for i in [1, 2, 3, 4, 5]:
-            load_cols = df.columns[df.columns.str.contains(f"Load{i}|Load_{i}|L{i}", case=False, regex=True)]
+            pattern = rf"\bLoad\s*{i}\b|\bLoad[-_]?{i}\b|\bL{i}\b"
+            load_cols = df.columns[df.columns.str.contains(pattern, case=False, regex=True)]
             if len(load_cols) > 0:
-                load_profiles_dict[i] = df[load_cols[0]].astype(float).fillna(0.0).tolist()
+                load_profiles_dict[i] = pd.to_numeric(df[load_cols[0]], errors="coerce").fillna(0.0).tolist()
             else:
-                # Try to get by position if column names don't match
-                if i <= len(df.columns):
-                    load_profiles_dict[i] = df.iloc[:, i-1].astype(float).fillna(0.0).tolist()
+                # Fallback to column position, excluding timestamp/date columns
+                if i <= len(data_columns):
+                    load_profiles_dict[i] = pd.to_numeric(df[data_columns[i - 1]], errors="coerce").fillna(0.0).tolist()
 
         # Extract price profile
         price_cols = df.columns[df.columns.str.contains("Price", case=False)]

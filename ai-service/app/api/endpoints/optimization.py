@@ -662,9 +662,20 @@ async def optimize(
 
             print(f"📂 Using uploaded file with inferred {inferred_days} day(s) and {time_resolution_minutes}-minute resolution")
 
-        # Extract load/price columns (case-insensitive)
-        load_profile = df.iloc[:, df.columns.str.contains("Load", case=False)].squeeze().tolist()
-        price_profile = df.iloc[:, df.columns.str.contains("Price", case=False)].squeeze().tolist()
+        # Extract load/price columns (case-insensitive, avoid timestamp/date)
+        data_columns = [col for col in df.columns if col != datetime_col]
+        load_cols = df.columns[df.columns.str.contains(r"\bLoad\b|\bLoad\s*\d+\b|\bL\d+\b", case=False, regex=True)]
+        price_cols = df.columns[df.columns.str.contains(r"\bPrice\b|\bTariff\b", case=False, regex=True)]
+
+        if len(load_cols) > 0:
+            load_profile = pd.to_numeric(df[load_cols[0]], errors="coerce").fillna(0.0).tolist()
+        elif data_columns:
+            load_profile = pd.to_numeric(df[data_columns[0]], errors="coerce").fillna(0.0).tolist()
+
+        if len(price_cols) > 0:
+            price_profile = pd.to_numeric(df[price_cols[0]], errors="coerce").fillna(0.0).tolist()
+        elif len(data_columns) > 1:
+            price_profile = pd.to_numeric(df[data_columns[1]], errors="coerce").fillna(0.0).tolist()
 
         # Extract solar column (Solar/PV), if present
         solar_cols = df.columns[df.columns.str.contains("Solar|PV", case=False, regex=True)]
